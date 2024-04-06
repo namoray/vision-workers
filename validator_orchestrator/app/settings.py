@@ -51,7 +51,6 @@ task_configs = models.TaskConfigMapping(
                 model="TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
                 half_precision=True,
                 revision="gptq-8bit-128g-actorder_True",
-                
             ),
             endpoint=BASE_URL + "/generate_text",
             checking_function=checking_functions.check_text_result,
