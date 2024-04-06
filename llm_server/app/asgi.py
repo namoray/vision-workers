@@ -40,12 +40,13 @@ async def lifespan(app: fastapi.FastAPI):
     tokenizer = os.getenv("TOKENIZER", None)
     use_toxic_checker = os.getenv("TOXIC_CHECKER", None)
     half_precision = os.getenv("HALF_PRECISION", True)
+    revision = os.getenv("REVISION", None)
 
     # TODO: NICER NAME, prob refactor further
     engine_state = state.EngineState()
     if initial_model is not None:
         await engine_state.load_model_and_tokenizer(
-            initial_model, tokenizer, half_precision 
+            initial_model, tokenizer, half_precision , revision
         )
 
     if use_toxic_checker:
