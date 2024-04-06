@@ -1,0 +1,7 @@
+*pycache*
+*nohup*
+*.safetensors
+*.bin
+*ControlNetModel*
+*antelope*
+ComfyUI/

@@ -1,0 +1,73 @@
+FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# PM2
+RUN apt-get update && apt-get install -y curl
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get install -y nodejs
+RUN npm install -g pm2
+
+WORKDIR /app
+
+# Installing necessary packages
+RUN apt-get update && apt-get install -y wget git
+
+
+# Installing Miniconda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && chmod 700 Miniconda3-latest-Linux-x86_64.sh \
+    && ./Miniconda3-latest-Linux-x86_64.sh -b \
+    && rm Miniconda3-latest-Linux-x86_64.sh
+
+ENV PATH="/root/miniconda3/bin:${PATH}"
+RUN conda create -n venv python=3.10.13 -y \
+    && echo "source activate venv" > ~/.bashrc
+ENV PATH="/root/miniconda3/envs/venv/bin:${PATH}"
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get -y full-upgrade \
+    && apt-get -y install python3-dev \
+    && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3-pip\
+    apt-utils \
+    curl \
+    wget \
+    vim \
+    sudo \
+    git \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    python3-tk \
+    python3-dev \
+    git-lfs \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y unzip
+
+COPY image_server/requirements.txt /app/requirements.txt
+RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools
+RUN  pip install -r /app/requirements.txt 
+RUN pip install huggingface_hub[hf_transfer]
+RUN rm -rf /root/.cache/pip/* 
+
+COPY image_server /app
+
+ENV APP_HOST=0.0.0.0
+ENV APP_PORT=8080
+ENV NSFW_ADJUSTMENT=-0.02
+ENV HF_HUB_ENABLE_HF_TRANSFER=1
+
+USER root
+EXPOSE 6919
+
+RUN chmod +x /app/entrypoint.sh
+
+
+CMD ["/app/entrypoint.sh", "--warmup"]

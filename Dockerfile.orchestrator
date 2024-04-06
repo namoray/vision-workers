@@ -1,0 +1,69 @@
+FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
+
+WORKDIR /app
+
+# Installing necessary packages
+RUN apt-get update && apt-get install -y wget git
+
+# Installing Miniconda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && chmod 700 Miniconda3-latest-Linux-x86_64.sh \
+    && ./Miniconda3-latest-Linux-x86_64.sh -b \
+    && rm Miniconda3-latest-Linux-x86_64.sh
+
+ENV PATH="/root/miniconda3/bin:${PATH}"
+RUN conda create -n venv python=3.10.13 -y \
+    && echo "source activate venv" > ~/.bashrc
+ENV PATH="/root/miniconda3/envs/venv/bin:${PATH}"
+
+# Installing CUDA toolkit matching the CUDA version from the base image
+RUN CUDA_VERSION="11.8.0" && \
+    CUDA_VERSION_MAJOR=$(echo $CUDA_VERSION | cut -d'.' -f1) && \
+    CUDA_VERSION_MINOR=$(echo $CUDA_VERSION | cut -d'.' -f2) && \
+    CUDA_VERSION_SIMPLE="${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}.0" && \
+    conda install nvidia/label/cuda-${CUDA_VERSION_SIMPLE}::cuda-toolkit -y
+
+# PM2
+RUN apt-get update && apt-get install -y curl
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get install -y nodejs
+RUN npm install -g pm2
+
+# lsof
+RUN apt-get update && apt-get install -y lsof
+
+COPY image_server/requirements.txt ./app/image_server/requirements.txt
+RUN pip install -r ./app/image_server/requirements.txt
+
+COPY validator_orchestrator/requirements.txt  /app/validator_orchestrator/requirements.txt
+RUN pip install -r /app/validator_orchestrator/requirements.txt
+
+RUN pip install huggingface_hub[hf_transfer]
+ENV HF_HUB_ENABLE_HF_TRANSFER=1
+
+# Vllm patch for cuda118
+COPY orchestrator_cu118patch.sh /app/orchestrator_cu118patch.sh
+RUN chmod +x /app/orchestrator_cu118patch.sh
+RUN /app/orchestrator_cu118patch.sh
+
+COPY llm_server/requirements.txt ./app/llm_server/requirements.txt
+RUN pip install -r ./app/llm_server/requirements.txt
+
+
+COPY llm_server /app/llm_server
+COPY image_server /app/image_server
+COPY validator_orchestrator /app/validator_orchestrator
+RUN chmod +x /app/llm_server/entrypoint.sh
+RUN chmod +x /app/image_server/entrypoint.sh
+RUN chmod +x /app/image_server/setup.sh
+
+
+EXPOSE 6920
+
+WORKDIR /app/validator_orchestrator
+RUN apt-get update && apt-get install -y unzip
+
+CMD ["bash", "-c", "cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
+
+
+
