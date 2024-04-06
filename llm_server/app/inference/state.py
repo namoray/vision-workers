@@ -1,5 +1,3 @@
-
-
 import gc
 
 import torch
@@ -8,8 +6,6 @@ from app.logging import logging
 from app import models
 from app.inference import engines, completions, toxic
 from typing import Optional
-
-
 
 
 class EngineState:
@@ -21,31 +17,40 @@ class EngineState:
         if self.toxic_checker is None:
             self.toxic_checker = toxic.get_toxic_chat_identifier()
 
-    async def load_model_and_tokenizer(self, model_to_load: str, tokenizer_name: str, half_precision: bool) -> None:
+    async def load_model_and_tokenizer(
+        self,
+        model_to_load: str,
+        revision: str,
+        tokenizer_name: str,
+        half_precision: bool,
+    ) -> None:
         if self.llm_engine is not None:
             if model_to_load == self.llm_engine.model_name:
                 logging.info(f"Model {model_to_load} already loaded")
                 return
-            
+
             old_model_name = self.llm_engine.model_name
             try:
                 destroy_model_parallel()
                 logging.info(f"Unloaded model {old_model_name} ✅")
             except Exception:
-                logging.debug("Tried to unload a vllm model & failed - probably wasn't a vllm model")
-            
+                logging.debug(
+                    "Tried to unload a vllm model & failed - probably wasn't a vllm model"
+                )
 
             del self.llm_engine.model
             del self.llm_engine
             self.llm_engine = None
 
-        await self._load_engine(model_to_load, tokenizer_name, half_precision)
+        await self._load_engine(model_to_load, revision, tokenizer_name, half_precision)
 
-    async def _load_engine(self, model_name: str, tokenizer_name: str, half_precision: bool) -> None:
+    async def _load_engine(
+        self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool
+    ) -> None:
         torch.cuda.empty_cache()
         gc.collect()
         self.llm_engine = await engines.get_llm_engine(
-            model_name, tokenizer_name, half_precision
+            model_name, revision, tokenizer_name, half_precision
         )
 
     # TODO: rename question & why is this needed?!

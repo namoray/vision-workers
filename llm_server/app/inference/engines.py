@@ -10,7 +10,7 @@ from app.inference import completions
 
 
 async def _get_vllm_engine(
-    model_name: str, tokenizer_name: str, half_precision: bool
+    model_name: str, revision: str, tokenizer_name: str, half_precision: bool
 ) -> models.LLMEngine:
     # This is needed as quantizing the small nous model's causes all sorts of trouble
     if half_precision:
@@ -24,7 +24,9 @@ async def _get_vllm_engine(
         tokenizer=tokenizer_name,
         dtype=dtype,
         enforce_eager=False,
+        revision=revision,
         max_num_seqs=256,
+        max_logprobs=100,
         gpu_memory_utilization=0.80,
         trust_remote_code=True
     )
@@ -51,10 +53,10 @@ async def _get_vllm_engine(
 
 
 async def get_llm_engine(
-    model_name: str, tokenizer_name: Optional[str] = None, half_precision: bool = True
+    model_name: str, revision: str, tokenizer_name: Optional[str] = None, half_precision: bool = True
 ) -> models.LLMEngine:
     # if "llava" not in model_name:
     # try:
     if tokenizer_name is None:
         tokenizer_name = model_name
-    return await _get_vllm_engine(model_name, tokenizer_name, half_precision)
+    return await _get_vllm_engine(model_name, revision, tokenizer_name, half_precision)

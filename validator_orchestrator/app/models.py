@@ -43,6 +43,7 @@ class ModelConfigDetails(BaseModel):
     model: str
     tokenizer: Optional[str] = None
     half_precision: Optional[bool] = None
+    revision: Optional[str] = None
 
 
 class TaskConfig(BaseModel):

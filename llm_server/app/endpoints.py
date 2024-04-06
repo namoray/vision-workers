@@ -13,8 +13,9 @@ async def load_model(
 ) -> schemas.LoadModelResponse:
     model = request.model
     tokenizer = request.tokenizer
+    revision = request.revision
 
-    await EngineState.load_model_and_tokenizer(model, tokenizer, request.half_precision)
+    await EngineState.load_model_and_tokenizer(model, revision, tokenizer, request.half_precision)
     return schemas.LoadModelResponse(success=True)
 
 
