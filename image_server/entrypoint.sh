@@ -10,45 +10,21 @@ trap cleanup SIGINT SIGTERM
 
 ./setup.sh
 
-lowvram=false
-highvram=false
-warmup=false
+vram_mode=${VRAM_MODE:-}
 
-while (( "$#" )); do
-  case "$1" in
-    --lowvram)
-      lowvram=true
-      shift
-      ;;
-    --highvram)
-      highvram=true
-      shift
-      ;;
-    --warmup)
-      warmup=true
-      shift
-      ;;
-    *)
-      shift
-      ;;
-  esac
-done
-
-if $lowvram
+if [ -n "$vram_mode" ]
 then
-    python ComfyUI/main.py --lowvram --disable-xformers &
-elif $highvram
-then
-    python ComfyUI/main.py --highvram --disable-xformers  &
+    python ComfyUI/main.py $vram_mode --disable-xformers &
 else
-    python ComfyUI/main.py --disable-xformers  &
+    python ComfyUI/main.py --disable-xformers &
 fi
+
 
 COMFY_SERVER_PID=$!
 echo "ComfyUI server started with PID: $COMFY_SERVER_PID"
 sleep 5
 
-if $warmup
+if [ "$warmup" = "true" ]
 then
     python warmup.py
 else

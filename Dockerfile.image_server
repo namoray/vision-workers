@@ -61,7 +61,6 @@ COPY image_server /app
 
 ENV APP_HOST=0.0.0.0
 ENV APP_PORT=8080
-ENV NSFW_ADJUSTMENT=-0.02
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
 USER root
@@ -70,4 +69,4 @@ EXPOSE 6919
 RUN chmod +x /app/entrypoint.sh
 
 
-CMD ["/app/entrypoint.sh", "--warmup"]
+CMD ["/app/entrypoint.sh"]

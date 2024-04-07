@@ -46,7 +46,7 @@ async def lifespan(app: fastapi.FastAPI):
     engine_state = state.EngineState()
     if initial_model is not None:
         await engine_state.load_model_and_tokenizer(
-            initial_model, tokenizer, half_precision , revision
+            initial_model, revision, tokenizer, half_precision
         )
 
     if use_toxic_checker:
