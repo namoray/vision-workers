@@ -12,12 +12,13 @@ trap cleanup SIGINT SIGTERM
 
 vram_mode=${VRAM_MODE:-}
 warmup=$(echo ${WARMUP:-true} | tr '[:upper:]' '[:lower:]')
+device=${DEVICE:0}
 
 if [ -n "$vram_mode" ]
 then
-    python ComfyUI/main.py $vram_mode --disable-xformers &
+    python ComfyUI/main.py $vram_mode --cuda-device $device --disable-xformers &
 else
-    python ComfyUI/main.py --disable-xformers &
+    python ComfyUI/main.py --disable-xformers  --cuda-device $device &
 fi
 
 

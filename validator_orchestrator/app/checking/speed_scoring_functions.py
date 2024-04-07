@@ -19,6 +19,7 @@ def _calculate_speed_modifier(
     )
     return max(1 - penalty**2, 0)
 
+
 def _calculate_work_bonus_images(
     steps: int, overhead: float, lower_bound_for_seconds_per_step: float
 ):
@@ -27,13 +28,34 @@ def _calculate_work_bonus_images(
     bonus_flat = overhead + steps * lower_bound_for_seconds_per_step
     return bonus_flat**0.8
 
+
 def _calculate_work_bonus_text(
-        character_count: int, overhead: float, lower_bound_for_seconds_per_character: float
+    character_count: int, overhead: float, lower_bound_for_seconds_per_character: float
 ):
     """Returns a bonus based on the lower bound for computation"""
 
     bonus_flat = overhead + character_count * lower_bound_for_seconds_per_character
     return bonus_flat**0.8
+
+
+### SOTA ####
+
+
+SOTA_OVERHEAD = 1
+SOTA_LOWER_BOUND = 60
+SOTA_MAX_ALLOWED_TIME = 180
+
+
+async def speed_scoring_sota(
+    result: models.QueryResult, synapse: Dict[str, Any], task_config: models.TaskConfig
+):
+    speed_modifier = _calculate_speed_modifier(
+        result.response_time - SOTA_OVERHEAD, SOTA_LOWER_BOUND, SOTA_MAX_ALLOWED_TIME
+    )
+    work_bonus = SOTA_LOWER_BOUND
+    return work_bonus * speed_modifier
+
+
 ### CLIP  ####
 
 CLIP_OVERHEAD = 1
@@ -50,14 +72,20 @@ async def speed_scoring_clip(
 
     number_of_clip_embeddings = len(clip_result.clip_embeddings)
 
-    normalised_response_time = max(response_time - CLIP_OVERHEAD + 0.1 * number_of_clip_embeddings, 0.1) / number_of_clip_embeddings
+    normalised_response_time = (
+        max(response_time - CLIP_OVERHEAD + 0.1 * number_of_clip_embeddings, 0.1)
+        / number_of_clip_embeddings
+    )
 
-    speed_modifier =  _calculate_speed_modifier(
+    speed_modifier = _calculate_speed_modifier(
         normalised_response_time,
         CLIP_SUFFICIENTLY_QUICK_THRESHOLD_TIME,
         CLIP_MAX_ALLOWED_TIME,
     )
-    work_bonus = number_of_clip_embeddings * CLIP_SUFFICIENTLY_QUICK_THRESHOLD_TIME + CLIP_OVERHEAD
+    work_bonus = (
+        number_of_clip_embeddings * CLIP_SUFFICIENTLY_QUICK_THRESHOLD_TIME
+        + CLIP_OVERHEAD
+    )
 
     return speed_modifier * work_bonus
 
@@ -214,7 +242,7 @@ async def speed_scoring_chat(
         lower_bound_time = 1 / 100  # equivalent to ~ 25 tokens per second
         upper_thershold_time = 1 / 60  # equivalen to ~ 15 tokens per second
 
-        speed_modifier =  _calculate_speed_modifier(
+        speed_modifier = _calculate_speed_modifier(
             seconds_per_character, lower_bound_time, upper_thershold_time
         )
         work_bonus = _calculate_work_bonus_text(
@@ -223,14 +251,13 @@ async def speed_scoring_chat(
 
         return speed_modifier * work_bonus
 
-
     if task_config.task == Tasks.chat_mixtral:
         response_time_without_overhead = max(response_time - CHAT_OVERHEAD, 0.1)
         seconds_per_character = response_time_without_overhead / number_of_characters
         lower_bound_time = 1 / 96  # equivalent to ~ 24 tokens per second
         upper_thershold_time = 1 / 60  # equivalen to ~ 15 tokens per second
 
-        speed_modifier =  _calculate_speed_modifier(
+        speed_modifier = _calculate_speed_modifier(
             seconds_per_character, lower_bound_time, upper_thershold_time
         )
         work_bonus = _calculate_work_bonus_text(

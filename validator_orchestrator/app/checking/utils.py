@@ -2,9 +2,12 @@ import numpy as np
 from typing import List
 import imagehash
 from PIL import Image
-
+import httpx
+import re
+from loguru import logger
 from app import utility_models
-
+import io
+import base64
 
 def _hash_distance(hash_1: str, hash_2: str, color_hash: bool = False) -> int:
     if color_hash:
@@ -48,6 +51,12 @@ def image_hash_feature_extraction(image: Image.Image) -> utility_models.ImageHas
         color_hash=chash,
     )
 
+def pil_to_base64(image: Image.Image, format: str = "JPEG") -> str:
+    buffered = io.BytesIO()
+    image.save(buffered, format=format)
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    return img_str
+
 
 def get_hash_distances(
     hashes_1: utility_models.ImageHashes, hashes_2: utility_models.ImageHashes
@@ -60,3 +69,21 @@ def get_hash_distances(
     )
 
     return [phash_distance, ahash_distance, dhash_distance, chash_distance]
+
+
+def validate_gojourney_url(url):
+    pattern = re.compile(r'^https:\/\/img\.midjourneyapi\.xyz\/mj\/.*\.png$')
+    if pattern.match(url):
+        return True
+    return False
+
+async def fetch_image_as_bytes(url):
+    try:
+        async with httpx.AsyncClient(timeout=45) as client:
+            response = await client.get(url)
+            return response.content
+    except Exception as e:
+        logger.debug(f"Error when fetching image {url}: {e}")
+        return False
+
+

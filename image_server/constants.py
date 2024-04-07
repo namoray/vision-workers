@@ -1,4 +1,4 @@
-DEVICE = "cuda:0"
+DEFAULT_DEVICE = "cuda:0"
 COMFY_INPUT_PATH = "ComfyUI/input/"
 WORKFLOWS_DIR = "assets/workflows/"
 WARMUP_WORKFLOWS_DIR = "assets/workflows/warmup"

@@ -57,3 +57,6 @@ class ImageResponseBody(BaseModel):
 
 class ClipEmbeddingsResponse(BaseModel):
     clip_embeddings: Optional[List[List[float]]] = None
+
+class ClipTextEmbeddingsResponse(BaseModel):
+    text_embedding: Optional[List[float]] = None

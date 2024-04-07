@@ -4,9 +4,9 @@ from functools import partial
 import torch
 from torch import nn
 from diffusers import StableDiffusionPipeline
-from typing import Tuple, List
+from typing import Tuple
 import constants as cst
-
+import os
 
 def cosine_distance(image_embeds, text_embeds):
     normalized_image_embeds = nn.functional.normalize(image_embeds)
@@ -67,10 +67,11 @@ def forward_inspect(self, clip_input, images):
 
 class Safety_Checker:
     def __init__(self):
+        self.device = os.getenv("DEVICE", cst.DEFAULT_DEVICE)
         path = cst.SAFETY_CHECKER_REPO_PATH
         safety_pipe = StableDiffusionPipeline.from_pretrained(
             path, torch_dtype=torch.bfloat16
-        ).to(cst.DEVICE)
+        ).to(self.device)
         safety_pipe.safety_checker.forward = partial(
             forward_inspect, self=safety_pipe.safety_checker
         )
@@ -85,7 +86,7 @@ class Safety_Checker:
         with torch.cuda.amp.autocast():
             safety_checker_input = self.safety_feature_extractor(
                 images=image, return_tensors="pt"
-            ).to(cst.DEVICE)
+            ).to(self.device)
             result, has_nsfw_concepts = self.safety_checker.forward(
                 clip_input=safety_checker_input.pixel_values, images=image
             )

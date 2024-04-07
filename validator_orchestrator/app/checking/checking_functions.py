@@ -8,11 +8,89 @@ from app.checking import utils as checking_utils
 import xgboost as xgb
 import math
 from loguru import logger
+from PIL import Image
+import io
+
+from PIL import UnidentifiedImageError
+
 
 images_are_same_classifier = xgb.XGBClassifier()
 images_are_same_classifier.load_model("image_similarity_xgb_model.json")
 
+
+##### SOTA ######
+
+
+async def check_sota_results(image_url: str, prompt: str) -> bool:
+    valid_gojourney_url = checking_utils._validate_gojourney_url(image_url)
+
+    if not valid_gojourney_url:
+        return False
+
+    image_bytes = await checking_utils._fetch_image_as_bytes(image_url)
+
+    if not image_bytes:
+        logger.warning(
+            f"Error when fetching image {image_url}, can't parse the bytes into a PIL for some reason"
+        )
+        return False
+
+    try:
+        original_image = Image.open(io.BytesIO(image_bytes))
+    except UnidentifiedImageError:
+        logger.warning(
+            f"Error when fetching image {image_url}, can't parse the bytes into a PIL for some reason"
+        )
+
+    width, height = original_image.size
+    image_1 = original_image.crop((0, 0, width // 2, height // 2))
+    image_2 = original_image.crop((width // 2, 0, width, height // 2))
+    image_3 = original_image.crop((0, height // 2, width // 2, height))
+    image_4 = original_image.crop((width // 2, height // 2, width, height))
+
+    images = [image_1, image_2, image_3, image_4]
+
+    clip_image_embeddings_response: utility_models.ClipEmbeddingsResponse = (
+        await query_endpoint_for_clip_response(
+            data={"image_b64s": [checking_utils.pil_to_base64(i) for i in images]}, endpoint="/clip-embeddings"
+        )
+    )
+
+    image_embeddings = clip_image_embeddings_response.clip_embeddings
+
+    text_embedding_response: utility_models.ClipTextEmbeddingsResponse = (
+        await query_endpoint_for_clip_text_response(
+            data={"text": prompt.split("--")[0]}, endpoint="/clip-embeddings-text"
+        )
+    )
+
+    text_embedding = text_embedding_response.text_embedding
+
+    sims = []
+    for image_embedding in image_embeddings:
+        embedding_sim = checking_utils.get_clip_embedding_similarity(
+            image_embedding, text_embedding
+        )
+        sims.append(embedding_sim)
+
+    average_sim = sum(sims) / len(sims)
+
+    # Found that 0.21 finds valid images >99.9% of the time, but stops invalid ones > 99% of the time too!
+    if average_sim > 0.21:
+        return True
+
+    return False
+
+
 ### CLIP  ####
+
+
+async def query_endpoint_for_clip_text_response(
+    endpoint: str, data: Dict[str, Any]
+) -> utility_models.ClipTextEmbeddingsResponse:
+    async with httpx.AsyncClient(timeout=10) as client:
+        response = await client.post(endpoint, data=data)
+        return utility_models.ClipTextEmbeddingsResponse(**response.json())
 
 
 async def query_endpoint_for_clip_response(
@@ -207,7 +285,6 @@ async def calculate_distance_for_token(
     validator_log_probs_for_token = {
         i.decoded: i.logprob for i in validator_checking_response.logprobs
     }
-
 
     if token not in validator_log_probs_for_token:
         distance = math.exp(chat_responses[index].logprob) + 1

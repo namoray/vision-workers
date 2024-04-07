@@ -20,9 +20,11 @@ def handle_request_errors(func: Callable):
 
     return wrapper
 
+
 @app.get("/")
 async def home():
     return PlainTextResponse("Image!")
+
 
 @app.post("/txt2img")
 @handle_request_errors
@@ -75,14 +77,24 @@ async def clip_embeddings(
     return base_model.ClipEmbeddingsResponse(clip_embeddings=embeddings)
 
 
+@app.post("/clip-embeddings-text")
+@handle_request_errors
+async def clip_embeddings_text(
+    request_data: base_model.ClipEmbeddingsTextBase,
+) -> base_model.ClipEmbeddingsTextResponse:
+    embedding = await inference.get_clip_embeddings_text(request_data)
+    return base_model.ClipEmbeddingsTextResponse(text_embedding=embedding)
+
+
 if __name__ == "__main__":
     import uvicorn
     import os
 
-    if 'CUBLAS_WORKSPACE_CONFIG' not in os.environ:
-        os.environ['CUBLAS_WORKSPACE_CONFIG'] = ":4096:8"
-    
+    if "CUBLAS_WORKSPACE_CONFIG" not in os.environ:
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+
     import torch
+
     # Below doens't do much except cause major issues with mode loading and unloading
     torch.use_deterministic_algorithms(False)
 

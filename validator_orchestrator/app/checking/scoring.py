@@ -39,4 +39,3 @@ async def score_results(
     logger.info(f"Got scores: {axon_scores}")
 
     return {"axon_scores": axon_scores}
-
