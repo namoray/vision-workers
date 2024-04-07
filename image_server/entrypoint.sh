@@ -11,6 +11,7 @@ trap cleanup SIGINT SIGTERM
 ./setup.sh
 
 vram_mode=${VRAM_MODE:-}
+warmup=$(echo ${WARMUP:-true} | tr '[:upper:]' '[:lower:]')
 
 if [ -n "$vram_mode" ]
 then
