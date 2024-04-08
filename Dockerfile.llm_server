@@ -34,8 +34,7 @@ RUN pip install huggingface_hub[hf_transfer]
 
 COPY llm_server/app /app/app
 
-
-EXPOSE 6919
+EXPOSE 6900-6919
 ENV PORT=6919
 
 COPY llm_server/entrypoint.sh /app/entrypoint.sh
