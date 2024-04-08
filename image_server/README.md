@@ -31,3 +31,12 @@ The Device to use for the image server (each image server can only use 1) (defau
 - Use a 4090 with --normal-vram or --low-vram, to run everything on one machine. Have WARMUP true to prepare all models in advance
 - USe an A100 or similar with --high-vram or --gpu-only, and have WARMUP true
 - Use a 4090 with --high-vram/ --gpu-only, WARMUP FALSE, and only use the server with certain models. For example, use a load balancer to direct all `proteus` requests to this server, and then make another 4090 for playground, etc - depending on what you want to support.
+
+
+### Running locally
+
+Here's just an example command
+```bash
+docker pull corcelio/ml:image_server
+docker run -p 6919:6919 -e PORT=6919 -e DEVICE=0 corcelio/ml:image_server
+```
