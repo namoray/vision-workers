@@ -71,7 +71,9 @@ def get_hash_distances(
     return [phash_distance, ahash_distance, dhash_distance, chash_distance]
 
 
-def validate_gojourney_url(url):
+def validate_gojourney_url(url: str) -> bool:
+    if not url:
+        return False
     pattern = re.compile(r'^https:\/\/img\.midjourneyapi\.xyz\/mj\/.*\.png$')
     if pattern.match(url):
         return True

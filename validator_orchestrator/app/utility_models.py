@@ -40,9 +40,6 @@ class ImageHashes(BaseModel):
     color_hash: str = ""
 
 
-class SotaCheckingRequest(BaseModel):
-    image_url: str
-    prompt: str
 
 class TextPrompt(BaseModel):
     text: str
@@ -60,3 +57,7 @@ class ClipEmbeddingsResponse(BaseModel):
 
 class ClipTextEmbeddingsResponse(BaseModel):
     text_embedding: Optional[List[float]] = None
+
+class SotaResponse(BaseModel):
+    image_url: Optional[str]
+    error_message: Optional[str]

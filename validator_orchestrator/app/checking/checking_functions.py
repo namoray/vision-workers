@@ -10,9 +10,9 @@ import math
 from loguru import logger
 from PIL import Image
 import io
-
+from app import settings
 from PIL import UnidentifiedImageError
-
+from typing import Optional
 
 images_are_same_classifier = xgb.XGBClassifier()
 images_are_same_classifier.load_model("image_similarity_xgb_model.json")
@@ -21,25 +21,37 @@ images_are_same_classifier.load_model("image_similarity_xgb_model.json")
 ##### SOTA ######
 
 
-async def check_sota_results(image_url: str, prompt: str) -> bool:
-    valid_gojourney_url = checking_utils._validate_gojourney_url(image_url)
+async def check_sota_result(
+    result: models.QueryResult, synapse: Dict[str, Any], task_config: models.TaskConfig
+) -> bool:
+
+    sota_result = utility_models.SotaResponse(**result.formatted_response)
+
+    valid_gojourney_url = checking_utils.validate_gojourney_url(sota_result.image_url)
 
     if not valid_gojourney_url:
-        return False
+        return 0
 
-    image_bytes = await checking_utils._fetch_image_as_bytes(image_url)
+    image_bytes = await checking_utils.fetch_image_as_bytes(sota_result.image_url)
+
+    prompt: Optional[str] = synapse.get("prompt", None)
+    if prompt is None:
+        logger.warning(
+            f"Error when fetching image {sota_result.image_url}, can't parse the bytes into a PIL for some reason"
+        )
+        return 0
 
     if not image_bytes:
         logger.warning(
-            f"Error when fetching image {image_url}, can't parse the bytes into a PIL for some reason"
+            f"Error when fetching image {sota_result.image_url}, can't parse the bytes into a PIL for some reason"
         )
-        return False
+        return 0
 
     try:
         original_image = Image.open(io.BytesIO(image_bytes))
     except UnidentifiedImageError:
         logger.warning(
-            f"Error when fetching image {image_url}, can't parse the bytes into a PIL for some reason"
+            f"Error when fetching image {sota_result.image_url}, can't parse the bytes into a PIL for some reason"
         )
 
     width, height = original_image.size
@@ -52,15 +64,19 @@ async def check_sota_results(image_url: str, prompt: str) -> bool:
 
     clip_image_embeddings_response: utility_models.ClipEmbeddingsResponse = (
         await query_endpoint_for_clip_response(
-            data={"image_b64s": [checking_utils.pil_to_base64(i) for i in images]}, endpoint="/clip-embeddings"
+            data={"image_b64s": [checking_utils.pil_to_base64(i) for i in images]},
+            endpoint=settings.BASE_URL + "/clip-embeddings",
         )
     )
 
     image_embeddings = clip_image_embeddings_response.clip_embeddings
 
+
+    split_prompt = prompt.split("--")[0]
     text_embedding_response: utility_models.ClipTextEmbeddingsResponse = (
         await query_endpoint_for_clip_text_response(
-            data={"text": prompt.split("--")[0]}, endpoint="/clip-embeddings-text"
+            data={"text_prompt": split_prompt},
+            endpoint=settings.BASE_URL + "/clip-embeddings-text",
         )
     )
 
@@ -77,9 +93,9 @@ async def check_sota_results(image_url: str, prompt: str) -> bool:
 
     # Found that 0.21 finds valid images >99.9% of the time, but stops invalid ones > 99% of the time too!
     if average_sim > 0.21:
-        return True
+        return 1
 
-    return False
+    return 0
 
 
 ### CLIP  ####
@@ -89,7 +105,7 @@ async def query_endpoint_for_clip_text_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ClipTextEmbeddingsResponse:
     async with httpx.AsyncClient(timeout=10) as client:
-        response = await client.post(endpoint, data=data)
+        response = await client.post(endpoint, json=data)
         return utility_models.ClipTextEmbeddingsResponse(**response.json())
 
 

@@ -42,8 +42,8 @@ def _calculate_work_bonus_text(
 
 
 SOTA_OVERHEAD = 1
-SOTA_LOWER_BOUND = 60
-SOTA_MAX_ALLOWED_TIME = 180
+SOTA_LOWER_BOUND = 30
+SOTA_MAX_ALLOWED_TIME = 120
 
 
 async def speed_scoring_sota(
