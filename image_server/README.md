@@ -3,7 +3,7 @@
 RUNNING WITH ENV VARS:
 
 
-`VRAM_MODE`
+### `VRAM_MODE` : str
 
 Options:
 
@@ -16,10 +16,16 @@ Options:
 Keep the `--`'s in there!
 
 
-`WARMUP`
+### `WARMUP` : bool
 - `true` - runs all models once to load everything, so subsequent generation times are quicker. 
 - `false` - doesn't do that :D
 
+
+### `PORT` : int 
+The port to run the server on (default 6919)
+
+### `DEVICE` : int
+The Device to use for the image server (each image server can only use 1) (default 0)
 
 ### Some methods to use the server
 - Use a 4090 with --normal-vram or --low-vram, to run everything on one machine. Have WARMUP true to prepare all models in advance

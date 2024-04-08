@@ -12,7 +12,8 @@ trap cleanup SIGINT SIGTERM
 
 vram_mode=${VRAM_MODE:-}
 warmup=$(echo ${WARMUP:-true} | tr '[:upper:]' '[:lower:]')
-device=${DEVICE:0}
+device=${DEVICE:-0}
+port=${PORT:-6919}
 
 if [ -n "$vram_mode" ]
 then
@@ -33,5 +34,5 @@ else
     sleep 1
 fi
 
-uvicorn main:app --host 0.0.0.0 --port 6919
+uvicorn main:app --host 0.0.0.0 --port $port
 cleanup
