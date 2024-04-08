@@ -12,7 +12,7 @@ This port (6919) DOES NOT need to be exposed. Instead, 6920 should be exposed (o
 Here's just an example command
 ```bash
 docker pull corcelio/ml:orchestrator
-docker run corcelio/ml:image_server
+docker run corcelio/ml:orchestrator
 ```
 
 If that doesn't run properly, try adding these flags
@@ -21,7 +21,12 @@ If that doesn't run properly, try adding these flags
 
 Or you can specify some extra env vars if you need them
 ```bash
-docker run -p 6920:6920 -e PORT=6920 -e CUDA_VISIBLE_DEVICES=0 DEVICE=0 corcelio/ml:image_server
+docker run -p 6920:6920 -e PORT=6920 -e CUDA_VISIBLE_DEVICES=0 -e DEVICE=0 --gpus '"device=0"' --runtime=nvidia '"corcelio/ml:orchestrator
 ```
 DEVICE is for the image service, CUDA_VISIBLE_DEVICES is for the LLM server. 
 Only one ever runs at a time, so using the default of 0 for both is more than fine
+
+
+If that doesn't run properly, try removing the flag
+`--runtime=nvidia`
+

@@ -20,7 +20,7 @@ CUDA_VISIBLE_DEVICES=3,4
 Here's just an example command
 ```bash
 docker pull corcelio/ml:llm_server
-docker run -p 6919:6919 --gpus '"device=0"' -e PORT=6919 --runtime=nvidia -e CUDA_VISIBLE_DEVICES=0 corcelio/ml:llm_server
+docker run -p 6919:6919 --gpus '"device=0"' --runtime=nvidia -e PORT=6919  -e CUDA_VISIBLE_DEVICES=0 corcelio/ml:llm_server
 ```
 
 If that doesn't run properly, try removing the flag
