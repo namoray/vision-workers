@@ -1,13 +1,8 @@
-from app import schemas
-import requests
-
 from typing import AsyncGenerator, List
 
 
-import torch
 from vllm import SamplingParams
 from vllm.model_executor.utils import set_random_seed
-from PIL import Image
 from app import models
 from app.models import Message, Role
 import json
@@ -15,40 +10,6 @@ from app.logging import logging
 from typing import Any
 
 SYSTEM_PROMPT_PREFIX = "Instructions to follow for all following messages: "
-
-
-def _grab_generation_config(self, request: schemas.TextRequestModel):
-    temperature = request.temperature
-    top_p = request.top_p
-    return
-    # do_sample = data["do_sample"]
-    # return GenerationConfig(
-    #     temperature=temperature, top_p=top_p, do_sample=do_sample
-    # )
-
-
-async def complete_img2text(engine: models.LLMEngine, data):
-    prompt = data.get("prompt", "")
-    raw_image = Image.open(requests.get(data["image"], stream=True).raw)
-    # TODO: REVIEW as this should be formatted by some generic prompt formatter method
-    prompt = f"USER: <image> {prompt} ASSISTANT:"
-    inputs = engine.processor(prompt, raw_image, return_tensors="pt").to(
-        0, torch.float16
-    )
-    generation_config = _grab_generation_config(data)
-    generation_kwargs = dict(
-        **inputs,
-        do_sample=True,
-        max_new_tokens=data["max_tokens"],
-        streamer=engine.streamer,
-        generation_config=generation_config,
-    )
-
-    # TODO: REVIEW
-    _ = engine.model.generate(**generation_kwargs)
-
-    for new_text in engine.streamer:
-        yield new_text
 
 
 def missing_system_prompts(tokenizer: Any) -> bool:
@@ -149,26 +110,6 @@ def fix_message_structure_for_prompt(
     return processed_messages
 
 
-async def complete_transformers(engine: models.LLMEngine, data):
-    prompt = data["prompt"]
-    model = engine.model
-    tokenizer = engine.tokenizer
-    input_ids = tokenizer([prompt], return_tensors="pt").input_ids.to("cuda")
-    generation_config = _grab_generation_config(data)
-    generation_config.eos_token_id = tokenizer.eos_token_id
-    generation_config.pad_token_id = tokenizer.pad_token_id
-    generation_kwargs = {
-        "input_ids": input_ids,
-        "do_sample": True,
-        "max_length": data["max_tokens"] + input_ids.size(1),
-        "streamer": model["streamer"],
-        **vars(generation_config),
-    }
-    _ = model.generate(**generation_kwargs)
-    for new_text in engine.streamer:
-        yield new_text
-
-
 async def complete_vllm(
     engine: models.LLMEngine, request_info: models.RequestInfo
 ) -> AsyncGenerator[str, None]:
@@ -209,7 +150,6 @@ async def complete_vllm(
         seed=seed,
         logprobs=number_of_logprobs,
         top_k=top_k,
-        
     )
     stream = await engine.model.add_request(
         uuid.uuid4().hex, formatted_prompt, sampling_params
@@ -238,3 +178,4 @@ async def complete_vllm(
 
         cursor = len(text)
         logprobs_cursor = len(log_probs)
+    yield "data: [DONE]\n\n"
