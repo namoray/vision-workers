@@ -67,7 +67,7 @@ async def get_clip_embeddings(
     infer_props: base_model.ClipEmbeddingsBase,
 ) -> List[List[float]]:
     clip_model, clip_processor = clip_emb_processor.get_clip_resources()
-    clip_device = os.getenv("DEVICE", cst.DEFAULT_DEVICE)
+    clip_device = clip_emb_processor.clip_device
     images = [
         base64_utils.base64_to_image(img_b64) for img_b64 in infer_props.image_b64s
     ]
@@ -85,7 +85,7 @@ async def get_clip_embeddings_text(
     infer_props: base_model.ClipEmbeddingsTextBase,
 ) -> List[float]:
     clip_model, _ = clip_emb_processor.get_clip_resources()
-    clip_device = os.getenv("DEVICE", cst.DEFAULT_DEVICE)
+    clip_device = clip_emb_processor.clip_device
 
     texts_tensor = clip.tokenize([infer_props.text_prompt]).to(clip_device)
 

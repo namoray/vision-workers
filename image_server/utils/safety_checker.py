@@ -8,6 +8,7 @@ from typing import Tuple
 import constants as cst
 import os
 
+
 def cosine_distance(image_embeds, text_embeds):
     normalized_image_embeds = nn.functional.normalize(image_embeds)
     normalized_text_embeds = nn.functional.normalize(text_embeds)
@@ -67,7 +68,8 @@ def forward_inspect(self, clip_input, images):
 
 class Safety_Checker:
     def __init__(self):
-        self.device = os.getenv("DEVICE", cst.DEFAULT_DEVICE)
+        _device = os.getenv("DEVICE", cst.DEFAULT_DEVICE)
+        self.device = _device if "cuda" in _device else f"cuda:{_device}"
         path = cst.SAFETY_CHECKER_REPO_PATH
         safety_pipe = StableDiffusionPipeline.from_pretrained(
             path, torch_dtype=torch.bfloat16
