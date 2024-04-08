@@ -9,7 +9,11 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 ./setup.sh
-python ComfyUI/main.py --lowvram &
+
+device=${DEVICE:-0}
+
+
+python ComfyUI/main.py --lowvram --cuda-device $device &
 
 
 COMFY_SERVER_PID=$!

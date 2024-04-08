@@ -20,7 +20,7 @@ CUDA_VISIBLE_DEVICES=3,4
 Here's just an example command
 ```bash
 docker pull corcelio/ml:llm_server
-docker run -p 8000:8000 -e PORT=8000 CUDA_VISIBLE_DEVICES=0 corcelio/ml:image_server
+docker run -p 8000:8000 -e PORT=8000 -e CUDA_VISIBLE_DEVICES=0 corcelio/ml:image_server
 ```
 
 If that doesn't run properly, try adding these flags

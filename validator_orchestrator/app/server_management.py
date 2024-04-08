@@ -14,8 +14,13 @@ class ServerManager:
     This class manages starting, stopping, and handling of language and image servers.
     """
 
+    cuda_visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES", None)
+
+    llm_command = "uvicorn --lifespan on --port 6919 --host 0.0.0.0  app.asgi:app"
+    if cuda_visible_devices is not None:
+        llm_command = f"CUDA_VISIBLE_DEVICES={cuda_visible_devices} {llm_command}"
     SERVER_COMMANDS = {
-        models.ServerType.LLM: "uvicorn --lifespan on --port 6919 --host 0.0.0.0  app.asgi:app",
+        models.ServerType.LLM: llm_command,
         models.ServerType.IMAGE: "./entrypoint_vali.sh warmup=false",
     }
     SERVER_DIRECTORIES = {
@@ -73,7 +78,7 @@ class ServerManager:
                     json=load_model_config,
                 )
             return response
-        except httpx.HTTPError: 
+        except httpx.HTTPError:
             raise Exception("Timeout when loading model :(")
 
     async def start_server(self, server_type: str):
