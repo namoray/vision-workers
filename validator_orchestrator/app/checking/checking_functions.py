@@ -24,7 +24,6 @@ images_are_same_classifier.load_model("image_similarity_xgb_model.json")
 async def check_sota_result(
     result: models.QueryResult, synapse: Dict[str, Any], task_config: models.TaskConfig
 ) -> bool:
-
     sota_result = utility_models.SotaResponse(**result.formatted_response)
 
     valid_gojourney_url = checking_utils.validate_gojourney_url(sota_result.image_url)
@@ -70,7 +69,6 @@ async def check_sota_result(
     )
 
     image_embeddings = clip_image_embeddings_response.clip_embeddings
-
 
     split_prompt = prompt.split("--")[0]
     text_embedding_response: utility_models.ClipTextEmbeddingsResponse = (
@@ -243,7 +241,7 @@ async def check_text_result(
         while checks < 10:
             # Pick random token that's not the first from the miner, construct the new validator
             # checking data, and check that
-            index = random.randint(1, len(miner_chat_responses) - 2)
+            index = random.randint(1, len(miner_chat_responses) - 1)
             text_to_inject_into_assistant_message = "".join(
                 [i.text for i in miner_chat_responses[:index]]
             )
@@ -282,6 +280,7 @@ async def query_endpoint_for_iterator(
 async def get_chat_data_validator_response(
     endpoint: str, data: Dict[str, Any]
 ) -> models.ValidatorCheckingResponse:
+    """This method is fine as we always have max token is 1"""
     response = await query_endpoint_for_iterator(endpoint, data)
     async for line in response.aiter_lines():
         response_json = json.loads(line.split("data: ")[1].split("\n\n")[0])
@@ -303,14 +302,12 @@ async def calculate_distance_for_token(
     }
 
     if token not in validator_log_probs_for_token:
-        distance = math.exp(chat_responses[index].logprob) + 1
-        logger.debug(f"Token not in validator_log {token}")
+        distance = 1.01 # instant fail
     else:
         distance = abs(
             math.exp(validator_log_probs_for_token[token])
             - math.exp(chat_responses[index].logprob)
         )
-        logger.debug(f"Distance between probs: {distance}")
 
     # formatted_validator_logging = "\n".join(
     #     [f"{i.decoded}: {i.logprob}" for i in validator_checking_response.logprobs]
@@ -318,4 +315,4 @@ async def calculate_distance_for_token(
     # logger.info(
     #     f"\nMiner token: {chat_responses[index].text}: {chat_responses[index].logprob} \n Validator tokens: \n{formatted_validator_logging}\ndistance between exp of log probs: {distance}"
     # )
-    return int(distance >= 0.2)
+    return int(distance >= 0.3)

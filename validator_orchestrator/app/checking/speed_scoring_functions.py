@@ -212,7 +212,7 @@ async def speed_scoring_images(
 
 ### Chat
 
-CHAT_OVERHEAD = 0.3
+CHAT_OVERHEAD = 0.6
 
 
 async def speed_scoring_chat(
@@ -239,8 +239,8 @@ async def speed_scoring_chat(
     if task_config.task == Tasks.chat_bittensor_finetune:
         response_time_without_overhead = max(response_time - CHAT_OVERHEAD, 0.1)
         seconds_per_character = response_time_without_overhead / number_of_characters
-        lower_bound_time = 1 / 100  # equivalent to ~ 25 tokens per second
-        upper_thershold_time = 1 / 60  # equivalen to ~ 15 tokens per second
+        lower_bound_time = 1 / 120  # equivalent to ~ 30 tokens per second
+        upper_thershold_time = 1 / 40  # equivalen to ~ 15 tokens per second
 
         speed_modifier = _calculate_speed_modifier(
             seconds_per_character, lower_bound_time, upper_thershold_time
@@ -254,8 +254,8 @@ async def speed_scoring_chat(
     if task_config.task == Tasks.chat_mixtral:
         response_time_without_overhead = max(response_time - CHAT_OVERHEAD, 0.1)
         seconds_per_character = response_time_without_overhead / number_of_characters
-        lower_bound_time = 1 / 96  # equivalent to ~ 24 tokens per second
-        upper_thershold_time = 1 / 60  # equivalen to ~ 15 tokens per second
+        lower_bound_time = 1 / 70  # equivalent to ~ 24 tokens per second
+        upper_thershold_time = 1 / 30  # equivalen to ~ 15 tokens per second
 
         speed_modifier = _calculate_speed_modifier(
             seconds_per_character, lower_bound_time, upper_thershold_time
