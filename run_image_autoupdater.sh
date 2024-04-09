@@ -5,6 +5,11 @@ cleanup() {
   while lsof -i:${PORT} >/dev/null; do
     echo "Waiting for process to stop..."
     sleep 1
+  # Kill comfy
+  kill $(lsof -t -i:8188)
+  while lsof -i:8188 >/dev/null; do
+    echo "Waiting for process to stop..."
+    sleep 1
   done
   
   echo "Stopped"
