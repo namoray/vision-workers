@@ -43,4 +43,5 @@ RUN chmod +x /app/entrypoint.sh
 
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
+
 ENTRYPOINT ["/app/entrypoint.sh"]

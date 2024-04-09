@@ -13,10 +13,7 @@ cleanup() {
 
 trap cleanup EXIT
 
-cd image_server 
-./entrypoint.sh &
-cd ..
-
+start_entrypoint
 
 while true; do
   # Get the current tag
@@ -41,9 +38,7 @@ while true; do
       ./autoupdate_image.sh
 
       # Restart the llm server
-      cd image_server
-      ./entrypoint.sh &
-      cd ..
+      start_entrypoint
       echo "Finished running the autoupdate steps! Ready to go 😎"
     else
       echo "Error in updating"
