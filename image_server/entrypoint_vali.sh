@@ -10,14 +10,13 @@ trap cleanup SIGINT SIGTERM
 
 device=${DEVICE:-0}
 
-source activate venv
-cd /app/image_server/ComfyUI
-python main.py --lowvram --disable-xformers --cuda-device $device &
+./setup.sh
+
+python ComfyUI/main.py --lowvram --cuda-device $device &
 
 COMFY_SERVER_PID=$!
 echo "ComfyUI server started with PID: $COMFY_SERVER_PID"
 sleep 5
 
-cd /app/image_server/
 uvicorn main:app --host 0.0.0.0 --port 6919
 cleanup
