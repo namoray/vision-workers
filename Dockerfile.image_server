@@ -56,7 +56,9 @@ RUN  pip install -r /app/requirements.txt
 RUN pip install huggingface_hub[hf_transfer]
 RUN rm -rf /root/.cache/pip/* 
 
-COPY image_server /app/image_server
+RUN git clone https://github.com/namoray/vision-workers.git
+# FOR DEV
+RUN git checkout dev
 
 ENV APP_HOST=0.0.0.0
 ENV APP_PORT=8080
@@ -69,4 +71,4 @@ ENV DEVICE=0
 RUN chmod +x /app/image_server/entrypoint.sh
 
 
-CMD ["/app/image_server/entrypoint.sh"]
+CMD ["/app/run_image_autoupdater.sh"]
