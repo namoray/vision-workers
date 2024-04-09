@@ -37,6 +37,6 @@ The Device to use for the image server (each image server can only use 1) (defau
 
 Here's just an example command
 ```bash
-docker pull corcelio/ml:image_server
-docker run --gpus '"device=0"' --runtime=nvidia -p 6919:6919 -e PORT=6919 -e DEVICE=0 corcelio/ml:image_server
+docker pull corcelio/vision:image_server
+docker run --gpus '"device=0"' --runtime=nvidia -p 6919:6919 -e PORT=6919 -e DEVICE=0 corcelio/vision:image_server
 ```

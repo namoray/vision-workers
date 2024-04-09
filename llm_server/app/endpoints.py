@@ -15,7 +15,9 @@ async def load_model(
     tokenizer = request.tokenizer
     revision = request.revision
 
-    await EngineState.load_model_and_tokenizer(model, revision, tokenizer, request.half_precision)
+    await EngineState.load_model_and_tokenizer(
+        model, revision, tokenizer, request.half_precision
+    )
     return schemas.LoadModelResponse(success=True)
 
 
@@ -44,7 +46,6 @@ async def generate_text(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             media_type="application/json",
         )
-
 
 
 router = fastapi.APIRouter(
