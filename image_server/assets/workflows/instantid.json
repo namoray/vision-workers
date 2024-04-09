@@ -1,56 +1,4 @@
 {
-  "Sampler": {
-    "inputs": {
-      "seed": 251722629055487,
-      "steps": 10,
-      "cfg": 1.5,
-      "sampler_name": "euler_ancestral",
-      "scheduler": "normal",
-      "denoise": 1,
-      "model": [
-        "InstantID",
-        0
-      ],
-      "positive": [
-        "73",
-        0
-      ],
-      "negative": [
-        "73",
-        1
-      ],
-      "latent_image": [
-        "Latent",
-        0
-      ]
-    },
-    "class_type": "KSampler",
-    "_meta": {
-      "title": "KSampler"
-    }
-  },
-  "4": {
-    "inputs": {
-      "ckpt_name": "proteus.safetensors",
-      "key_opt": "",
-      "mode": "Auto"
-    },
-    "class_type": "CheckpointLoaderSimpleShared //Inspire",
-    "_meta": {
-      "title": "Shared Checkpoint Loader (Inspire)"
-    }
-  },
-  "Latent": {
-    "inputs": {
-      "width": 1280,
-      "height": 1280,
-      "batch_size": 1
-    },
-    "class_type": "EmptyLatentImage",
-    "_meta": {
-      "title": "Empty Latent Image"
-    }
-  },
   "8": {
     "inputs": {
       "samples": [
@@ -58,7 +6,7 @@
         0
       ],
       "vae": [
-        "4",
+        "75",
         2
       ]
     },
@@ -116,11 +64,49 @@
       "title": "InstantID Face Analysis"
     }
   },
+  "71": {
+    "inputs": {
+      "samples": [
+        "Sampler_initial",
+        0
+      ],
+      "vae": [
+        "75",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "75": {
+    "inputs": {
+      "ckpt_name": "proteus.safetensors",
+      "key_opt": "",
+      "mode": "Auto"
+    },
+    "class_type": "CheckpointLoaderSimpleShared //Inspire",
+    "_meta": {
+      "title": "Shared Checkpoint Loader (Inspire)"
+    }
+  },
+  "Latent": {
+    "inputs": {
+      "width": 1280,
+      "height": 1280,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
   "Prompt": {
     "inputs": {
-      "text": "a man, disney pixar concept artwork, 3d concept, high detail iconic character for upcoming film, trending on artstation, 3d artistic render, highly detailed, octane, blender, cartoon, shadows, lighting",
+      "text": "(portrait:1.5), ",
       "clip": [
-        "4",
+        "75",
         1
       ]
     },
@@ -131,9 +117,9 @@
   },
   "Negative_prompt": {
     "inputs": {
-      "text": "embedding:negativeXL_A",
+      "text": "embedding:negativeXL_A, ",
       "clip": [
-        "4",
+        "75",
         1
       ]
     },
@@ -142,13 +128,43 @@
       "title": "CLIP Text Encode (Prompt)"
     }
   },
+  "Sampler_initial": {
+    "inputs": {
+      "seed": 275282716768669,
+      "steps": 7,
+      "cfg": 1.5,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "75",
+        0
+      ],
+      "positive": [
+        "Prompt",
+        0
+      ],
+      "negative": [
+        "Negative_prompt",
+        0
+      ],
+      "latent_image": [
+        "Latent",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
   "InstantID": {
     "inputs": {
-      "ip_weight": 0.7,
+      "ip_weight": 0.7000000000000001,
       "cn_strength": 1,
       "start_at": 0,
       "end_at": 1,
-      "noise": 0,
+      "noise": 0.2,
       "combine_embeds": "average",
       "instantid": [
         "11",
@@ -167,7 +183,7 @@
         0
       ],
       "model": [
-        "4",
+        "75",
         0
       ],
       "positive": [
@@ -188,68 +204,18 @@
       "title": "Apply InstantID Advanced"
     }
   },
-  "Sampler_initial": {
+  "Sampler": {
     "inputs": {
-      "seed": 966591656716460,
-      "steps": 7,
+      "seed": 904534112192151,
+      "steps": 10,
       "cfg": 1.5,
       "sampler_name": "euler_ancestral",
       "scheduler": "normal",
       "denoise": 1,
       "model": [
-        "4",
+        "InstantID",
         0
       ],
-      "positive": [
-        "Prompt",
-        0
-      ],
-      "negative": [
-        "Negative_prompt",
-        0
-      ],
-      "latent_image": [
-        "Latent_initial",
-        0
-      ]
-    },
-    "class_type": "KSampler",
-    "_meta": {
-      "title": "KSampler"
-    }
-  },
-  "Latent_initial": {
-    "inputs": {
-      "width": 1280,
-      "height": 1280,
-      "batch_size": 1
-    },
-    "class_type": "EmptyLatentImage",
-    "_meta": {
-      "title": "Empty Latent Image"
-    }
-  },
-  "71": {
-    "inputs": {
-      "samples": [
-        "Sampler_initial",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
-    },
-    "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Decode"
-    }
-  },
-  "73": {
-    "inputs": {
-      "strength": 0.65,
-      "start_percent": 0,
-      "end_percent": 0.3,
       "positive": [
         "InstantID",
         1
@@ -258,40 +224,14 @@
         "InstantID",
         2
       ],
-      "control_net": [
-        "74",
-        0
-      ],
-      "image": [
-        "Depth_processor",
+      "latent_image": [
+        "Latent",
         0
       ]
     },
-    "class_type": "ControlNetApplyAdvanced",
+    "class_type": "KSampler",
     "_meta": {
-      "title": "Apply ControlNet (Advanced)"
-    }
-  },
-  "74": {
-    "inputs": {
-      "control_net_name": "control-lora-depth-rank256.safetensors"
-    },
-    "class_type": "ControlNetLoader",
-    "_meta": {
-      "title": "Load ControlNet Model"
-    }
-  },
-  "Depth_processor": {
-    "inputs": {
-      "resolution": 1280,
-      "image": [
-        "71",
-        0
-      ]
-    },
-    "class_type": "Zoe-DepthMapPreprocessor",
-    "_meta": {
-      "title": "Zoe Depth Map"
+      "title": "KSampler"
     }
   }
 }

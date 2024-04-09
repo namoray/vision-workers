@@ -27,7 +27,6 @@ class ServerManager:
         models.ServerType.LLM: "../llm_server",
         models.ServerType.IMAGE: "../image_server",
     }
-
     def __init__(self):
         self.server_process = None
         self.llm_server_is_running: bool = False

@@ -118,7 +118,7 @@
   },
   "Negative_prompt": {
     "inputs": {
-      "text": "embedding:negativeXL_A",
+      "text": "embedding:negativeXL_A, ",
       "clip": [
         "95",
         1

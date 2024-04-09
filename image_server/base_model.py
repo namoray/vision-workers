@@ -38,7 +38,9 @@ class Txt2ImgBase(BaseModel):
         gt=512,
         lt=2048,
     )
-    seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
+    seed: int = Field(
+        ..., description="Seed value for deterministic outputs", ge=0
+    )
 
 
 class Img2ImgBase(BaseModel):
@@ -64,7 +66,9 @@ class Img2ImgBase(BaseModel):
     cfg_scale: float = Field(
         cst.DEFAULT_CFG, description="Guidance scale", gt=1.5, lt=12
     )
-    seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
+    seed: int = Field(
+        ..., description="Seed value for deterministic outputs", ge=0
+    )
 
 
 class UpscaleBase(BaseModel):
@@ -104,7 +108,9 @@ class AvatarBase(BaseModel):
         gt=512,
         lt=2048,
     )
-    seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
+    seed: int = Field(
+        ..., description="Seed value for deterministic outputs", ge=0
+    )
 
 
 class InpaintingBase(BaseModel):
@@ -120,7 +126,9 @@ class InpaintingBase(BaseModel):
     cfg_scale: float = Field(
         cst.DEFAULT_CFG_INPAINT, description="Guidance scale", gt=1.5, lt=12
     )
-    seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
+    seed: int = Field(
+        ..., description="Seed value for deterministic outputs", ge=0
+    )
 
 
 class OutpaintingBase(BaseModel):
@@ -143,7 +151,9 @@ class OutpaintingBase(BaseModel):
     cfg_scale: float = Field(
         cst.DEFAULT_CFG_INPAINT, description="Guidance scale", gt=1.5, lt=12
     )
-    seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
+    seed: int = Field(
+        ..., description="Seed value for deterministic outputs", ge=0
+    )
 
 
 class ClipEmbeddingsBase(BaseModel):

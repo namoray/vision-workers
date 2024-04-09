@@ -20,8 +20,6 @@ fi
 
 [ -f ComfyUI/models/upscale_models/ultrasharp.pt ] || wget -O ComfyUI/models/upscale_models/ultrasharp.pt https://civitai.com/api/download/models/125843
 
-[ -f ComfyUI/models/controlnet/control-lora-depth-rank256.safetensors ] || wget -O ComfyUI/models/controlnet/control-lora-depth-rank256.safetensors https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank256/control-lora-depth-rank256.safetensors?download=true
-
 [ -f ComfyUI/input/init.png ] || mv ComfyUI/input/example.png ComfyUI/input/init.png
 
 [ -f ComfyUI/input/mask.png ] || cp ComfyUI/input/init.png ComfyUI/input/mask.png
@@ -32,11 +30,12 @@ cd ComfyUI/custom_nodes
 
 [ -d ComfyUI_IPAdapter_plus ] || git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus
 
-[ -d ComfyUI_InstantID ] || git clone https://github.com/cubiq/ComfyUI_InstantID
-
-[ -d comfyui_controlnet_aux ] || git clone https://github.com/Fannovel16/comfyui_controlnet_aux
-
-[ -d comfyui_controlnet_aux/ckpts ] || ( mkdir -p comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/ && wget -O comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/ZoeD_M12_N.pt https://huggingface.co/lllyasviel/Annotators/resolve/main/ZoeD_M12_N.pt?download=true )
+if [ ! -d ComfyUI_InstantID ]; then 
+  git clone https://github.com/cubiq/ComfyUI_InstantID
+  cd ComfyUI_InstantID
+  git checkout 50445991e2bd1d5ec73a8633726fe0b33a825b5b
+  cd ..
+fi
 
 cd ../..
 

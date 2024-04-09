@@ -20,11 +20,9 @@ def handle_request_errors(func: Callable):
 
     return wrapper
 
-
 @app.get("/")
 async def home():
     return PlainTextResponse("Image!")
-
 
 @app.post("/txt2img")
 @handle_request_errors
