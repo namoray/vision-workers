@@ -28,7 +28,6 @@ class EngineState:
             if model_to_load == self.llm_engine.model_name:
                 logging.info(f"Model {model_to_load} already loaded")
                 return
-
             old_model_name = self.llm_engine.model_name
             try:
                 destroy_model_parallel()

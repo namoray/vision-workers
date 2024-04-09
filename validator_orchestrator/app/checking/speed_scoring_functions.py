@@ -19,7 +19,6 @@ def _calculate_speed_modifier(
     )
     return max(1 - penalty**2, 0)
 
-
 def _calculate_work_bonus_images(
     steps: int, overhead: float, lower_bound_for_seconds_per_step: float
 ):
@@ -95,7 +94,7 @@ async def speed_scoring_clip(
 T2I_OVERHEAD = 3
 I2I_OVERHEAD = 3
 UPSCALE_OVERHEAD = 5
-AVATAR_OVERHEAD = 4
+AVATAR_OVERHEAD = 10
 INPAINTING_OVERHEAD = 4
 
 

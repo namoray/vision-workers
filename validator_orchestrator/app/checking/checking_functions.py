@@ -174,6 +174,11 @@ async def check_image_result(
     expected_image_response = await query_endpoint_for_image_response(
         task_config.endpoint, synapse
     )
+
+    if expected_image_response.is_nsfw and image_response_body.is_nsfw:
+        return 1 
+
+
     if expected_image_response.clip_embeddings is None:
         logger.error(f"For some reason Everything is none! {expected_image_response}")
         return None
@@ -302,7 +307,7 @@ async def calculate_distance_for_token(
     }
 
     if token not in validator_log_probs_for_token:
-        distance = 1.01 # instant fail
+        distance = 1.01  # instant fail
     else:
         distance = abs(
             math.exp(validator_log_probs_for_token[token])
