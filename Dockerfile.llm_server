@@ -25,23 +25,27 @@ RUN CUDA_VERSION="11.8.0" && \
 
 # Vllm patch for cuda118
 COPY cu118_vllm_patch.sh /app/cu118_vllm_patch.sh
-RUN chmod +x /app/cu118_vllm_patch.sh \
-    && /app/cu118_vllm_patch.sh
+RUN chmod +x /app/cu118_vllm_patch.sh
+RUN /app/cu118_vllm_patch.sh
 
 COPY llm_server/requirements.txt ./app/requirements.txt
-RUN pip install -r ./app/requirements.txt \
-    && pip install huggingface_hub[hf_transfer]
+RUN pip install -r ./app/requirements.txt
+RUN pip install huggingface_hub[hf_transfer]
 
-COPY llm_server/app /app/app
 
 EXPOSE 6900-6919
 ENV PORT=6919
 
-COPY llm_server/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+RUN apt-get update && apt-get install -y lsof
+
+RUN git clone https://github.com/namoray/vision-workers.git
+WORKDIR /app/vision-workers
+# FOR DEV
+RUN git checkout dev
+
+
 
 
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
-
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["./run_llm_autoupdater.sh"]

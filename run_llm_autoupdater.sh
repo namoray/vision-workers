@@ -22,17 +22,19 @@ trap cleanup EXIT
 start_entrypoint
 
 while true; do
-    # Get the current tag
-    local_tag=$(git describe --abbrev=0 --tags)
-    # Fetch the latest updates
-    git fetch
-    # Get the latest remote tag
-    remote_tag=$(git describe --tags $(git rev-list --topo-order --tags HEAD --max-count=1))
+    branch_name=$(git rev-parse --abbrev-ref HEAD)
+    
+
+    local_commit=$(git rev-parse HEAD)
+  
+    git fetch origin ${branch_name}
+
+    remote_commit=$(git rev-parse origin/${branch_name})
     
     # Check if an update is required
-    if [[ $local_tag != $remote_tag ]]; then
-        echo "Local repo is not up-to-date. Updating..."
-        git reset --hard $remote_tag
+    if [[ ${local_commit} != ${remote_commit} ]]; then
+        echo "Local branch is not up-to-date. Updating..."
+        git reset --hard ${remote_commit}
         if [ $? -eq 0 ]; then
             echo "Updated local repo to latest version: $remote_tag"
             echo "Running the autoupdate steps..."
