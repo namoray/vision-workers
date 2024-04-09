@@ -7,8 +7,6 @@ cleanup() {
 }
 
 
-
-
 cd llm_server
 ./entrypoint.sh &
 process_pid=$!

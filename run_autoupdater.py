@@ -32,7 +32,8 @@ def run_autoupdate(restart_script: str, process_pid: int):
                 # Trigger shell script. Make sure this file path starts from root
                 subprocess.run(["kill", f"{process_pid}"], shell=True)
                 subprocess.run(["wait", f"{process_pid}", "2>/dev/null"], shell=True)
-                subprocess.call([f"./{restart_script}"], shell=True)
+                restart_process = subprocess.Popen([f"./{restart_script}"], shell=True)
+                process_pid = restart_process.pid
                 print("Finished running the autoupdate steps! Ready to go 😎")
 
         else:

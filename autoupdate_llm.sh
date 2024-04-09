@@ -23,4 +23,4 @@
 #     pip3 install -r git_requirements.txt
 # fi
 
-./llm_server/entrypoint.sh
+echo "Just somec hanges"
