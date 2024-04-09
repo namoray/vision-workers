@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# THIS IS A FILE TO USE TO RUN THE CODE LOCALLY WITHOUT THE DOCKER TEMPALTE - I DOUBT YOU NEED THIS
+
 # Stop script on error
 set -e
 
