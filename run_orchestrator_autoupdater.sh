@@ -18,7 +18,7 @@ start_entrypoint() {
 
 trap cleanup EXIT
 
-
+cleanup
 start_entrypoint
 
 while true; do
