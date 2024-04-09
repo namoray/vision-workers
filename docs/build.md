@@ -1,6 +1,8 @@
 
 # Steps setup env, build and run docker image
 
+## THIS IS TO BUID TO RUN LOCALLY, YOU WONT NEED TO DO THIS TO RUN IT. JUST FOLLOW THE READ ME IN IMAGE_SERVER/LLM_SERVER/ORCHESTRATOR
+
 ### Install cuda toolkit & drivers
 ```bash
 # for cuda versions, choose between 12.2.0 or 11.8.0 only!
