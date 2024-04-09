@@ -13,7 +13,7 @@ cleanup() {
 
 trap cleanup EXIT
 
-cd llm_server 
+cd image_server 
 ./entrypoint.sh &
 cd ..
 
@@ -38,10 +38,10 @@ while true; do
       cleanup
 
       # Run any steps needed to update, other than getting the new code
-      ./autoupdate_llm.sh
+      ./autoupdate_image.sh
 
       # Restart the llm server
-      cd llm_server
+      cd image_server
       ./entrypoint.sh &
       cd ..
       echo "Finished running the autoupdate steps! Ready to go 😎"
