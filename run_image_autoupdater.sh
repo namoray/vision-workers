@@ -10,6 +10,12 @@ cleanup() {
   echo "Stopped"
 }
 
+start_entrypoint() {
+    cd image_server
+    ./entrypoint.sh &
+    cd ..
+}
+
 
 trap cleanup EXIT
 

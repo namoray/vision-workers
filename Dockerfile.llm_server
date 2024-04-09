@@ -38,7 +38,9 @@ ENV PORT=6919
 
 RUN apt-get update && apt-get install -y lsof
 
-RUN git clone https://github.com/namoray/vision-workers.git
+# Below used so we dont cache git clone - change as you desire
+ARG CACHEBUST=2
+RUN git clone https://github.com/namoray/vision-workers.git 
 WORKDIR /app/vision-workers
 # FOR DEV
 RUN git checkout dev
