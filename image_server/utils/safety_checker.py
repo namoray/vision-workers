@@ -35,7 +35,7 @@ def forward_inspect(self, clip_input, images):
             "bad_concepts": [],
         }
 
-        adjustment = 0.0
+        adjustment = 0.01
 
         for concet_idx in range(len(special_cos_dist[0])):
             concept_cos = special_cos_dist[i][concet_idx]
@@ -47,7 +47,6 @@ def forward_inspect(self, clip_input, images):
                 result_img["special_care"].append(
                     {concet_idx, result_img["special_scores"][concet_idx]}
                 )
-                adjustment = 0.01
                 matches["special"].append(cst.SPECIAL_CONCEPTS[concet_idx])
 
         for concet_idx in range(len(cos_dist[0])):

@@ -25,12 +25,12 @@ RUN CUDA_VERSION="11.8.0" && \
 
 # Vllm patch for cuda118
 COPY cu118_vllm_patch.sh /app/cu118_vllm_patch.sh
-RUN chmod +x /app/cu118_vllm_patch.sh
-RUN /app/cu118_vllm_patch.sh
+RUN chmod +x /app/cu118_vllm_patch.sh \
+    && /app/cu118_vllm_patch.sh
 
 COPY llm_server/requirements.txt ./app/requirements.txt
-RUN pip install -r ./app/requirements.txt
-RUN pip install huggingface_hub[hf_transfer]
+RUN pip install -r ./app/requirements.txt \
+    && pip install huggingface_hub[hf_transfer]
 
 COPY llm_server/app /app/app
 

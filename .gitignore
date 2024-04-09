@@ -20,8 +20,6 @@ cache.db
 vllm-local/*
 vllm-local
 
-*/vllm-local/*
-
 ### OSX ###
 # General
 .DS_Store

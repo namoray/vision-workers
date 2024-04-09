@@ -144,7 +144,7 @@ class PayloadModifier:
         positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
             input_data.text_prompts
         )
-        payload["Prompt"]["inputs"]["text"] = positive_prompt
+        payload["Prompt"]["inputs"]["text"] += positive_prompt
         payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
 
         payload["Sampler"]["inputs"]["steps"] = input_data.steps
@@ -152,13 +152,9 @@ class PayloadModifier:
         if seed == 0:
             seed = random.randint(1, 2**16)
         payload["Sampler"]["inputs"]["seed"] = seed
+        payload["Sampler_initial"]["inputs"]["seed"] = seed
         payload["Latent"]["inputs"]["width"] = input_data.width
-        payload["Latent_initial"]["inputs"]["width"] = input_data.width
         payload["Latent"]["inputs"]["height"] = input_data.height
-        payload["Latent_initial"]["inputs"]["height"] = input_data.height
-        payload["Depth_processor"]["inputs"]["resolution"] = max(
-            input_data.height, input_data.width
-        )
         payload["InstantID"]["inputs"]["ip_weight"] = input_data.ipadapter_strength
         payload["InstantID"]["inputs"]["cn_strength"] = input_data.control_strength
         return payload
