@@ -58,5 +58,13 @@ docker pull corcelio/vision:image_server
 docker run --gpus '"device=0"' --runtime=nvidia -p 6919:6919 -e PORT=6919 -e DEVICE=0 corcelio/vision:image_server
 ```
 
+To start another machine on the same instance:
+
+KEEP THE ENV VAR -e DEVICE=0 the same!
+
+```bash
+docker run --gpus '"device=1"' --runtime=nvidia -p 6918:6918 -e PORT=6918 -e DEVICE=0 corcelio/vision:image_server
+```
+
 
 ## [Troubleshooting](../../docs/troubleshooting.md)
