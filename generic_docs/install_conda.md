@@ -15,6 +15,3 @@ conda activate venv
 
 echo "conda activate venv" >> ~/.bashrc
 ```
-
-
-MAKE SURE YOU SEE 11.8 WHEN YOU RUN THIS
