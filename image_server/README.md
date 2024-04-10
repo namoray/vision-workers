@@ -1,7 +1,21 @@
 **Vision ComfyUI Inference Server**
 
-RUNNING WITH ENV VARS:
+In order to run the server on bare metal, you will need docker!
 
+### Install docker
+[docker readme](../docs/install_docker.md)
+
+### Pull the image
+```bash
+docker pull corcelio/vision:llm_server
+```
+
+### Install nvidia stuff
+[nvidia readme](../docs/install_nvidia_stuff.md)
+
+### Running the image
+
+**ENV VARS**
 
 ### `VRAM_MODE` : str
 
