@@ -4,7 +4,7 @@
 
 
 ### Install docker
-[docker readme](../../docs/install_docker.md)
+[docker readme](../../generic_docs/install_docker.md)
 
 ### Pull the image
 ```bash
@@ -12,10 +12,10 @@ docker pull corcelio/vision:orchestrator
 ```
 ### Install conda
 I recommend conda for an easy installation of nvidia-toolkit
-[Conda installation](../../docs/install_conda.md)
+[Conda installation](../../generic_docs/install_conda.md)
 
 ### Install nvidia stuff
-[nvidia readme](../../docs/install_nvidia_stuff.md)
+[nvidia readme](../../generic_docs/install_nvidia_stuff.md)
 
 
 
@@ -44,4 +44,4 @@ Only one ever runs at a time, so using the default of 0 for both is more than fi
 If that doesn't run properly, try removing the flag
 `--runtime=nvidia`
 
-## [Troubleshooting](../../docs/troubleshooting.md)
+## [Troubleshooting](../../generic_docs/troubleshooting.md)

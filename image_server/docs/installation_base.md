@@ -3,7 +3,7 @@
 In order to run the server on bare metal, you will need docker!
 
 ### Install docker
-[docker readme](../../docs/install_docker.md)
+[docker readme](../../generic_docs/install_docker.md)
 
 ### Pull the image
 ```bash
@@ -11,10 +11,10 @@ docker pull corcelio/vision:llm_server
 ```
 ### Install conda
 I recommend conda for an easy installation of nvidia-toolkit
-[Conda installation](../../docs/install_conda.md)
+[Conda installation](../../generic_docs/install_conda.md)
 
 ### Install nvidia stuff
-[nvidia readme](../../docs/install_nvidia_stuff.md)
+[nvidia readme](../../generic_docs/install_nvidia_stuff.md)
 
 ### Running the image
 
@@ -67,4 +67,4 @@ docker run --gpus '"device=1"' --runtime=nvidia -p 6918:6918 -e PORT=6918 -e DEV
 ```
 
 
-## [Troubleshooting](../../docs/troubleshooting.md)
+## [Troubleshooting](../../generic_docs/troubleshooting.md)
