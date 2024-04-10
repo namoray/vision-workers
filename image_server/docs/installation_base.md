@@ -24,9 +24,9 @@ I recommend conda for an easy installation of nvidia-toolkit
 
 Options:
 
-- `--low-vram` - Optimised for low vram usage of < 3GB - slowest
-- `--normal-vram` - Swaps models in and out of vram / CPU memory - Still low memory usage but quicker than the above
-- `--high-vram` - Keep all model weights on VRAM - quicker inference but more memory usage
+- `--lowvram` - Optimised for low vram usage of < 3GB - slowest. HAS PROBLEMS WITH SOME RUNPOD A100'S
+- `--normalvram` - Swaps models in and out of vram / CPU memory - Still low memory usage but quicker than the above
+- `--highvram` - Keep all model weights on VRAM - quicker inference but more memory usage
 - `--gpu-only` - Keep everything on VRAM - quickest inference but highest memory usage
 - `--cpu` - don't do this :D
 

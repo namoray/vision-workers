@@ -79,6 +79,9 @@ RUN conda run -n venv pip install --no-cache-dir xformers==0.0.23.post1 torchvis
 
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
+COPY image_server/setup.sh /app/image_server/setup.sh
+RUN cd /app/image_server && ./setup.sh
+
 # Copying server directories
 COPY ./ /app/
 
@@ -97,6 +100,6 @@ EXPOSE 6920
 WORKDIR /app/validator_orchestrator
 
 
-CMD ["bash", "-c", "cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
+CMD ["bash", "-c", "cd /app/validator_orchestrator && ./entrypoint.sh"]
 
 
