@@ -13,4 +13,27 @@ sudo apt-get update
 sudo apt-get install nvidia-docker2
 
 which nvidia-container-runtime
+
+sudo systemctl restart docker
+```
+
+
+
+If you still have problems with docker running with `unknown or invalid runtime name: nvidia`, try this:
+
+```bash
+apt-get install ubuntu-drivers-common \
+	&& sudo ubuntu-drivers autoinstall
+
+# reboot
+sudo reboot now
+
+curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \
+  sudo apt-key add -
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-container-runtime/$distribution/nvidia-container-runtime.list | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-runtime.list
+sudo apt-get update
+apt-get install nvidia-container-runtime
+sudo systemctl restart docker
 ```
