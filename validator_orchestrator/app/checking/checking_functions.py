@@ -151,7 +151,7 @@ async def check_clip_result(
 async def query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
-    async with httpx.AsyncClient(timeout=45) as client:
+    async with httpx.AsyncClient(timeout=180) as client:
         response = await client.post(endpoint, json=data)
         logger.info(response.status_code)
         return utility_models.ImageResponseBody(**response.json())

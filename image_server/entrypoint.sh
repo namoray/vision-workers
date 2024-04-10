@@ -1,9 +1,9 @@
 #!/bin/bash
 cleanup() {
-  echo "Stopping the ComfyUI server..."
-  kill $COMFY_SERVER_PID
-  wait $COMFY_SERVER_PID 2>/dev/null
-  echo "Both servers have been stopped."
+    echo "Stopping the ComfyUI server..."
+    kill $COMFY_SERVER_PID
+    wait $COMFY_SERVER_PID 2>/dev/null
+    echo "Both servers have been stopped."
 }
 
 trap cleanup SIGINT SIGTERM
