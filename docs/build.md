@@ -21,7 +21,8 @@ source ~/.bashrc && exec bash
 
 # Create a new Conda environment with the specified Python version
 conda create -n venv python=$PYTHON_VERSION -y
-conda activate venv
+echo "conda activate venv" >> ~/.bashrc
+source ~/.bashrc
 
 CUDA_VERSION="12.2.0"
 # Install CUDA toolkit with the specified version
@@ -156,4 +157,3 @@ sudo apt-get update
 apt-get install nvidia-container-runtime
 sudo systemctl restart docker
 ```
-
