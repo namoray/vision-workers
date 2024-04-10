@@ -8,7 +8,7 @@ chmod 700 Miniconda3-latest-Linux-x86_64.sh
 echo 'source "$HOME/miniconda3/etc/profile.d/conda.sh"' >> ~/.bashrc && \
 echo 'if [ -f ~/.bashrc ]; then . ~/.bashrc; fi' >> ~/.bash_profile && \
 echo 'source "$HOME/miniconda3/etc/profile.d/conda.sh"' >> ~/.profile && \
-source ~/.bashrc && exec bash
+source ~/.bashrc
 
 conda create -n venv python=$PYTHON_VERSION -y
 conda activate venv
