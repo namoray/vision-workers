@@ -8,7 +8,7 @@
 
 ### Pull the image
 ```bash
-docker pull corcelio/vision:llm_server
+docker pull corcelio/vision:orchestrator
 ```
 ### Install conda
 I recommend conda for an easy installation of nvidia-toolkit
