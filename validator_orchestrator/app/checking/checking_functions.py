@@ -151,7 +151,7 @@ async def check_clip_result(
 async def query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
-    async with httpx.AsyncClient(timeout=180) as client:
+    async with httpx.AsyncClient(timeout=600) as client:  # 10 min timeout due to initial load on some runpod gpus
         response = await client.post(endpoint, json=data)
         logger.info(response.status_code)
         return utility_models.ImageResponseBody(**response.json())
@@ -176,8 +176,7 @@ async def check_image_result(
     )
 
     if expected_image_response.is_nsfw and image_response_body.is_nsfw:
-        return 1 
-
+        return 1
 
     if expected_image_response.clip_embeddings is None:
         logger.error(f"For some reason Everything is none! {expected_image_response}")
