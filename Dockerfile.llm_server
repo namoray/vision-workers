@@ -34,9 +34,6 @@ RUN pip install -r ./app/requirements.txt \
 
 COPY llm_server/app /app/app
 
-EXPOSE 6900-6919
-ENV PORT=6919
-
 COPY llm_server/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
