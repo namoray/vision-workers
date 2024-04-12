@@ -8,7 +8,7 @@
 
 ### Pull the image
 ```bash
-docker pull corcelio/vision:orchestrator
+docker pull corcelio/vision:orchestrator-1.0.0
 ```
 ### Install conda
 I recommend conda for an easy installation of nvidia-toolkit
@@ -30,12 +30,12 @@ This port (6919) DOES NOT need to be exposed. Instead, 6920 should be exposed (o
 
 Here's just an example command
 ```bash
-docker pull corcelio/vision:orchestrator
+docker pull corcelio/vision:orchestrator-1.0.0
 ```
 
 Or you can specify some extra env vars if you need them
 ```bash
-docker run -p 6920:6920 -e PORT=6920 -e CUDA_VISIBLE_DEVICES=0 -e DEVICE=0 --gpus '"device=0"' --runtime=nvidia corcelio/vision:orchestrator
+docker run -p 6920:6920 -e PORT=6920 -e CUDA_VISIBLE_DEVICES=0 -e DEVICE=0 --gpus '"device=0"' --runtime=nvidia corcelio/vision:orchestrator-1.0.0
 ```
 DEVICE is for the image service, CUDA_VISIBLE_DEVICES is for the LLM server. 
 Only one ever runs at a time, so using the default of 0 for both is more than fine

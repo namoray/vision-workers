@@ -7,7 +7,7 @@ In order to run the server on bare metal, you will need docker!
 
 ### Pull the image
 ```bash
-docker pull corcelio/vision:llm_server
+docker pull corcelio/vision:llm_server-1.0.0
 ```
 ### Install conda
 I recommend conda for an easy installation of nvidia-toolkit
@@ -46,7 +46,7 @@ which revision of the model to use e.g.: `gptq-8bit-128g-actorder_True`
 
 Here's just an example command
 ```bash
-docker run -p 6919:6919 --gpus '"device=0"' --runtime=nvidia -e PORT=6919 -e MODEL=TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ -e HALF_PRECISION=true -e REVISION=gptq-8bit-128g-actorder_True -e CUDA_VISIBLE_DEVICES=0 corcelio/vision:llm_server
+docker run -p 6919:6919 --gpus '"device=0"' --runtime=nvidia -e PORT=6919 -e MODEL=TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ -e HALF_PRECISION=true -e REVISION=gptq-8bit-128g-actorder_True -e CUDA_VISIBLE_DEVICES=0 corcelio/vision:llm_server-1.0.0
 ```
 
 If that doesn't run properly, try removing the flag
