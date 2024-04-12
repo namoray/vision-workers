@@ -7,7 +7,7 @@ In order to run the server on bare metal, you will need docker!
 
 ### Pull the image
 ```bash
-docker pull corcelio/vision:llm_server-1.0.0
+docker pull corcelio/vision:image_server-1.0.0
 ```
 ### Install conda
 I recommend conda for an easy installation of nvidia-toolkit
