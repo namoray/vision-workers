@@ -67,6 +67,7 @@ ENV VLLM_PORT=6919
 ENV DEVICE=0
 
 RUN chmod +x /app/image_server/entrypoint.sh
+RUN chmod +x /app/image_server/setup.sh
 
 
-CMD ["cd /app/image_server && ./setup.sh && /app/image_server/entrypoint.sh"]
+CMD ["bash", "-c", "cd /app/image_server && ./setup.sh && ./entrypoint.sh"]

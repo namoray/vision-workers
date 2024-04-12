@@ -71,4 +71,4 @@ ENV DEVICE=0
 RUN chmod +x /app/image_server/entrypoint.sh
 
 
-CMD ["/app/image_server/entrypoint.sh"]
+CMD ["bash", "-c", "./app/image_server/entrypoint.sh"]
