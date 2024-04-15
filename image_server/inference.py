@@ -6,6 +6,7 @@ from utils import base64_utils
 from payload import PayloadModifier
 from clip_embeddings.clip_manager import ClipEmbeddingsProcessor
 import torch
+import random
 from utils import misc
 import os
 import clip
@@ -26,7 +27,7 @@ async def txt2img_infer(
 async def img2img_infer(
     infer_props: base_model.Img2ImgBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_img2img(infer_props)
+    payload, image_ids = payload_modifier.modify_img2img(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 
@@ -34,7 +35,7 @@ async def img2img_infer(
 async def upscale_infer(
     infer_props: base_model.UpscaleBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_upscale(infer_props)
+    payload, image_ids = payload_modifier.modify_upscale(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 
@@ -42,7 +43,7 @@ async def upscale_infer(
 async def avatar_infer(
     infer_props: base_model.AvatarBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_avatar(infer_props)
+    payload, image_ids = payload_modifier.modify_avatar(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 
@@ -50,7 +51,7 @@ async def avatar_infer(
 async def inpainting_infer(
     infer_props: base_model.InpaintingBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_inpaint(infer_props)
+    payload, image_ids = payload_modifier.modify_inpaint(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 
@@ -58,7 +59,7 @@ async def inpainting_infer(
 async def outpainting_infer(
     infer_props: base_model.OutpaintingBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_outpaint(infer_props)
+    payload, image_ids = payload_modifier.modify_outpaint(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 

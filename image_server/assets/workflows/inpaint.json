@@ -10,7 +10,7 @@
       "title": "Shared Checkpoint Loader (Inspire)"
     }
   },
-  "69": {
+  "Image_loader": {
     "inputs": {
       "image": "init.png",
       "upload": "image"
@@ -111,7 +111,7 @@
     "inputs": {
       "grow_mask_by": 15,
       "pixels": [
-        "69",
+        "Image_loader",
         0
       ],
       "vae": [
@@ -119,7 +119,7 @@
         2
       ],
       "mask": [
-        "114",
+        "Mask_loader",
         0
       ]
     },
@@ -128,7 +128,7 @@
       "title": "VAE Encode (for Inpainting)"
     }
   },
-  "114": {
+  "Mask_loader": {
     "inputs": {
       "image": "mask.png",
       "channel": "red",
