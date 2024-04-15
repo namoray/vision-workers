@@ -29,6 +29,7 @@ async def img2img_infer(
 ) -> base_model.ImageResponseBody:
     payload, image_ids = payload_modifier.modify_img2img(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
@@ -37,6 +38,7 @@ async def upscale_infer(
 ) -> base_model.ImageResponseBody:
     payload, image_ids = payload_modifier.modify_upscale(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
@@ -45,6 +47,7 @@ async def avatar_infer(
 ) -> base_model.ImageResponseBody:
     payload, image_ids = payload_modifier.modify_avatar(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
@@ -53,6 +56,7 @@ async def inpainting_infer(
 ) -> base_model.ImageResponseBody:
     payload, image_ids = payload_modifier.modify_inpaint(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
@@ -61,6 +65,7 @@ async def outpainting_infer(
 ) -> base_model.ImageResponseBody:
     payload, image_ids = payload_modifier.modify_outpaint(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
