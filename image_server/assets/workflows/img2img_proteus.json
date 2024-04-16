@@ -79,7 +79,7 @@
       "title": "KSampler"
     }
   },
-  "93": {
+  "Image_loader": {
     "inputs": {
       "image": "init.png",
       "upload": "image"
@@ -92,7 +92,7 @@
   "94": {
     "inputs": {
       "pixels": [
-        "93",
+        "Image_loader",
         0
       ],
       "vae": [

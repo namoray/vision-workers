@@ -15,15 +15,6 @@
       "title": "VAE Decode"
     }
   },
-  "11": {
-    "inputs": {
-      "instantid_file": "ip-adapter.bin"
-    },
-    "class_type": "InstantIDModelLoader",
-    "_meta": {
-      "title": "Load InstantID Model"
-    }
-  },
   "15": {
     "inputs": {
       "images": [
@@ -34,15 +25,6 @@
     "class_type": "PreviewImage",
     "_meta": {
       "title": "Preview Image"
-    }
-  },
-  "16": {
-    "inputs": {
-      "control_net_name": "diffusion_pytorch_model.safetensors"
-    },
-    "class_type": "ControlNetLoader",
-    "_meta": {
-      "title": "Load ControlNet Model"
     }
   },
   "38": {
@@ -94,6 +76,24 @@
       "title": "CLIP Text Encode (Prompt)"
     }
   },
+  "78": {
+    "inputs": {
+      "key": "instantid_model"
+    },
+    "class_type": "RetrieveBackendData //Inspire",
+    "_meta": {
+      "title": "Retrieve Backend Data (Inspire)"
+    }
+  },
+  "79": {
+    "inputs": {
+      "key": "instantid_controlnet"
+    },
+    "class_type": "RetrieveBackendData //Inspire",
+    "_meta": {
+      "title": "Retrieve Backend Data (Inspire)"
+    }
+  },
   "Latent": {
     "inputs": {
       "width": 1280,
@@ -143,7 +143,7 @@
   },
   "Sampler_initial": {
     "inputs": {
-      "seed": 592837971903012,
+      "seed": 8428875393740,
       "steps": 10,
       "cfg": 1.5,
       "sampler_name": "euler_ancestral",
@@ -180,7 +180,7 @@
       "noise": 0.2,
       "combine_embeds": "average",
       "instantid": [
-        "11",
+        "78",
         0
       ],
       "insightface": [
@@ -188,7 +188,7 @@
         0
       ],
       "control_net": [
-        "16",
+        "79",
         0
       ],
       "image": [
@@ -219,7 +219,7 @@
   },
   "Sampler": {
     "inputs": {
-      "seed": 341071840361502,
+      "seed": 324377332588120,
       "steps": 15,
       "cfg": 1.5,
       "sampler_name": "euler_ancestral",

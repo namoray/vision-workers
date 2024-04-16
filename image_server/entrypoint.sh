@@ -36,11 +36,14 @@ sleep 5
 if [ "$warmup" = "true" ]
 then
     cd /app/image_server/
-    python warmup.py
+    if [ -n "$vram_mode" ]
+    then
+        python warmup.py --highvram
+    fi
 else
     sleep 1
 fi
 
 cd /app/image_server/
-uvicorn main:app --host 0.0.0.0 --port $port
+uvicorn main:app --host 0.0.0.0 --port $port --workers 1
 cleanup
