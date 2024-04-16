@@ -36,9 +36,11 @@ sleep 5
 if [ "$warmup" = "true" ]
 then
     cd /app/image_server/
-    if [ -n "$vram_mode" ]
+    if [ -n "$vram_mode" ] && [ "$vram_mode" = "--highvram" ]
     then
         python warmup.py --highvram
+    else
+        python warmup.py
     fi
 else
     sleep 1
