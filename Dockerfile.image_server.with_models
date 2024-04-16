@@ -67,8 +67,10 @@ ENV HF_HUB_ENABLE_HF_TRANSFER=1
 USER root
 ENV VLLM_PORT=6919
 ENV DEVICE=0
+ENV VRAM_MODE=--highvram
+ENV WARMUP=true
 
 RUN chmod +x /app/image_server/entrypoint.sh
 
 
-CMD ["bash", "-c", "./app/image_server/entrypoint.sh"]
+CMD ["bash", "-c", "/app/image_server/entrypoint.sh"]

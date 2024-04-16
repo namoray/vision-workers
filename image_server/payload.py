@@ -11,6 +11,7 @@ from base_model import (
 from typing import Dict, Any, Tuple, List
 from utils.base64_utils import base64_to_image
 import os
+import torch
 import copy
 import random
 import uuid
@@ -148,7 +149,8 @@ class PayloadModifier:
         return payload, [img_id]
 
     def modify_avatar(self, input_data: AvatarBase) -> Tuple[Dict[str, Any], List[str]]:
-        payload = copy.deepcopy(self._payloads["instantid"])
+        avatar_workflow = "instantid_highvram" if ((torch.cuda.get_device_properties(cst.DEFAULT_DEVICE).total_memory / 1e9) > 25.0) else "instantid"
+        payload = copy.deepcopy(self._payloads[avatar_workflow])
         init_img = base64_to_image(input_data.init_image)
         img_id = uuid.uuid4()
         init_img.save(f"{cst.COMFY_INPUT_PATH}{img_id}.png")
@@ -157,6 +159,7 @@ class PayloadModifier:
             input_data.text_prompts
         )
         payload["Prompt"]["inputs"]["text"] += positive_prompt
+        payload["Prompt_initial"]["inputs"]["text"] = positive_prompt
         payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
 
         payload["Sampler"]["inputs"]["steps"] = input_data.steps

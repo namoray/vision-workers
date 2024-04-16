@@ -3,6 +3,7 @@ from utils import base64_utils
 import base_model
 import imagehash
 import inference
+from typing import List
 from utils import safety_checker as sc
 import os
 import shutil

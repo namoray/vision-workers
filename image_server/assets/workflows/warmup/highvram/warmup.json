@@ -1,0 +1,484 @@
+{
+    "11": {
+      "inputs": {
+        "instantid_file": "ip-adapter.bin"
+      },
+      "class_type": "InstantIDModelLoader",
+      "_meta": {
+        "title": "Load InstantID Model"
+      }
+    },
+    "16": {
+      "inputs": {
+        "control_net_name": "diffusion_pytorch_model.safetensors"
+      },
+      "class_type": "ControlNetLoader",
+      "_meta": {
+        "title": "Load ControlNet Model"
+      }
+    },
+    "75": {
+      "inputs": {
+        "ckpt_name": "proteus.safetensors",
+        "key_opt": "",
+        "mode": "Auto"
+      },
+      "class_type": "CheckpointLoaderSimpleShared //Inspire",
+      "_meta": {
+        "title": "Shared Checkpoint Loader (Inspire)"
+      }
+    },
+    "81": {
+      "inputs": {
+        "ckpt_name": "playground.safetensors",
+        "key_opt": "",
+        "mode": "Auto"
+      },
+      "class_type": "CheckpointLoaderSimpleShared //Inspire",
+      "_meta": {
+        "title": "Shared Checkpoint Loader (Inspire)"
+      }
+    },
+    "82": {
+      "inputs": {
+        "ckpt_name": "juggerinpaint.safetensors",
+        "key_opt": "",
+        "mode": "Auto"
+      },
+      "class_type": "CheckpointLoaderSimpleShared //Inspire",
+      "_meta": {
+        "title": "Shared Checkpoint Loader (Inspire)"
+      }
+    },
+    "83": {
+      "inputs": {
+        "ckpt_name": "dreamshaperturbo.safetensors",
+        "key_opt": "",
+        "mode": "Auto"
+      },
+      "class_type": "CheckpointLoaderSimpleShared //Inspire",
+      "_meta": {
+        "title": "Shared Checkpoint Loader (Inspire)"
+      }
+    },
+    "84": {
+      "inputs": {
+        "key": "instantid_model",
+        "tag": "",
+        "data": [
+          "11",
+          0
+        ]
+      },
+      "class_type": "CacheBackendData //Inspire",
+      "_meta": {
+        "title": "Cache Backend Data (Inspire)"
+      }
+    },
+    "90": {
+      "inputs": {
+        "key": "instantid_controlnet",
+        "tag": "",
+        "data": [
+          "16",
+          0
+        ]
+      },
+      "class_type": "CacheBackendData //Inspire",
+      "_meta": {
+        "title": "Cache Backend Data (Inspire)"
+      }
+    },
+    "91": {
+      "inputs": {
+        "seed": 17150222215131,
+        "steps": 1,
+        "cfg": 8,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1,
+        "model": [
+          "75",
+          0
+        ],
+        "positive": [
+          "95",
+          0
+        ],
+        "negative": [
+          "96",
+          0
+        ],
+        "latent_image": [
+          "101",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "KSampler"
+      }
+    },
+    "92": {
+      "inputs": {
+        "seed": 510282318558139,
+        "steps": 1,
+        "cfg": 8,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1,
+        "model": [
+          "81",
+          0
+        ],
+        "positive": [
+          "95",
+          0
+        ],
+        "negative": [
+          "96",
+          0
+        ],
+        "latent_image": [
+          "101",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "KSampler"
+      }
+    },
+    "93": {
+      "inputs": {
+        "seed": 391651381438900,
+        "steps": 1,
+        "cfg": 8,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1,
+        "model": [
+          "82",
+          0
+        ],
+        "positive": [
+          "95",
+          0
+        ],
+        "negative": [
+          "96",
+          0
+        ],
+        "latent_image": [
+          "101",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "KSampler"
+      }
+    },
+    "94": {
+      "inputs": {
+        "seed": 641415346839717,
+        "steps": 1,
+        "cfg": 8,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1,
+        "model": [
+          "83",
+          0
+        ],
+        "positive": [
+          "95",
+          0
+        ],
+        "negative": [
+          "96",
+          0
+        ],
+        "latent_image": [
+          "101",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "KSampler"
+      }
+    },
+    "95": {
+      "inputs": {
+        "text": "warmup",
+        "clip": [
+          "75",
+          1
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
+    },
+    "96": {
+      "inputs": {
+        "text": "",
+        "clip": [
+          "75",
+          1
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
+    },
+    "97": {
+      "inputs": {
+        "ip_weight": 0.8,
+        "cn_strength": 0.8,
+        "start_at": 0,
+        "end_at": 1,
+        "noise": 0,
+        "combine_embeds": "average",
+        "instantid": [
+          "84",
+          0
+        ],
+        "insightface": [
+          "98",
+          0
+        ],
+        "control_net": [
+          "90",
+          0
+        ],
+        "image": [
+          "99",
+          0
+        ],
+        "model": [
+          "81",
+          0
+        ],
+        "positive": [
+          "95",
+          0
+        ],
+        "negative": [
+          "96",
+          0
+        ],
+        "image_kps": [
+          "99",
+          0
+        ]
+      },
+      "class_type": "ApplyInstantIDAdvanced",
+      "_meta": {
+        "title": "Apply InstantID Advanced"
+      }
+    },
+    "98": {
+      "inputs": {
+        "provider": "CPU"
+      },
+      "class_type": "InstantIDFaceAnalysis",
+      "_meta": {
+        "title": "InstantID Face Analysis"
+      }
+    },
+    "99": {
+      "inputs": {
+        "image": "init.png",
+        "upload": "image"
+      },
+      "class_type": "LoadImage",
+      "_meta": {
+        "title": "Load Image"
+      }
+    },
+    "100": {
+      "inputs": {
+        "seed": 1113910042055899,
+        "steps": 1,
+        "cfg": 8,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1,
+        "model": [
+          "97",
+          0
+        ],
+        "positive": [
+          "97",
+          1
+        ],
+        "negative": [
+          "97",
+          2
+        ],
+        "latent_image": [
+          "101",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "KSampler"
+      }
+    },
+    "101": {
+      "inputs": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1
+      },
+      "class_type": "EmptyLatentImage",
+      "_meta": {
+        "title": "Empty Latent Image"
+      }
+    },
+    "102": {
+      "inputs": {
+        "samples": [
+          "100",
+          0
+        ],
+        "vae": [
+          "75",
+          2
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE Decode"
+      }
+    },
+    "103": {
+      "inputs": {
+        "samples": [
+          "91",
+          0
+        ],
+        "vae": [
+          "75",
+          2
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE Decode"
+      }
+    },
+    "104": {
+      "inputs": {
+        "samples": [
+          "92",
+          0
+        ],
+        "vae": [
+          "75",
+          2
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE Decode"
+      }
+    },
+    "105": {
+      "inputs": {
+        "samples": [
+          "93",
+          0
+        ],
+        "vae": [
+          "75",
+          2
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE Decode"
+      }
+    },
+    "106": {
+      "inputs": {
+        "samples": [
+          "94",
+          0
+        ],
+        "vae": [
+          "75",
+          2
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE Decode"
+      }
+    },
+    "107": {
+      "inputs": {
+        "images": [
+          "106",
+          0
+        ]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    },
+    "108": {
+      "inputs": {
+        "images": [
+          "105",
+          0
+        ]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    },
+    "109": {
+      "inputs": {
+        "images": [
+          "104",
+          0
+        ]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    },
+    "110": {
+      "inputs": {
+        "images": [
+          "103",
+          0
+        ]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    },
+    "111": {
+      "inputs": {
+        "images": [
+          "102",
+          0
+        ]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    }
+  }

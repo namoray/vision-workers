@@ -1,8 +1,8 @@
 if [ ! -d ComfyUI ]; then 
   git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
   cd ComfyUI
-  git fetch --depth 1 origin 57753c964affd18d2b87d2a47fe6b375bca39004
-  git checkout 57753c964affd18d2b87d2a47fe6b375bca39004
+  git fetch --depth 1 origin 45ec1cbe963055798765645c4f727122a7d3e35e
+  git checkout 45ec1cbe963055798765645c4f727122a7d3e35e
   cd ..
 fi
 
@@ -20,9 +20,7 @@ fi
 
 [ -f ComfyUI/models/upscale_models/ultrasharp.pt ] || wget -O ComfyUI/models/upscale_models/ultrasharp.pt https://civitai.com/api/download/models/125843
 
-[ -f ComfyUI/input/init.png ] || mv ComfyUI/input/example.png ComfyUI/input/init.png
-
-[ -f ComfyUI/input/mask.png ] || cp ComfyUI/input/init.png ComfyUI/input/mask.png
+[ -f ComfyUI/input/init.png ] || cp assets/face_image.png ComfyUI/input/init.png
 
 cd ComfyUI/custom_nodes
 
@@ -33,7 +31,7 @@ cd ComfyUI/custom_nodes
 if [ ! -d ComfyUI_InstantID ]; then 
   git clone https://github.com/cubiq/ComfyUI_InstantID
   cd ComfyUI_InstantID
-  git checkout 50445991e2bd1d5ec73a8633726fe0b33a825b5b
+  git checkout 8b7932a66bf43b5e2499e2ba77df5c373af006da
   cd ..
 fi
 
