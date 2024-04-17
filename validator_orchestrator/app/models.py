@@ -59,7 +59,6 @@ class TaskConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-
 class TaskConfigMapping(BaseModel):
     tasks: Dict[Tasks, TaskConfig]
 
@@ -74,7 +73,6 @@ class Message(BaseModel):
     role: str
     content: str
 
-
 class ChatRequestModel(BaseModel):
     messages: list[Message]
     seed: int
@@ -86,6 +84,23 @@ class ChatRequestModel(BaseModel):
 class MinerChatResponse(BaseModel):
     text: str
     logprob: float
+
+class ValidationTest(BaseModel):
+    validator_server: ServerInstance
+    miners_to_test: List[ServerDetails]
+    prompts_to_check: List[ChatRequestModel]
+    checking_function: Callable[[QueryResult, Dict[str, Any], TaskConfig], Coroutine[Any, Any, Union[float, None]]]
+
+class ServerDetails(BaseModel):
+    id: str
+    cuda_version: str
+    gpu: str
+    endpoint: str
+
+class ServerInstance(BaseModel):
+    server_details: ServerDetails
+    model: ModelConfigDetails
+
 
 class Logprob(BaseModel):
     index: int
