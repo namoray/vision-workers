@@ -1,18 +1,25 @@
-{ "miners" : [
-    {
-        "id" : "1",
-        "endpoint : "http://localhost:8000",
-        "cuda_version" : "12.0",
-        "gpu" : "A100"
-    }
-
-],
-"validators" : [
-    {
-        "id" : "1",
-        "endpoint : "http://localhost:8000",
-        "cuda_version" : "12.2",
-        "gpu" : "A100"
-    }
-]
-}
+{
+    "miners": [
+      {
+        "id": "1",
+        "endpoint": "http://localhost:8000",
+        "cuda_version": "12.0",
+        "gpu": "A100"
+      },
+      {
+        "id": "2",
+        "endpoint": "http://localhost:999",
+        "cuda_version": "11.8",
+        "gpu": "H100"
+      }
+    ],
+    "validators": [
+      {
+        "id": "1",
+        "endpoint": "http://localhost:6919",
+        "cuda_version": "12.2",
+        "gpu": "A100"
+      }
+    ]
+  }
+  

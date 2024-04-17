@@ -10,9 +10,9 @@ import math
 from loguru import logger
 from PIL import Image
 import io
-from app import settings
 from PIL import UnidentifiedImageError
 from typing import Optional
+from app.constants import BASE_URL
 
 images_are_same_classifier = xgb.XGBClassifier()
 images_are_same_classifier.load_model("image_similarity_xgb_model.json")
@@ -64,7 +64,7 @@ async def check_sota_result(
     clip_image_embeddings_response: utility_models.ClipEmbeddingsResponse = (
         await query_endpoint_for_clip_response(
             data={"image_b64s": [checking_utils.pil_to_base64(i) for i in images]},
-            endpoint=settings.BASE_URL + "/clip-embeddings",
+            endpoint=BASE_URL + "/clip-embeddings",
         )
     )
 
@@ -74,7 +74,7 @@ async def check_sota_result(
     text_embedding_response: utility_models.ClipTextEmbeddingsResponse = (
         await query_endpoint_for_clip_text_response(
             data={"text_prompt": split_prompt},
-            endpoint=settings.BASE_URL + "/clip-embeddings-text",
+            endpoint=BASE_URL + "/clip-embeddings-text",
         )
     )
 

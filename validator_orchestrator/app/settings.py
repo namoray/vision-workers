@@ -4,7 +4,7 @@ from app.checking import checking_functions, speed_scoring_functions
 from app.synthetic import synthetic_generation
 from app import utility_models
 from enum import Enum
-
+from app.constants import BASE_URL
 
 class Settings(BaseSettings):
     version: str = "1.0.0"
@@ -23,9 +23,6 @@ class Endpoints(Enum):
 
 
 settings = Settings()
-
-
-BASE_URL = "http://localhost:6919"
 
 
 task_configs = models.TaskConfigMapping(

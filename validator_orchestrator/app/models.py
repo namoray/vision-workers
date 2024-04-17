@@ -87,7 +87,7 @@ class MinerChatResponse(BaseModel):
 
 class ValidationTest(BaseModel):
     validator_server: ServerInstance
-    miners_to_test: List[ServerDetails]
+    miners_to_test: List[ServerInstance]
     prompts_to_check: List[ChatRequestModel]
     checking_function: Callable[[QueryResult, Dict[str, Any], TaskConfig], Coroutine[Any, Any, Union[float, None]]]
 
