@@ -2,8 +2,9 @@ import json
 import numpy as np 
 import random 
 from app.models import ServerDetails, ServerInstance, ValidationTest, \
-ChatRequestModel, Tasks, TaskConfig, TaskConfigMapping, CheckResultsRequest, \
+ChatRequestModel, Tasks, TaskConfig, ServerType, CheckResultsRequest, \
 Message, MinerChatResponse, Logprob, ValidatorCheckingResponse, ModelConfigDetails
+import requests
 
 from app.checking.checking_functions import check_text_result
 
@@ -68,6 +69,40 @@ def create_tests_for_one_validator(validator, miners, prompts, models, number_of
 def create_all_validation_test_combinations(validators, miners, prompts, models, number_of_prompt_tests):
     return [create_tests_for_one_validator(validator, miners, prompts, models, number_of_prompt_tests) for validator in validators]
 
+def make_request_to_server(server: ServerInstance, request_payload, endpoint):
+    url = server.server_details.endpoint + endpoint
+    print(url, request_payload)
+#    response = requests.post(url, json=request_payload)
+#    return response
+
+def make_load_model_request(server: ServerInstance):
+    model_config = server.model
+    payload = {
+        "model": model_config.model,
+        "tokenizer": model_config.tokenizer,
+        "revision": model_config.revision
+    }
+    return make_request_to_server(server, payload, "/load_model")
+
+def make_generate_text_request(server: ServerInstance, chat_request: ChatRequestModel):
+    payload = chat_request.dict()
+    return make_request_to_server(server, payload, "/generate_text") 
+
+def process_validation_test(test: ValidationTest):
+    # Load the model on the validator server
+    task_config = TaskConfig(server_needed=ServerType.LLM, load_model_config=test.validator_server.model, checking_function=test.checking_function, task=Tasks.chat_mixtral, endpoint=test.validator_server.server_details.endpoint, speed_scoring_function=test.checking_function)
+    make_load_model_request(test.validator_server)
+    for miner in test.miners_to_test:
+        make_load_model_request(miner)
+        for prompt in test.prompts_to_check:
+            response = make_generate_text_request(miner, prompt)
+            break
+            # Check the result
+            check_result = test.checking_function(response, {}, task_config)
+            # Send the result to the validator server
+            request_payload = CheckResultsRequest(task=Tasks.chat_mixtral, synthetic_query=False, result=Logprob(text=response.text, logprob=response.logprob), synapse={})
+#            make_request_to_server(test.validator_server, request_payload, "/check_results")
+
 miners, validators = get_the_miner_and_validator_servers()
 model_options = get_the_models()
 prompts = load_the_test_prompts_txt()
@@ -75,5 +110,5 @@ validator_servers = create_all_possible_server_instances(validators, model_optio
 miner_servers = create_all_possible_server_instances(miners, model_options)
 NUMBER_OF_TESTS = 10
 test_suite = create_all_validation_test_combinations(validator_servers, miner_servers, prompts, model_options, NUMBER_OF_TESTS)
-print(test_suite)
+process_validation_test(test_suite[0])
 
