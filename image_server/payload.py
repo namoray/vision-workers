@@ -14,6 +14,7 @@ import os
 import torch
 import copy
 import random
+import traceback
 import uuid
 
 
@@ -141,11 +142,15 @@ class PayloadModifier:
         return payload, [img_id]
 
     def modify_upscale(self, input_data: UpscaleBase) -> Tuple[Dict[str, Any], List[str]]:
-        payload = copy.deepcopy(self._payloads["upscale"])
-        init_img = base64_to_image(input_data.init_image)
-        img_id = uuid.uuid4()
-        init_img.save(f"{cst.COMFY_INPUT_PATH}{img_id}.png")
-        payload["Image_loader"]["inputs"]["image"] = f"{img_id}.png"
+        try:
+            upscale_mode = "upscale_sampled" if input_data.sampled else "upscale"
+            payload = copy.deepcopy(self._payloads[upscale_mode])
+            init_img = base64_to_image(input_data.init_image)
+            img_id = uuid.uuid4()
+            init_img.save(f"{cst.COMFY_INPUT_PATH}{img_id}.png")
+            payload["Image_loader"]["inputs"]["image"] = f"{img_id}.png"
+        except Exception as e:
+            traceback.print_exc()
         return payload, [img_id]
 
     def modify_avatar(self, input_data: AvatarBase) -> Tuple[Dict[str, Any], List[str]]:

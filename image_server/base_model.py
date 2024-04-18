@@ -73,6 +73,10 @@ class Img2ImgBase(BaseModel):
 
 class UpscaleBase(BaseModel):
     init_image: str
+    sampled: bool = Field(
+        False,
+        description = "Use sampler on the upscaled image to increase details at the expense of higher generation time"
+    )
 
 
 class AvatarBase(BaseModel):
