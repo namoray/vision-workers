@@ -10,9 +10,131 @@
       "title": "Shared Checkpoint Loader (Inspire)"
     }
   },
+  "77": {
+    "inputs": {
+      "samples": [
+        "Sampler",
+        0
+      ],
+      "vae": [
+        "60",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "107": {
+    "inputs": {
+      "grow_mask_by": 15,
+      "pixels": [
+        "Image_loader",
+        0
+      ],
+      "vae": [
+        "60",
+        2
+      ],
+      "mask": [
+        "Mask_loader",
+        0
+      ]
+    },
+    "class_type": "VAEEncodeForInpaint",
+    "_meta": {
+      "title": "VAE Encode (for Inpainting)"
+    }
+  },
+  "108": {
+    "inputs": {
+      "seed": 592041844694127,
+      "steps": 20,
+      "cfg": 3,
+      "sampler_name": "dpmpp_3m_sde_gpu",
+      "scheduler": "karras",
+      "denoise": 0.25,
+      "model": [
+        "109",
+        0
+      ],
+      "positive": [
+        "Prompt",
+        0
+      ],
+      "negative": [
+        "Negative_prompt",
+        0
+      ],
+      "latent_image": [
+        "110",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "109": {
+    "inputs": {
+      "ckpt_name": "dreamshaperturbo.safetensors",
+      "key_opt": "",
+      "mode": "Auto"
+    },
+    "class_type": "CheckpointLoaderSimpleShared //Inspire",
+    "_meta": {
+      "title": "Shared Checkpoint Loader (Inspire)"
+    }
+  },
+  "110": {
+    "inputs": {
+      "pixels": [
+        "77",
+        0
+      ],
+      "vae": [
+        "109",
+        2
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "111": {
+    "inputs": {
+      "samples": [
+        "108",
+        0
+      ],
+      "vae": [
+        "109",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "112": {
+    "inputs": {
+      "images": [
+        "111",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
   "Image_loader": {
     "inputs": {
-      "image": "init.png",
+      "image": "lion.png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -20,10 +142,47 @@
       "title": "Load Image"
     }
   },
+  "Mask_loader": {
+    "inputs": {
+      "image": "lion22.png",
+      "channel": "red",
+      "upload": "image"
+    },
+    "class_type": "LoadImageMask",
+    "_meta": {
+      "title": "Load Image (as Mask)"
+    }
+  },
+  "Prompt": {
+    "inputs": {
+      "text": "a zebra wearing a joker hat",
+      "clip": [
+        "60",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "Negative_prompt": {
+    "inputs": {
+      "text": "embedding:negativeXL_A , blurry, lowres",
+      "clip": [
+        "60",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
   "Sampler": {
     "inputs": {
       "add_noise": "enable",
-      "noise_seed": 685652545380498,
+      "noise_seed": 1074936571174951,
       "steps": 20,
       "cfg": 4,
       "sampler_name": "dpmpp_3m_sde_gpu",
@@ -51,92 +210,6 @@
     "class_type": "KSamplerAdvanced",
     "_meta": {
       "title": "KSampler (Advanced)"
-    }
-  },
-  "Prompt": {
-    "inputs": {
-      "text": "a lion wearing a joker hat",
-      "clip": [
-        "60",
-        1
-      ]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
-  "Negative_prompt": {
-    "inputs": {
-      "text": "low quality",
-      "clip": [
-        "60",
-        1
-      ]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
-  "77": {
-    "inputs": {
-      "samples": [
-        "Sampler",
-        0
-      ],
-      "vae": [
-        "60",
-        2
-      ]
-    },
-    "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Decode"
-    }
-  },
-  "78": {
-    "inputs": {
-      "images": [
-        "77",
-        0
-      ]
-    },
-    "class_type": "PreviewImage",
-    "_meta": {
-      "title": "Preview Image"
-    }
-  },
-  "107": {
-    "inputs": {
-      "grow_mask_by": 15,
-      "pixels": [
-        "Image_loader",
-        0
-      ],
-      "vae": [
-        "60",
-        2
-      ],
-      "mask": [
-        "Mask_loader",
-        0
-      ]
-    },
-    "class_type": "VAEEncodeForInpaint",
-    "_meta": {
-      "title": "VAE Encode (for Inpainting)"
-    }
-  },
-  "Mask_loader": {
-    "inputs": {
-      "image": "mask.png",
-      "channel": "red",
-      "upload": "image"
-    },
-    "class_type": "LoadImageMask",
-    "_meta": {
-      "title": "Load Image (as Mask)"
     }
   }
 }

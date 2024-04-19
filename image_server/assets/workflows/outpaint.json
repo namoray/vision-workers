@@ -10,75 +10,6 @@
       "title": "Shared Checkpoint Loader (Inspire)"
     }
   },
-  "Image_loader": {
-    "inputs": {
-      "image": "init.png",
-      "upload": "image"
-    },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "Load Image"
-    }
-  },
-  "Sampler": {
-    "inputs": {
-      "add_noise": "enable",
-      "noise_seed": 338599390529563,
-      "steps": 20,
-      "cfg": 4,
-      "sampler_name": "dpmpp_3m_sde_gpu",
-      "scheduler": "karras",
-      "start_at_step": 0,
-      "end_at_step": 10000,
-      "return_with_leftover_noise": "disable",
-      "model": [
-        "60",
-        0
-      ],
-      "positive": [
-        "Prompt",
-        0
-      ],
-      "negative": [
-        "Negative_prompt",
-        0
-      ],
-      "latent_image": [
-        "76",
-        0
-      ]
-    },
-    "class_type": "KSamplerAdvanced",
-    "_meta": {
-      "title": "KSampler (Advanced)"
-    }
-  },
-  "Prompt": {
-    "inputs": {
-      "text": "",
-      "clip": [
-        "60",
-        1
-      ]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
-  "Negative_prompt": {
-    "inputs": {
-      "text": "(lowres, low quality, worst quality:1.2), (text:1.2), (watermark:1.2)",
-      "clip": [
-        "60",
-        1
-      ]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
   "76": {
     "inputs": {
       "grow_mask_by": 15,
@@ -116,16 +47,99 @@
       "title": "VAE Decode"
     }
   },
-  "78": {
+  "79": {
+    "inputs": {
+      "ckpt_name": "dreamshaperturbo.safetensors",
+      "key_opt": "",
+      "mode": "Auto"
+    },
+    "class_type": "CheckpointLoaderSimpleShared //Inspire",
+    "_meta": {
+      "title": "Shared Checkpoint Loader (Inspire)"
+    }
+  },
+  "80": {
+    "inputs": {
+      "seed": 672225584564614,
+      "steps": 20,
+      "cfg": 3,
+      "sampler_name": "dpmpp_3m_sde_gpu",
+      "scheduler": "karras",
+      "denoise": 0.25,
+      "model": [
+        "79",
+        0
+      ],
+      "positive": [
+        "Prompt",
+        0
+      ],
+      "negative": [
+        "Negative_prompt",
+        0
+      ],
+      "latent_image": [
+        "81",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "81": {
+    "inputs": {
+      "pixels": [
+        "77",
+        0
+      ],
+      "vae": [
+        "79",
+        2
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "82": {
+    "inputs": {
+      "samples": [
+        "80",
+        0
+      ],
+      "vae": [
+        "79",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "83": {
     "inputs": {
       "images": [
-        "77",
+        "82",
         0
       ]
     },
     "class_type": "PreviewImage",
     "_meta": {
       "title": "Preview Image"
+    }
+  },
+  "Image_loader": {
+    "inputs": {
+      "image": "lion.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
     }
   },
   "Outpaint_pad": {
@@ -143,6 +157,65 @@
     "class_type": "ImagePadForOutpaint",
     "_meta": {
       "title": "Pad Image for Outpainting"
+    }
+  },
+  "Prompt": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "60",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "Negative_prompt": {
+    "inputs": {
+      "text": "embedding:negativeXL_A , (lowres, low quality, worst quality:1.2), (text:1.2), (watermark:1.2), blurry",
+      "clip": [
+        "60",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "Sampler": {
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": 1061749756354763,
+      "steps": 20,
+      "cfg": 4,
+      "sampler_name": "dpmpp_3m_sde_gpu",
+      "scheduler": "karras",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "return_with_leftover_noise": "disable",
+      "model": [
+        "60",
+        0
+      ],
+      "positive": [
+        "Prompt",
+        0
+      ],
+      "negative": [
+        "Negative_prompt",
+        0
+      ],
+      "latent_image": [
+        "76",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
     }
   }
 }
