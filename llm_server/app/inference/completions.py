@@ -138,7 +138,6 @@ async def complete_vllm(
         # we want to revmoe anything from the last instance of <|eot_id|> onwards
         formatted_prompt = formatted_prompt[:formatted_prompt.rfind("<|eot_id|>")]
 
-    print(f"Formatted prompt: {formatted_prompt}")
     end_of_string_token = engine.tokenizer.eos_token
     if not starting_assistant_message and formatted_prompt.rstrip().endswith(
         end_of_string_token
