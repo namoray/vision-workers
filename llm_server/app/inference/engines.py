@@ -40,6 +40,9 @@ async def _get_vllm_engine(
         logging.info(f"Cuda version :  {cuda_version}, not awaiting for tokenizer init")
         tokenizer_obj = model_instance.get_tokenizer()
 
+    if 'llama-3' in model_name:
+        tokenizer_obj.eos_token = "<|eot_id|>"
+
     logging.info(f"Model initialized successfully with {model_name} using vLLM")
     return models.LLMEngine(
         tokenizer=tokenizer_obj,
