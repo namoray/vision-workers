@@ -151,7 +151,9 @@ async def check_clip_result(
 async def query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
-    async with httpx.AsyncClient(timeout=600) as client:  # 10 min timeout due to initial load on some runpod gpus
+    async with httpx.AsyncClient(
+        timeout=600
+    ) as client:  # 10 min timeout due to initial load on some runpod gpus
         response = await client.post(endpoint, json=data)
         logger.info(response.status_code)
         return utility_models.ImageResponseBody(**response.json())
@@ -242,7 +244,7 @@ async def check_text_result(
     checks += 1
 
     if len(miner_chat_responses) >= 3:
-        while checks < 10:
+        while checks < 7:
             # Pick random token that's not the first from the miner, construct the new validator
             # checking data, and check that
             index = random.randint(1, len(miner_chat_responses) - 1)
