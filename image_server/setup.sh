@@ -6,7 +6,7 @@ if [ ! -d ComfyUI ]; then
   cd ..
 fi
 
-[ -f ComfyUI/models/checkpoints/juggerinpaint.safetensors ] || wget -O ComfyUI/models/checkpoints/juggerinpaint.safetensors https://huggingface.co/diagonalge/juggernaut-inpaint/resolve/main/juggerinpaint.safetensors?download=true
+[ -f ComfyUI/models/checkpoints/juggerinpaint.safetensors ] || wget -O ComfyUI/models/checkpoints/juggerinpaint.safetensors https://huggingface.co/tau-vision/jugger-inpaint/resolve/main/juggerinpaint.safetensors?download=true
 
 [ -f ComfyUI/models/checkpoints/dreamshaperturbo.safetensors ] || wget -O ComfyUI/models/checkpoints/dreamshaperturbo.safetensors https://huggingface.co/Lykon/dreamshaper-xl-v2-turbo/resolve/main/DreamShaperXL_Turbo_v2_1.safetensors?download=true
 
@@ -43,7 +43,7 @@ mkdir -p ComfyUI/models/insightface/models
 
 cd ComfyUI/models/insightface/models
 
-[ -f antelopev2.zip ] || gdown 18wEUfMNohBJ4K3Ly5wpTejPfDzp-8fI8
+[ -f antelopev2.zip ] || wget -O antelopev2.zip https://huggingface.co/tau-vision/insightface-antelopev2/resolve/main/antelopev2.zip
 
 [ -d antelopev2 ] || unzip antelopev2.zip
 
