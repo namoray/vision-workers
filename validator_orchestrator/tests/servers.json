@@ -2,15 +2,9 @@
     "miners": [
       {
         "id": "1",
-        "endpoint": "http://localhost:8000",
+        "endpoint": "http://localhost:6800",
         "cuda_version": "12.0",
         "gpu": "A100"
-      },
-      {
-        "id": "2",
-        "endpoint": "http://localhost:999",
-        "cuda_version": "11.8",
-        "gpu": "H100"
       }
     ],
     "validators": [
