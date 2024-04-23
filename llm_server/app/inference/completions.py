@@ -123,6 +123,10 @@ async def complete_vllm(
     top_k = 5  # 5 is the maximum that vllm allows for logprobs, so we must use this
     top_p = request_info.top_p
 
+    # Our use cases have top p 0 or 1
+    if not top_p != 0:
+        top_p = 1
+
     messages_dict = [
         message.model_dump()
         for message in fix_message_structure_for_prompt(

@@ -84,7 +84,7 @@ class RequestInfo(BaseModel):
     top_p: float = Field(
         default=1,
         title="Top P",
-        description="Top P for text generation. This needs to always be 1 unless using uber fast 😎",
+        description="Top P for text generation. This nearly always should be 1",
     )
 
     class Config:
