@@ -133,8 +133,10 @@ async def complete_vllm(
     formatted_prompt = engine.tokenizer.apply_chat_template(
         conversation=messages_dict,
         tokenize=False,
-        add_generation_prompt=starting_assistant_message,
-    )
+        add_generation_prompt=starting_assistant_message)
+    if 'llama-3' in engine.model_name and not starting_assistant_message:
+        # we want to revmoe anything from the last instance of <|eot_id|> onwards
+        formatted_prompt = formatted_prompt[:formatted_prompt.rfind("<|eot_id|>")]
 
     end_of_string_token = engine.tokenizer.eos_token
     if not starting_assistant_message and formatted_prompt.rstrip().endswith(

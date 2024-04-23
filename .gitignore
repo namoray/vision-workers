@@ -4,6 +4,7 @@ db/*.sql
 .vscode/*.json
 tmp*
 
+
 *.ipynb
 .gcloudignore
 charlie_test.py
@@ -15,6 +16,8 @@ image_cache/*
 validator_orchestrator/image_cache/*
 validator_orchestrator/image_cache
 
+sn6-finetune/*
+sn6-finetune
 cache.db
 
 vllm-local/*
