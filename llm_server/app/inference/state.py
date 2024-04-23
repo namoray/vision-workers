@@ -23,9 +23,10 @@ class EngineState:
         revision: str,
         tokenizer_name: str,
         half_precision: bool,
+        force_reload: bool,
     ) -> None:
         if self.llm_engine is not None:
-            if model_to_load == self.llm_engine.model_name:
+            if model_to_load == self.llm_engine.model_name and not force_reload:
                 logging.info(f"Model {model_to_load} already loaded")
                 return
             old_model_name = self.llm_engine.model_name

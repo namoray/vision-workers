@@ -14,6 +14,7 @@ class LoadModelRequest(BaseModel):
         description="Whether to use half precision - dont for the nous finetinues!",
     )
     revision: Optional[str] = Field(None, example="gptq-8bit-128g-actorder_True")
+    force_reload: bool = Field(False)
 
 
 class LoadModelResponse(BaseModel):

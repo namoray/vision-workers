@@ -33,7 +33,7 @@ task_configs = models.TaskConfigMapping(
         models.Tasks.chat_bittensor_finetune.value: models.TaskConfig(
             server_needed=models.ServerType.LLM,
             load_model_config=models.ModelConfigDetails(
-                model="lgodwangl/new_01m",
+                model="tau-vision/sn6-finetune",
                 half_precision=False,
             ),
             checking_function=checking_functions.check_text_result,

@@ -267,7 +267,7 @@ async def speed_scoring_chat(
     elif task_config.task == Tasks.chat_llama_3:
         response_time_without_overhead = max(response_time - CHAT_OVERHEAD, 0.1)
         seconds_per_character = response_time_without_overhead / number_of_characters
-        lower_bound_time = 1/ 70 # equivalent to ~ 27 tokens per second
+        lower_bound_time = 1 / 70  # equivalent to ~ 27 tokens per second
         upper_thershold_time = 1 / 40  # equivalen to ~ 10 tokens per second
 
         speed_modifier = _calculate_speed_modifier(
