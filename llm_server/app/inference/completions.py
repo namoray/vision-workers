@@ -121,7 +121,7 @@ async def complete_vllm(
     number_of_logprobs = request_info.number_of_logprobs
     starting_assistant_message = request_info.starting_assistant_message
     top_k = 5  # 5 is the maximum that vllm allows for logprobs, so we must use this
-    top_p = 1.0  # must use this too
+    top_p = request_info.top_p
 
     messages_dict = [
         message.model_dump()
