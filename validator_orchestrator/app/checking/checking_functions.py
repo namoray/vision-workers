@@ -229,6 +229,7 @@ async def check_text_result(
     total_distance = 0
     checks = 0
 
+    print('I am being called from here')
     synapse["number_of_logprobs"] = 5
     synapse["starting_assistant_message"] = True
     llm_request = models.ChatRequestModel(**synapse)
@@ -276,8 +277,11 @@ async def check_text_result(
 async def query_endpoint_for_iterator(
     endpoint: str, data: Dict[str, Any]
 ) -> httpx.Response:
+    print('I am the endpoint', endpoint)
+    print('I am the data', data)
     async with httpx.AsyncClient(timeout=5) as client:
         response = await client.post(endpoint, json=data)
+        print('I am the response', response)
         return response
 
 

@@ -62,12 +62,25 @@ class TaskConfig(BaseModel):
 class TaskConfigMapping(BaseModel):
     tasks: Dict[Tasks, TaskConfig]
 
+class TestInstanceResults(BaseModel):
+    score: float
+    miner_server: ServerInstance
+    validator_server: ServerInstance
+    messages : List[Message]
+    temperature: float
+    seed: int
+    
 class CheckResultsRequest(BaseModel):
     task: Tasks
     synthetic_query: bool
     result: QueryResult
     synapse: Dict[str, Any]
 
+    def dict(self, *args, **kwargs):
+        obj_dict = super().dict(*args, **kwargs)
+        # Converting Enum instance to its value
+        obj_dict["task"] = obj_dict["task"].value 
+        return obj_dict 
 
 class Message(BaseModel):
     role: str
@@ -78,6 +91,7 @@ class ChatRequestModel(BaseModel):
     seed: int
     temperature: float
     max_tokens: int
+    top_k: int
     number_of_logprobs: int
     starting_assistant_message: bool 
 
