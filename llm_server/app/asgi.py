@@ -9,6 +9,7 @@ from app.logging import logging
 from app import configuration, endpoints
 from app.inference import state
 
+
 async def home():
     return PlainTextResponse("LLM")
 
@@ -26,13 +27,13 @@ def get_router(config: configuration.Config, path: str) -> fastapi.routing.APIRo
     return router
 
 
-
 dotenv.load_dotenv()
 config = configuration.Config()
 
 if config.debug:
     for _ in range(3):
         logging.info("STARTING IN DEBUG MODE, THIS BETTER NOT BE PRODUCTION")
+
 
 @contextlib.asynccontextmanager
 async def lifespan(app: fastapi.FastAPI):
@@ -46,13 +47,14 @@ async def lifespan(app: fastapi.FastAPI):
     engine_state = state.EngineState()
     if initial_model is not None:
         await engine_state.load_model_and_tokenizer(
-            initial_model, revision, tokenizer, half_precision
+            initial_model, revision, tokenizer, half_precision, force_reload=True
         )
 
     if use_toxic_checker:
         engine_state.load_toxic_checker()
     app.state.engine_state = engine_state
     yield
+
 
 app = fastapi.FastAPI(
     title="Corcel API",
