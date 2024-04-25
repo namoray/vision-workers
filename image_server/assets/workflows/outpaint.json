@@ -10,7 +10,7 @@
       "title": "Shared Checkpoint Loader (Inspire)"
     }
   },
-  "69": {
+  "Image_loader": {
     "inputs": {
       "image": "init.png",
       "upload": "image"
@@ -136,7 +136,7 @@
       "bottom": 248,
       "feathering": 150,
       "image": [
-        "69",
+        "Image_loader",
         0
       ]
     },

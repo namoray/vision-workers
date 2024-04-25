@@ -26,40 +26,45 @@ async def txt2img_infer(
 async def img2img_infer(
     infer_props: base_model.Img2ImgBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_img2img(infer_props)
+    payload, image_ids = payload_modifier.modify_img2img(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
 async def upscale_infer(
     infer_props: base_model.UpscaleBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_upscale(infer_props)
+    payload, image_ids = payload_modifier.modify_upscale(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
 async def avatar_infer(
     infer_props: base_model.AvatarBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_avatar(infer_props)
+    payload, image_ids = payload_modifier.modify_avatar(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
 async def inpainting_infer(
     infer_props: base_model.InpaintingBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_inpaint(infer_props)
+    payload, image_ids = payload_modifier.modify_inpaint(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
 async def outpainting_infer(
     infer_props: base_model.OutpaintingBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_outpaint(infer_props)
+    payload, image_ids = payload_modifier.modify_outpaint(infer_props)
     image = api_gate.generate(payload)[0]
+    misc.cleanup_inputs(cst.COMFY_INPUT_PATH, image_ids)
     return await misc.take_image_and_return_formatted_response_body(image)
 
 

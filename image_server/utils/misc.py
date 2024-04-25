@@ -4,6 +4,9 @@ import base_model
 import imagehash
 import inference
 from utils import safety_checker as sc
+import os
+import shutil
+from typing import List
 
 safety_checker = sc.Safety_Checker()
 
@@ -21,6 +24,10 @@ def image_hash_feature_extraction(image: Image.Image) -> base_model.ImageHashes:
         color_hash=chash,
     )
 
+def cleanup_inputs(input_path: str, image_ids: List[str]):
+    for idx in image_ids:
+        file_path = f"{input_path}{idx}.png"
+        os.remove(file_path)
 
 async def take_image_and_return_formatted_response_body(
     image: Image.Image,
