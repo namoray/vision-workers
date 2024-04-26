@@ -33,7 +33,7 @@ task_configs = models.TaskConfigMapping(
         models.Tasks.chat_bittensor_finetune.value: models.TaskConfig(
             server_needed=models.ServerType.LLM,
             load_model_config=models.ModelConfigDetails(
-                model="lgodwangl/new_01m",
+                model="tau-vision/sn6-finetune",
                 half_precision=False,
             ),
             checking_function=checking_functions.check_text_result,
@@ -60,6 +60,22 @@ task_configs = models.TaskConfigMapping(
                 "model": utility_models.ChatModels.mixtral.value
             },
             task=models.Tasks.chat_mixtral,
+        ),
+        models.Tasks.chat_llama_3.value: models.TaskConfig(
+            server_needed=models.ServerType.LLM,
+            load_model_config=models.ModelConfigDetails(
+                model="casperhansen/llama-3-70b-instruct-awq",
+                half_precision=True,
+                tokenizer="tau-vision/llama-3-tokenizer-fix",
+            ),
+            endpoint=BASE_URL + "/generate_text",
+            checking_function=checking_functions.check_text_result,
+            speed_scoring_function=speed_scoring_functions.speed_scoring_chat,
+            synthetic_generation_function=synthetic_generation.generate_chat_synthetic,
+            synthetic_generation_params={
+                "model": utility_models.ChatModels.llama_3.value
+            },
+            task=models.Tasks.chat_llama_3,
         ),
         models.Tasks.proteus_text_to_image.value: models.TaskConfig(
             server_needed=models.ServerType.IMAGE,

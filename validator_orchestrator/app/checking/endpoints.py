@@ -24,6 +24,7 @@ async def root():
 
 # One check result at a time please
 lock = Lock()
+last_task = None
 
 
 @router.post("/check-result")
@@ -34,6 +35,8 @@ async def check_result(
     ),
 ):
     async with lock:
+        global last_task
+
         logger.info("Checking a result!... 🫡")
         task_config = task_configs.tasks[request.task]
         server_needed = task_config.server_needed
@@ -42,8 +45,13 @@ async def check_result(
         logger.debug(f"Task config: {task_config}")
         load_model_config = task_config.load_model_config
         if load_model_config is not None:
-            await server_manager.load_model(load_model_config.model_dump())
+            load_model_config_dumped = task_config.load_model_config.model_dump()
+            # If this is the first time loading this model, force reload it, incase it has been updated
+            if last_task != request.task:
+                load_model_config_dumped["force_reload"] = True
+            await server_manager.load_model(load_model_config_dumped)
 
+        last_task = request.task
         return await scoring.score_results(
             result=request.result,
             task_config=task_config,

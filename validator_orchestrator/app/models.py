@@ -25,6 +25,7 @@ class ServerType(Enum):
 class Tasks(Enum):
     chat_bittensor_finetune = "chat-bittensor-finetune"
     chat_mixtral = "chat-mixtral"
+    chat_llama_3 = "chat-llama-3"
     proteus_text_to_image = "proteus-text-to-image"
     playground_text_to_image = "playground-text-to-image"
     dreamshaper_text_to_image = "dreamshaper-text-to-image"
