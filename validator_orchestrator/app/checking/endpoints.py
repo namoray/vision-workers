@@ -45,9 +45,9 @@ async def check_result(
         logger.debug(f"Task config: {task_config}")
         load_model_config = task_config.load_model_config
         if load_model_config is not None:
+            load_model_config_dumped = task_config.load_model_config.model_dump()
             # If this is the first time loading this model, force reload it, incase it has been updated
             if last_task != request.task:
-                load_model_config_dumped = task_config.load_model_config.model_dump()
                 load_model_config_dumped["force_reload"] = True
             await server_manager.load_model(load_model_config_dumped)
 
