@@ -166,18 +166,16 @@ async def generate_avatar_synthetic() -> incoming_models.AvatarIncoming:
     text_prompts = [utility_models.TextPrompt(text=positive_text, weight=1.0)]
     seed = random.randint(1, MAX_SEED)
 
-    init_image = await utils.get_random_image_b64(cache)
-    mask_image = utils.generate_mask_with_circle(init_image)
+    init_image = utils.get_randomly_edited_face_picture_for_avatar()
 
     return incoming_models.AvatarIncoming(
         init_image=init_image,
         text_prompts=text_prompts,
         ipadapter_strength=0.5,
         control_strength=0.5,
-        height=1024,
-        width=1024,
+        height=1280,
+        width=1280,
         seed=seed,
-        mask_image=mask_image,
         steps=8,
     )
 
