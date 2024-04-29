@@ -25,6 +25,8 @@ class ServerType(Enum):
 class Tasks(Enum):
     chat_bittensor_finetune = "chat-bittensor-finetune"
     chat_mixtral = "chat-mixtral"
+    chat_mixtral4b = "chat-mixtral4b"
+    gemma2b= "gemma2b"
     proteus_text_to_image = "proteus-text-to-image"
     playground_text_to_image = "playground-text-to-image"
     dreamshaper_text_to_image = "dreamshaper-text-to-image"
@@ -63,6 +65,7 @@ class TaskConfigMapping(BaseModel):
     tasks: Dict[Tasks, TaskConfig]
 
 class TestInstanceResults(BaseModel):
+    task: Tasks
     score: float
     miner_server: ServerInstance
     validator_server: ServerInstance
@@ -101,6 +104,7 @@ class MinerChatResponse(BaseModel):
 
 class ValidationTest(BaseModel):
     validator_server: ServerInstance
+    validator_task: Tasks
     miners_to_test: List[ServerInstance]
     prompts_to_check: List[ChatRequestModel]
     checking_function: Callable[[QueryResult, Dict[str, Any], TaskConfig], Coroutine[Any, Any, Union[float, None]]]
@@ -113,7 +117,7 @@ class ServerDetails(BaseModel):
 
 class ServerInstance(BaseModel):
     server_details: ServerDetails
-    model: ModelConfigDetails
+    model: Optional[ModelConfigDetails]
 
 
 class Logprob(BaseModel):

@@ -249,6 +249,7 @@ async def speed_scoring_chat(
             number_of_characters, CHAT_OVERHEAD, lower_bound_time
         )
 
+        print('HERRRRRRRRRRRRRRRRRRRRRRE', speed_modifier, work_bonus)
         return speed_modifier * work_bonus
 
     if task_config.task == Tasks.chat_mixtral:

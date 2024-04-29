@@ -15,10 +15,13 @@
     "validators": [
       {
         "id": "1",
-        "endpoint": "https://kxet3v3rzbjs8i-6920.proxy.runpod.net",
+
+        "endpoint": "http://localhost:6900",
         "cuda_version": "12.2",
         "gpu": "A100"
       }
     ]
   }
+  
+  
   

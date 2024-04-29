@@ -34,6 +34,7 @@ async def score_results(
         result, synapse, task_config
     )
 
+
     axon_scores[result.axon_uid] = base_score * speed_mulitplier
 
     logger.info(f"Got scores: {axon_scores}")

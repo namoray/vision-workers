@@ -20,7 +20,8 @@ SERVERS_JSON_LOC = "tests/servers.json"
 PROMPTS_LOC = "tests/test_prompts.txt"
 MODELS_TO_TEST_LOC = "tests/models_to_test.json"
 TEST_SAVE_LOC = "tests/test_results.csv"
-NUMBER_OF_TESTS = 1
+NUMBER_OF_TESTS = 20
+VALIDATOR_TASKS = [Tasks.chat_mixtral, Tasks.chat_bittensor_finetune]
 
 def load_json(file_path: str) -> Dict[str, Any]:
     with open(file_path) as f:
@@ -46,12 +47,12 @@ def create_chat_request_samples(prompts: List[str], num_needed: int = 1) -> List
 def create_server_instances(servers: List[ServerDetails], models: List[ModelConfigDetails]) -> List[ServerInstance]:
     return [ServerInstance(server_details=server, model=model) for server in servers for model in models]
 
-def create_validation_tests(validators: List[ServerInstance], miners: List[ServerInstance], prompts: List[str],
-                            models: List[ModelConfigDetails], num_tests: int) -> List[ValidationTest]:
-    return [ValidationTest(validator_server=validator, miners_to_test=miners,
+def create_validation_tests(validator_server: ServerInstance ,validator_tasks: List[Tasks], miners: List[ServerInstance], prompts: List[str],
+                            num_tests: int) -> List[ValidationTest]:
+    return [ValidationTest(validator_server=validator_server, validator_task=validator_task, miners_to_test=miners,
                            prompts_to_check=create_chat_request_samples(prompts, num_tests),
                            checking_function=check_text_result)
-            for validator in validators]
+            for validator_task in validator_tasks]
 
 async def make_request(server: ServerInstance, payload: Union[ChatRequestModel, CheckResultsRequest], endpoint: str) -> requests.Response:
     return requests.post(server.server_details.endpoint + endpoint, json=payload.dict())
@@ -66,7 +67,7 @@ async def make_load_model_request(server: ServerInstance) -> httpx.Response:
     async with httpx.AsyncClient(timeout=(100000000, 100000000)) as client:
         response = await client.post(server.server_details.endpoint + "/load_model", json=payload)
         if response.status_code == 524:
-            time.sleep(600)
+            time.sleep(300)
         print('Load model response', response, 'when loading with', payload)
     return response
 
@@ -91,20 +92,20 @@ async def stream_text_from_server(body: dict, url: str) -> AsyncGenerator[str, N
 
 async def process_validation_test(test: ValidationTest) -> None:
     test_results = []
+    
     for miner in test.miners_to_test:
         await make_load_model_request(miner)
         for prompt in test.prompts_to_check:
             miner_stream = stream_text_from_server(prompt.dict(), miner.server_details.endpoint)
             response = await _stream_response_from_stream_miners_until_result(miner_stream, miner)
-            check = await make_request(test.validator_server, CheckResultsRequest(task=Tasks.chat_mixtral,
+            check = await make_request(test.validator_server, CheckResultsRequest(task=test.validator_task,
                                                                                   synthetic_query=False,
                                                                                   result=response,
                                                                                   synapse=prompt.dict()), "/check-result")
-            print('Check output:', check.json())
             try:
                 score = check.json()["axon_scores"][miner.server_details.id]
                 test_res = TestInstanceResults(score=score, miner_server=miner, validator_server=test.validator_server,
-                                               messages=prompt.messages, seed=prompt.seed, temperature=prompt.temperature)
+                                               messages=prompt.messages, seed=prompt.seed, temperature=prompt.temperature, task = test.validator_task)
                 print(test_res.dict())
                 test_results.append(test_res)
             except Exception as e:
@@ -115,10 +116,8 @@ def save_test_results_to_csv(test_results: List[TestInstanceResults]) -> None:
     flattened_results = []
     for result in test_results:
         miner_details = flatten_server_instance_details(result.miner_server)
-        validator_details = flatten_server_instance_details(result.validator_server)
-        res = {'score': result.score, 'prompt': result.messages[0].content, 'temp': result.temperature, 'seed': result.seed}
+        res = {'validator': result.validator_server.server_details.endpoint, 'task': result.task, 'score': result.score, 'prompt': result.messages[0].content, 'temp': result.temperature, 'seed': result.seed}
         res.update({f"miner_{k}": v for k, v in miner_details.items()})
-        res.update({f"validator_{k}": v for k, v in validator_details.items()})
         flattened_results.append(res)
     df = pd.DataFrame(flattened_results)
     df.to_csv(TEST_SAVE_LOC, mode='a' if os.path.exists(TEST_SAVE_LOC) else 'w', header=not os.path.exists(TEST_SAVE_LOC), index=False)
@@ -161,17 +160,21 @@ async def _stream_response_from_stream_miners_until_result(miner_stream: AsyncGe
         if len(text_jsons) > 0:
             return QueryResult(formatted_response=text_jsons, axon_uid=miner_details.server_details.id,
                                failed_axon_uids=[], response_time=time.time() - time1, error_message=None)
+
+
+
 async def main():
     servers = load_json(SERVERS_JSON_LOC)
     miners = get_server_details(servers, "miners")
     validators = get_server_details(servers, "validators")
     models = [ModelConfigDetails(**model) for model in load_json(MODELS_TO_TEST_LOC)]
     prompts = load_txt_lines(PROMPTS_LOC)
-    validator_servers = create_server_instances(validators, models)
     miner_servers = create_server_instances(miners, models)
-    test_suite = create_validation_tests(validator_servers, miner_servers, prompts, models, NUMBER_OF_TESTS)
-    for test in test_suite:
-        await process_validation_test(test)
+    for validator in validators:
+        validation_server = ServerInstance(server_details=validator, model=None)
+        test_suite = create_validation_tests(validation_server, VALIDATOR_TASKS, miner_servers, prompts, NUMBER_OF_TESTS)
+        for test in test_suite:
+            await process_validation_test(test)
 
 if __name__ == "__main__":
     asyncio.run(main())
