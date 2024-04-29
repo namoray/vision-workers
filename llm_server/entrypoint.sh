@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source activate venv
-port=${PORT:-6800}
+port=${PORT:-6919}
 
 if [[ -z "${CUDA_VISIBLE_DEVICES}" ]]; then
     # CUDA_VISIBLE_DEVICES environment variable is not set, run uvicorn without setting it

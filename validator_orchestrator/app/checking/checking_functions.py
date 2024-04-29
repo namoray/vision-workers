@@ -227,10 +227,6 @@ async def check_text_result(
 
     # Sort miner_chat_responses by logprobs (smallest first)
     sorted_responses = sorted(enumerate(miner_chat_responses), key=lambda x: x[1].logprob, reverse=True)
-
-    # remove any that have logprobs = 0.0
-    sorted_responses = [response for response in sorted_responses if response[1].logprob != 0.0]
-
     selected_indices = [i[0] for i in sorted_responses[:10]]
 
     total_distance = 0
@@ -238,8 +234,6 @@ async def check_text_result(
     synapse["number_of_logprobs"] = 5
     llm_request = models.ChatRequestModel(**synapse)
     llm_request.max_tokens = 1
-    distances = []
-    errors = 0
 
     for index in range(1, len(miner_chat_responses)):
         if checks >= 10 or index not in selected_indices:
@@ -262,7 +256,6 @@ async def check_text_result(
             task_config, llm_request, miner_chat_responses, index
         )
         checks += 1
-        distances.append(distance)
         total_distance += distance
         llm_request.messages = llm_request.messages[:-1]
 
@@ -324,11 +317,11 @@ async def calculate_distance_for_token(
             - math.exp(chat_responses[index].logprob)
         )
 
-    # formatted_validator_logging = "\n".join(
-    #     [f"{i.decoded}: {i.logprob}" for i in validator_checking_response.logprobs]
-    # )
-    # logger.info(
-    #     f"\nMiner token: {chat_responses[index].text}: {chat_responses[index].logprob} \n Validator tokens: \n{formatted_validator_logging}\ndistance between exp of log probs: {distance}"
-    # )
+    formatted_validator_logging = "\n".join(
+         [f"{i.decoded}: {i.logprob}" for i in validator_checking_response.logprobs]
+     )
+    logger.info(
+         f"\nMiner token: {chat_responses[index].text}: {chat_responses[index].logprob} \n Validator tokens: \n{formatted_validator_logging}\ndistance between exp of log probs: {distance}"
+     )
     return distance
     return int(distance >= 0.3)
