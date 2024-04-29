@@ -316,12 +316,11 @@ async def calculate_distance_for_token(
             math.exp(validator_log_probs_for_token[token])
             - math.exp(chat_responses[index].logprob)
         )
-
-    formatted_validator_logging = "\n".join(
-         [f"{i.decoded}: {i.logprob}" for i in validator_checking_response.logprobs]
-     )
-    logger.info(
-         f"\nMiner token: {chat_responses[index].text}: {chat_responses[index].logprob} \n Validator tokens: \n{formatted_validator_logging}\ndistance between exp of log probs: {distance}"
-     )
+    
+    #formatted_validator_logging = "\n".join(
+     #    [f"{i.decoded}: {i.logprob}" for i in validator_checking_response.logprobs]
+     #)
+    #logger.info(
+     #    f"\nMiner token: {chat_responses[index].text}: {chat_responses[index].logprob} \n Validator tokens: \n{formatted_validator_logging}\ndistance between exp of log probs: {distance}"
+     #)
     return distance
-    return int(distance >= 0.3)
