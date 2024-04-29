@@ -82,13 +82,13 @@ class AvatarBase(BaseModel):
         cst.DEFAULT_IP_STRENGTH,
         description="IP Adapter strength, increase for more face coherence, works best on default",
         gt=0.1,
-        lt=0.9,
+        le=1,
     )
     control_strength: float = Field(
         cst.DEFAULT_CONTROL_STRENGTH,
         description="Control strength, increase for more face coherence, works best on default",
         gt=0.1,
-        lt=0.9,
+        le=1.01,
     )
     steps: int = Field(
         cst.DEFAULT_STEPS_AVATAR,
