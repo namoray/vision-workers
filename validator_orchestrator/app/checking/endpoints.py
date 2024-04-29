@@ -33,7 +33,7 @@ async def check_result(
     ),
 ):
     async with lock:
-        #logger.info("Checking a result!... 🫡")
+        logger.info("Checking a result!... 🫡")
         task_config = task_configs.tasks[request.task]
         server_needed = task_config.server_needed
         await server_manager.start_server(server_needed)

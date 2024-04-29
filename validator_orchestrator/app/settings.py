@@ -27,21 +27,6 @@ settings = Settings()
 
 task_configs = models.TaskConfigMapping(
     tasks={
-        models.Tasks.gemma2b.value: models.TaskConfig(
-            server_needed=models.ServerType.LLM,
-            load_model_config=models.ModelConfigDetails(
-                model="anakin87/gemma-2b-orpo",
-                half_precision=False,
-            ),
-            checking_function=checking_functions.check_text_result,
-            speed_scoring_function=speed_scoring_functions.speed_scoring_chat,
-            endpoint=BASE_URL + "/generate_text",
-            synthetic_generation_function=synthetic_generation.generate_chat_synthetic,
-            synthetic_generation_params={
-                "model": utility_models.ChatModels.bittensor_finetune.value
-            },
-            task=models.Tasks.gemma2b,
-        ),
          models.Tasks.chat_bittensor_finetune.value: models.TaskConfig(
             server_needed=models.ServerType.LLM,
             load_model_config=models.ModelConfigDetails(
