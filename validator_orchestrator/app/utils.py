@@ -9,8 +9,16 @@ import diskcache
 from PIL import Image
 import uuid
 from typing import List, Tuple
+import io
 import numpy as np
 import cv2
+
+
+def pil_to_base64(image: Image, format: str = "JPEG") -> str:
+    buffered = io.BytesIO()
+    image.save(buffered, format=format)
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    return img_str
 
 
 def model_to_printable_dict(model: Optional[BaseModel], max_length: int = 50) -> dict:
@@ -81,6 +89,40 @@ async def get_random_image_b64(cache: diskcache.Cache) -> str:
     random_picsum_image = await get_random_picsum_image(1024, 1024)
     cache.add(key=str(uuid.uuid4()), value=random_picsum_image)
     return random_picsum_image
+
+
+def get_randomly_edited_face_picture_for_avatar() -> str:
+    """
+    For avatar we need a face image.
+
+    We must satisfy the criteria: image must not be cacheable
+
+    As long as we satisfy that, we're good - since we score organic queries.
+
+    Hence, we can use a single picture and just edit it to generate 2**(1204*1024) unique images
+    """
+    image = Image.open("app/assets/avatar_image.png")
+
+    # Load the image data
+    pixels = image.load()
+
+    width, height = image.size
+
+    for x in range(width):
+        for y in range(height):
+            if random.random() < 0.9:
+                current_value = pixels[x, y]
+                if image.mode == "RGB":
+                    r, g, b = current_value
+                    r = min(r + 1, 255)
+                    g = min(g + 1, 255)
+                    b = min(b + 1, 255)
+                    pixels[x, y] = (r, g, b)
+                elif image.mode == "L":
+                    new_value = min(current_value + 1, 255)
+                    pixels[x, y] = new_value
+
+    return pil_to_base64(image)
 
 
 def generate_mask_with_circle(image_b64: str) -> np.ndarray:

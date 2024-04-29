@@ -80,7 +80,9 @@ RUN conda run -n venv pip install --no-cache-dir xformers==0.0.23.post1 torchvis
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
 # Copying server directories
-COPY ./ /app/
+COPY image_server/ /app/image_server
+COPY llm_server /app/llm_server
+COPY validator_orchestrator /app/validator_orchestrator
 
 # Making entrypoint scripts executable
 RUN chmod +x /app/llm_server/entrypoint.sh \

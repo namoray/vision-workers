@@ -82,24 +82,24 @@ docker run hello-world
 
 To build:
 ```bash
-nohup docker build -t corcelio/vision:orchestrator-1.0.0 -f Dockerfile.orchestrator . > build.log 2>&1 &
+nohup docker build -t corcelio/vision:orchestrator-latest -f Dockerfile.orchestrator . > build.log 2>&1 &
 ```
 
 To run:
 ```bash
-docker run --gpus all --runtime=nvidia -p 6919:6919 corcelio/vision:orchestrator-1.0.0
+docker run --gpus all --runtime=nvidia -p 6919:6919 corcelio/vision:orchestrator-latest
 ```
 
 If that doesn't work:
 ```bash
-docker run --gpus all  -p 6919:6919 corcelio/vision:orchestrator-1.0.0
+docker run --gpus all  -p 6919:6919 corcelio/vision:orchestrator-latest
 ```
 
 
 **Combined command**
 ```bash
-docker build -t corcelio/vision:orchestrator-1.0.0 .
-docker run --gpus all  -p 6919:6919 corcelio/vision:orchestrator-1.0.0
+docker build -t corcelio/vision:orchestrator-latest .
+docker run --gpus all  -p 6919:6919 corcelio/vision:orchestrator-latest
 ```
 
 ### Uploading to docker hub
@@ -109,7 +109,7 @@ docker login
 ```
 
 ```bash
-docker push corcelio/vision:orchestrator-1.0.0
+docker push corcelio/vision:orchestrator-latest
 ```
 
 
