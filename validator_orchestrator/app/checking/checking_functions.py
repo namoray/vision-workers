@@ -227,7 +227,7 @@ async def check_text_result(
         models.MinerChatResponse(**r) for r in formatted_response
     ]
 
-    # Sort miner_chat_responses by logprobs (smallest first)
+    # Sort miner_chat_responses by logprobs (largest first, which is smallest probability)
     sorted_responses = sorted(enumerate(miner_chat_responses), key=lambda x: x[1].logprob, reverse=True)
     selected_indices = [i[0] for i in sorted_responses[:10]]
 
