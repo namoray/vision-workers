@@ -121,7 +121,11 @@ async def complete_vllm(
     number_of_logprobs = request_info.number_of_logprobs
     starting_assistant_message = request_info.starting_assistant_message
     top_k = 5  # 5 is the maximum that vllm allows for logprobs, so we must use this
-    top_p = 1.0  # must use this too
+    top_p = request_info.top_p
+
+    # Our use cases have top p 0 or 1
+    if not top_p != 0:
+        top_p = 1
 
     messages_dict = [
         message.model_dump()
@@ -133,8 +137,10 @@ async def complete_vllm(
     formatted_prompt = engine.tokenizer.apply_chat_template(
         conversation=messages_dict,
         tokenize=False,
-        add_generation_prompt=starting_assistant_message,
-    )
+        add_generation_prompt=starting_assistant_message)
+    if 'llama-3' in engine.model_name and not starting_assistant_message:
+        # we want to revmoe anything from the last instance of <|eot_id|> onwards
+        formatted_prompt = formatted_prompt[:formatted_prompt.rfind("<|eot_id|>")]
 
     end_of_string_token = engine.tokenizer.eos_token
     if not starting_assistant_message and formatted_prompt.rstrip().endswith(

@@ -54,8 +54,8 @@
       "seed": 413249764546273,
       "steps": 8,
       "cfg": 2,
-      "sampler_name": "euler_ancestral",
-      "scheduler": "normal",
+      "sampler_name": "dpmpp_sde_gpu",
+      "scheduler": "karras",
       "denoise": 0.7,
       "model": [
         "95",
@@ -107,7 +107,7 @@
   },
   "95": {
     "inputs": {
-      "ckpt_name": "proteus.safetensors",
+      "ckpt_name": "dreamshaperturbo.safetensors",
       "key_opt": "",
       "mode": "Auto"
     },
@@ -118,7 +118,7 @@
   },
   "Negative_prompt": {
     "inputs": {
-      "text": "embedding:negativeXL_A, ",
+      "text": "embedding:negativeXL_A",
       "clip": [
         "95",
         1

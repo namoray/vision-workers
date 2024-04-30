@@ -212,7 +212,8 @@ async def speed_scoring_images(
 
 ### Chat
 
-CHAT_OVERHEAD = 0.6
+# TODO: Improve by having this be dynamic based on input tokens
+CHAT_OVERHEAD = 1
 
 
 async def speed_scoring_chat(
@@ -251,11 +252,11 @@ async def speed_scoring_chat(
 
         return speed_modifier * work_bonus
 
-    if task_config.task == Tasks.chat_mixtral:
+    elif task_config.task == Tasks.chat_mixtral:
         response_time_without_overhead = max(response_time - CHAT_OVERHEAD, 0.1)
         seconds_per_character = response_time_without_overhead / number_of_characters
-        lower_bound_time = 1 / 70  # equivalent to ~ 24 tokens per second
-        upper_thershold_time = 1 / 30  # equivalen to ~ 15 tokens per second
+        lower_bound_time = 1 / 70  # equivalent to ~ 17 tokens per second
+        upper_thershold_time = 1 / 30  # equivalen to ~ 7 tokens per second
 
         speed_modifier = _calculate_speed_modifier(
             seconds_per_character, lower_bound_time, upper_thershold_time
@@ -263,5 +264,20 @@ async def speed_scoring_chat(
         work_bonus = _calculate_work_bonus_text(
             number_of_characters, CHAT_OVERHEAD, lower_bound_time
         )
+    elif task_config.task == Tasks.chat_llama_3:
+        response_time_without_overhead = max(response_time - CHAT_OVERHEAD, 0.1)
+        seconds_per_character = response_time_without_overhead / number_of_characters
+        lower_bound_time = 1 / 70  # equivalent to ~ 17 tokens per second
+        upper_thershold_time = 1 / 40  # equivalen to ~ 10 tokens per second
 
-        return speed_modifier * work_bonus
+        speed_modifier = _calculate_speed_modifier(
+            seconds_per_character, lower_bound_time, upper_thershold_time
+        )
+        work_bonus = _calculate_work_bonus_text(
+            number_of_characters, CHAT_OVERHEAD, lower_bound_time
+        )
+    else:
+        logger.error(f"Task {task_config.task} not found")
+        return None
+
+    return speed_modifier * work_bonus

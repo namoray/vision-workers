@@ -81,6 +81,12 @@ class RequestInfo(BaseModel):
         description="Are we starting the assistant message or continuing it? Only needs to be non true for validators",
     )
 
+    top_p: float = Field(
+        default=1,
+        title="Top P",
+        description="Top P for text generation. This nearly always should be 1",
+    )
+
     class Config:
         extra = "allow"
 

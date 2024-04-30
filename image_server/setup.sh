@@ -6,7 +6,7 @@ if [ ! -d ComfyUI ]; then
   cd ..
 fi
 
-[ -f ComfyUI/models/checkpoints/juggerinpaint.safetensors ] || wget -O ComfyUI/models/checkpoints/juggerinpaint.safetensors https://huggingface.co/diagonalge/juggernaut-inpaint/resolve/main/juggerinpaint.safetensors?download=true
+[ -f ComfyUI/models/checkpoints/juggerinpaint.safetensors ] || wget -O ComfyUI/models/checkpoints/juggerinpaint.safetensors https://huggingface.co/tau-vision/jugger-inpaint/resolve/main/juggerinpaint.safetensors?download=true
 
 [ -f ComfyUI/models/checkpoints/dreamshaperturbo.safetensors ] || wget -O ComfyUI/models/checkpoints/dreamshaperturbo.safetensors https://huggingface.co/Lykon/dreamshaper-xl-v2-turbo/resolve/main/DreamShaperXL_Turbo_v2_1.safetensors?download=true
 
@@ -26,9 +26,19 @@ fi
 
 cd ComfyUI/custom_nodes
 
-[ -d ComfyUI-Inspire-Pack ] || git clone https://github.com/ltdrdata/ComfyUI-Inspire-Pack
+if [ ! -d ComfyUI-Inspire-Pack ]; then 
+  git clone https://github.com/ltdrdata/ComfyUI-Inspire-Pack
+  cd ComfyUI-Inspire-Pack
+  git checkout 985f6a239b1aed0c67158f64bf579875ec292cb2
+  cd ..
+fi
 
-[ -d ComfyUI_IPAdapter_plus ] || git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus
+if [ ! -d ComfyUI_IPAdapter_plus ]; then 
+  git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus
+  cd ComfyUI_IPAdapter_plus
+  git checkout 0d0a7b3693baf8903fe2028ff218b557d619a93d
+  cd ..
+fi
 
 if [ ! -d ComfyUI_InstantID ]; then 
   git clone https://github.com/cubiq/ComfyUI_InstantID
@@ -43,7 +53,7 @@ mkdir -p ComfyUI/models/insightface/models
 
 cd ComfyUI/models/insightface/models
 
-[ -f antelopev2.zip ] || gdown 18wEUfMNohBJ4K3Ly5wpTejPfDzp-8fI8
+[ -f antelopev2.zip ] || wget -O antelopev2.zip https://huggingface.co/tau-vision/insightface-antelopev2/resolve/main/antelopev2.zip
 
 [ -d antelopev2 ] || unzip antelopev2.zip
 

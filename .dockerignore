@@ -1,10 +1,9 @@
-image_server/ComfyUI/*
-image_server/ComfyUI
 
 db/*.sql
 .git-rev
 .vscode/*.json
 tmp*
+
 
 *.ipynb
 .gcloudignore
@@ -17,8 +16,11 @@ image_cache/*
 validator_orchestrator/image_cache/*
 validator_orchestrator/image_cache
 
+sn6-finetune/*
+sn6-finetune
 cache.db
 
+vllm-local/*
 vllm-local
 
 ### OSX ###

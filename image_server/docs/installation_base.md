@@ -7,7 +7,7 @@ In order to run the server on bare metal, you will need docker!
 
 ### Pull the image
 ```bash
-docker pull corcelio/vision:image_server-1.0.0
+docker pull corcelio/vision:image_server-latest
 ```
 ### Install conda
 I recommend conda for an easy installation of nvidia-toolkit
@@ -54,8 +54,8 @@ The Device to use for the image server (each image server can only use 1) (defau
 
 Here's just an example command
 ```bash
-docker pull corcelio/vision:image_server-1.0.0
-docker run --gpus '"device=0"' --runtime=nvidia -p 6919:6919 -e PORT=6919 -e DEVICE=0 corcelio/vision:image_server-1.0.0
+docker pull corcelio/vision:image_server-latest
+docker run --gpus '"device=0"' --runtime=nvidia -p 6919:6919 -e PORT=6919 -e DEVICE=0 corcelio/vision:image_server-latest
 ```
 
 To start another machine on the same instance:
@@ -63,7 +63,7 @@ To start another machine on the same instance:
 KEEP THE ENV VAR -e DEVICE=0 the same!
 
 ```bash
-docker run --gpus '"device=1"' --runtime=nvidia -p 6918:6918 -e PORT=6918 -e DEVICE=0 corcelio/vision:image_server-1.0.0
+docker run --gpus '"device=1"' --runtime=nvidia -p 6918:6918 -e PORT=6918 -e DEVICE=0 corcelio/vision:image_server-latest
 ```
 
 
