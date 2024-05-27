@@ -1,0 +1,142 @@
+{
+  "60": {
+    "inputs": {
+      "ckpt_name": "juggerinpaint.safetensors",
+      "key_opt": "",
+      "mode": "Auto"
+    },
+    "class_type": "CheckpointLoaderSimpleShared //Inspire",
+    "_meta": {
+      "title": "Shared Checkpoint Loader (Inspire)"
+    }
+  },
+  "69": {
+    "inputs": {
+      "image": "init.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "Sampler": {
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": 685652545380498,
+      "steps": 20,
+      "cfg": 4,
+      "sampler_name": "dpmpp_3m_sde_gpu",
+      "scheduler": "karras",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "return_with_leftover_noise": "disable",
+      "model": [
+        "60",
+        0
+      ],
+      "positive": [
+        "Prompt",
+        0
+      ],
+      "negative": [
+        "Negative_prompt",
+        0
+      ],
+      "latent_image": [
+        "107",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
+    }
+  },
+  "Prompt": {
+    "inputs": {
+      "text": "a lion wearing a joker hat",
+      "clip": [
+        "60",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "Negative_prompt": {
+    "inputs": {
+      "text": "low quality",
+      "clip": [
+        "60",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "77": {
+    "inputs": {
+      "samples": [
+        "Sampler",
+        0
+      ],
+      "vae": [
+        "60",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "78": {
+    "inputs": {
+      "images": [
+        "77",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "107": {
+    "inputs": {
+      "grow_mask_by": 15,
+      "pixels": [
+        "69",
+        0
+      ],
+      "vae": [
+        "60",
+        2
+      ],
+      "mask": [
+        "114",
+        0
+      ]
+    },
+    "class_type": "VAEEncodeForInpaint",
+    "_meta": {
+      "title": "VAE Encode (for Inpainting)"
+    }
+  },
+  "114": {
+    "inputs": {
+      "image": "mask.png",
+      "channel": "red",
+      "upload": "image"
+    },
+    "class_type": "LoadImageMask",
+    "_meta": {
+      "title": "Load Image (as Mask)"
+    }
+  }
+}

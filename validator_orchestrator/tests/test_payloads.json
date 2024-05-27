@@ -1,0 +1,123 @@
+[
+  {
+    "task": "chat-bittensor-finetune",
+    "synthetic_query": true,
+    "synapse": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "hello"
+        }
+      ],
+      "top_k": 10,
+      "top_p": 0.95,
+      "seed": 100,
+      "temperature": 0.15,
+      "max_tokens": 400
+    },
+    "result": {
+      "formatted_response": [
+        {
+          "text": "Hello",
+          "logprob": -0.10088931769132614
+        },
+        {
+          "text": "!",
+          "logprob": -0.0028334015514701605
+        },
+        {
+          "text": " How",
+          "logprob": -0.01797376200556755
+        },
+        {
+          "text": " can",
+          "logprob": -0.009757915511727333
+        },
+        {
+          "text": " I",
+          "logprob": 0.0
+        },
+        {
+          "text": " assist",
+          "logprob": -0.07889106869697571
+        },
+        {
+          "text": " you",
+          "logprob": 0.0
+        },
+        {
+          "text": " today",
+          "logprob": -7.045020902296528e-05
+        },
+        {
+          "text": "?",
+          "logprob": 0.0
+        },
+        {
+          "text": "",
+          "logprob": -0.039498716592788696
+        }
+      ],
+      "axon_uid": 0,
+      "response_time": 0,
+      "error_message": null,
+      "failed_axon_uids": []
+    }
+  },
+  {
+    "synapse": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "A large and small window."
+        }
+      ],
+      "top_p": 1.0,
+      "temperature": 0.8,
+      "max_tokens": 1024,
+      "seed": 441670308,
+      "model": "mixtral-8x7b",
+      "name": "Chat",
+      "timeout": 12.0,
+      "total_size": 0,
+      "header_size": 0,
+      "dendrite": {
+        "status_code": null,
+        "status_message": null,
+        "process_time": null,
+        "ip": null,
+        "port": null,
+        "version": null,
+        "nonce": null,
+        "uuid": null,
+        "hotkey": null,
+        "signature": null
+      },
+      "axon": {
+        "status_code": null,
+        "status_message": null,
+        "process_time": null,
+        "ip": null,
+        "port": null,
+        "version": null,
+        "nonce": null,
+        "uuid": null,
+        "hotkey": null,
+        "signature": null
+      },
+      "computed_body_hash": "",
+      "required_hash_fields": []
+    },
+    "synthetic_query": true,
+    "result": {
+      "formatted_response": {
+        "text": "logprob"
+      },
+      "axon_uid": 6,
+      "response_time": 2.398472309112549,
+      "error_message": null,
+      "failed_axon_uids": []
+    },
+    "task": "chat-mixtral"
+  }
+]

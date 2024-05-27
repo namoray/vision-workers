@@ -1,0 +1,105 @@
+FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
+
+WORKDIR /app
+
+# --------------------------------------- Common ---------------------------------------
+
+# In order to avoid interruptions
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Node.js, PM2, Miniconda and other packages 
+RUN apt-get update && apt-get install -y \
+    wget \ 
+    git \
+    curl \
+    lsof \
+    python3-dev \
+    build-essential \
+    python3-pip \
+    apt-utils \
+    vim \
+    sudo \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    python3-tk \
+    python3-dev \
+    git-lfs \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -sL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pm2 \
+    && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O Miniconda.sh \
+    && chmod +x Miniconda.sh \
+    && ./Miniconda.sh -b \
+    && rm Miniconda.sh
+    
+
+ENV PATH="/root/miniconda3/bin:${PATH}"
+
+# --------------------------------------- LLM Server + Orchestrator Environment ---------------------------
+
+RUN conda create -n venv python=3.10.13 -y \
+    && echo "source activate venv" > ~/.bashrc
+ENV PATH="/root/miniconda3/envs/venv/bin:${PATH}"
+
+RUN CUDA_VERSION="11.8.0" && \
+    CUDA_VERSION_MAJOR=$(echo $CUDA_VERSION | cut -d'.' -f1) && \
+    CUDA_VERSION_MINOR=$(echo $CUDA_VERSION | cut -d'.' -f2) && \
+    CUDA_VERSION_SIMPLE="${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}.0" && \
+    conda install nvidia/label/cuda-${CUDA_VERSION_SIMPLE}::cuda-toolkit -y
+
+# Vllm patch for cuda118
+COPY cu118_vllm_patch.sh /app/cu118_vllm_patch.sh
+RUN chmod +x /app/cu118_vllm_patch.sh
+RUN /app/cu118_vllm_patch.sh
+
+# LLM server requirements
+COPY llm_server/requirements.txt ./app/llm_server_requirements.txt
+RUN pip install -r ./app/llm_server_requirements.txt
+
+# Validator orchestrator requirements
+COPY validator_orchestrator/requirements.txt /app/validator_orchestrator_requirements.txt
+RUN conda run -n venv pip install --no-cache-dir -r /app/validator_orchestrator_requirements.txt \
+    && conda run -n venv pip install --no-cache-dir huggingface_hub[hf_transfer]
+
+# --------------------------------------- Image Server Environment ---------------------------------------
+
+COPY image_server/requirements.txt /app/image_server_requirements.txt
+
+
+RUN conda run -n venv pip install --no-cache-dir xformers==0.0.23.post1 torchvision torch --index-url https://download.pytorch.org/whl/cu118 \
+    && conda run -n venv pip install --upgrade pip setuptools \
+    && conda run -n venv pip install -r /app/image_server_requirements.txt \
+    && conda run -n venv pip install protobuf huggingface_hub[hf_transfer]
+
+ENV HF_HUB_ENABLE_HF_TRANSFER=1
+
+COPY image_server/setup.sh /app/image_server/setup.sh
+RUN cd /app/image_server && ./setup.sh
+
+# Copying server directories
+COPY ./ /app/
+
+# Making entrypoint scripts executable
+RUN chmod +x /app/llm_server/entrypoint.sh \
+    && chmod +x /app/image_server/entrypoint.sh \
+    && chmod +x /app/image_server/entrypoint_vali.sh \
+    && chmod +x /app/image_server/setup.sh
+
+ENV APP_HOST=0.0.0.0
+ENV APP_PORT=8080
+USER root
+
+EXPOSE 6920
+
+WORKDIR /app/validator_orchestrator
+
+
+CMD ["bash", "-c", "cd /app/validator_orchestrator && ./entrypoint.sh"]
+
+
