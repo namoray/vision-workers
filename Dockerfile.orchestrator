@@ -70,7 +70,7 @@ RUN conda run -n venv pip install --no-cache-dir -r /app/validator_orchestrator_
 COPY image_server/requirements.txt /app/image_server_requirements.txt
 
 
-RUN conda run -n venv pip install --upgrade pip setuptools \
+RUN conda run -n venv pip install --upgrade pip setuptools==69.5.1 \
     && conda run -n venv pip install -r /app/image_server_requirements.txt \
     && conda run -n venv pip install protobuf huggingface_hub[hf_transfer]
 
