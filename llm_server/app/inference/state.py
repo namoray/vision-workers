@@ -1,17 +1,40 @@
 import gc
+import os
+import sys
+import multiprocessing
 
 import torch
-from vllm.model_executor.parallel_utils.parallel_state import destroy_model_parallel
+
 from app.logging import logging
 from app import models
-from app.inference import engines, completions, toxic
-from typing import Optional
+from app.inference import engines, completions
+from app.models import RequestInfo
 
+from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, HTTPException
+import asyncio
+from typing import Optional
+import httpx
+import uvicorn
+import json
+
+class CancelledErrorFilter:
+    def __call__(self, record):
+        if record["exception"]:
+            exc_type, _, _ = record["exception"]
+            if exc_type is asyncio.exceptions.CancelledError:
+                return False
+        return True
+logging.add(lambda msg: None, filter=CancelledErrorFilter())
+multiprocessing.set_start_method('spawn', force=True)
 
 class EngineState:
     def __init__(self):
-        self.llm_engine: Optional[models.LLMEngine] = None
+        self.current_model: Optional[str] = None
+        self.model_ready = multiprocessing.Event()
+        self.model_loaded = False
         self.toxic_checker: Optional[models.ToxicEngine] = None
+        self.model_process: Optional[multiprocessing.Process] = None
 
     def load_toxic_checker(self) -> None:
         if self.toxic_checker is None:
@@ -25,46 +48,79 @@ class EngineState:
         half_precision: bool,
         force_reload: bool,
     ) -> None:
-        if self.llm_engine is not None:
-            if model_to_load == self.llm_engine.model_name and not force_reload:
-                logging.info(f"Model {model_to_load} already loaded")
-                return
-            old_model_name = self.llm_engine.model_name
-            try:
-                destroy_model_parallel()
-                logging.info(f"Unloaded model {old_model_name} ✅")
-            except Exception:
-                logging.debug(
-                    "Tried to unload a vllm model & failed - probably wasn't a vllm model"
-                )
+        if self.model_loaded and not force_reload and self.current_model == model_to_load:
+            logging.info(f"Model {model_to_load} already loaded")
+            return
 
-            del self.llm_engine.model
-            del self.llm_engine
-            self.llm_engine = None
+        await self._unload_model()
 
-        await self._load_engine(model_to_load, revision, tokenizer_name, half_precision)
-
-    async def _load_engine(
-        self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool
-    ) -> None:
-        torch.cuda.empty_cache()
-        gc.collect()
-        self.llm_engine = await engines.get_llm_engine(
-            model_name, revision, tokenizer_name, half_precision
+        self.model_ready.clear()
+        ctx = multiprocessing.get_context('spawn')
+        self.model_process = ctx.Process(
+            target=self._model_server_process,
+            args=(model_to_load, revision, tokenizer_name, half_precision, self.model_ready)
         )
+        self.model_process.start()
+        self.model_ready.wait()
+        self.current_model = model_to_load
+        self.model_loaded = True
+        logging.info(f"Loaded new model {model_to_load} ✅")
 
-    # TODO: rename question & why is this needed?!
-    async def grab_the_right_prompt(engine: models.LLMEngine, question: str):
-        if engine.completion_method == completions.complete_img2text:
-            return question
-        else:
-            return question
+    async def _unload_model(self) -> None:
+        if self.model_process is not None:
+            self.model_process.terminate()
+            self.model_process.join()
+            logging.info("Terminated previous model loading process")
 
-    # TODO: WHY IS THIS NEEDED?
-    # async def gen_stream(self, prompt, generation_kwargs, model):
-    #     loop = asyncio.get_event_loop()
-    #     await loop.run_in_executor(
-    #         None, lambda: self.current_model["model"].generate(**generation_kwargs)
-    #     )
-    #     for new_text in self.current_model["streamer"]:
-    #         yield new_text
+        self.model_loaded = False
+        self.current_model = None
+        gc.collect()
+        torch.cuda.empty_cache()
+
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+
+        logging.info("Unloaded model")
+
+    def _model_server_process(self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool, model_ready: multiprocessing.Event) -> None:
+        sys.stderr = open(os.devnull, 'w')
+
+        logging.add(lambda msg: None, filter=CancelledErrorFilter())
+        app = FastAPI()
+        engine_holder = {} 
+
+        @app.post("/generate")
+        async def generate_text(request: RequestInfo):
+            try:
+                logging.info(f"Received request: {request.json()}")
+                llm_engine = engine_holder['engine']
+                async def stream_response():
+                    async for chunk in completions.complete_vllm(llm_engine, request):
+                        yield f"{json.dumps({'text': chunk})}\n"
+
+                return StreamingResponse(stream_response(), media_type="application/json")
+            except Exception as e:
+                logging.error(f"Error during text generation: {e}")
+                raise HTTPException(status_code=500, detail=str(e))
+
+        async def load_model():
+            gc.collect()
+            torch.cuda.empty_cache()
+            llm_engine = await engines.get_llm_engine(
+                model_name, revision, tokenizer_name, half_precision
+            )
+            engine_holder['engine'] = llm_engine
+            model_ready.set()
+
+        asyncio.run(load_model())
+        uvicorn.run(app, host="0.0.0.0", port=6910)
+
+    async def forward_request(self, request_info: models.RequestInfo):
+        async with httpx.AsyncClient() as client:
+            async with client.stream("POST", "http://localhost:6910/generate", json=request_info.dict()) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if line:
+                        yield line
