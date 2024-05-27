@@ -1,0 +1,134 @@
+{
+    "synapse": {
+        "messages": [
+            {
+                "role": "user",
+                "content": "A room with hardwood floors and bath tub."
+            }
+        ],
+        "temperature": 0.8,
+        "max_tokens": 20,
+        "seed": 3831303107,
+        "model": "bittensor-finetune",
+        "name": "Chat",
+        "timeout": 12.0,
+        "total_size": 0,
+        "header_size": 0,
+        "dendrite": {
+            "status_code": null,
+            "status_message": null,
+            "process_time": null,
+            "ip": null,
+            "port": null,
+            "version": null,
+            "nonce": null,
+            "uuid": null,
+            "hotkey": null,
+            "signature": null
+        },
+        "axon": {
+            "status_code": null,
+            "status_message": null,
+            "process_time": null,
+            "ip": null,
+            "port": null,
+            "version": null,
+            "nonce": null,
+            "uuid": null,
+            "hotkey": null,
+            "signature": null
+        },
+        "computed_body_hash": "",
+        "required_hash_fields": []
+    },
+    "synthetic_query": true,
+    "result": {
+        "formatted_response": [
+            {
+                "text": "A",
+                "logprob": -2.595240354537964
+            },
+            {
+                "text": " room",
+                "logprob": -0.010609414428472519
+            },
+            {
+                "text": " with",
+                "logprob": -0.08650609850883484
+            },
+            {
+                "text": " hard",
+                "logprob": -0.0008950994815677404
+            },
+            {
+                "text": "wood",
+                "logprob": -1.1920928244535389e-07
+            },
+            {
+                "text": " floors",
+                "logprob": -0.00011240804451517761
+            },
+            {
+                "text": " and",
+                "logprob": -0.043658237904310226
+            },
+            {
+                "text": " a",
+                "logprob": -0.017249559983611107
+            },
+            {
+                "text": " bath",
+                "logprob": -0.1325429379940033
+            },
+            {
+                "text": " tub",
+                "logprob": -4.768258077092469e-05
+            },
+            {
+                "text": " typically",
+                "logprob": -1.0526114702224731
+            },
+            {
+                "text": " suggests",
+                "logprob": -4.283380031585693
+            },
+            {
+                "text": " a",
+                "logprob": -0.0779452845454216
+            },
+            {
+                "text": " bathroom",
+                "logprob": -2.0464675426483154
+            },
+            {
+                "text": " or",
+                "logprob": -0.20292772352695465
+            },
+            {
+                "text": " a",
+                "logprob": -0.21521492302417755
+            },
+            {
+                "text": " high",
+                "logprob": -1.4157524108886719
+            },
+            {
+                "text": "-",
+                "logprob": -0.00017474555352237076
+            },
+            {
+                "text": "end",
+                "logprob": -0.0009927588980644941
+            },
+            {
+                "text": " living",
+                "logprob": -0.5206856727600098
+            }
+        ],
+        "axon_uid": 8,
+        "response_time": 1.396211862564087,
+        "error_message": null,
+        "failed_axon_uids": []
+    },
+    "task": "chat-bittensor-finetune"
+}

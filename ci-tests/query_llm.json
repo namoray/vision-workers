@@ -1,0 +1,13 @@
+{
+    "messages": [
+        {
+        "role": "user",
+        "content": "Remind me that I have forgot to set the messages"
+        }
+    ],
+    "seed": 0,
+    "temperature": 0.5,
+    "max_tokens": 4096,
+    "number_of_logprobs": 1,
+    "starting_assistant_message": true
+}

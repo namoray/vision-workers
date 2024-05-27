@@ -1,0 +1,5 @@
+{
+    "model": "NousResearch/Hermes-2-Pro-Mistral-7B",
+    "tokenizer": "NousResearch/Hermes-2-Pro-Mistral-7B",
+    "half_precision": true
+}

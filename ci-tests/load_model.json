@@ -1,0 +1,5 @@
+{
+    "model": "TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
+    "tokenizer": "TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
+    "revision": "gptq-8bit-128g-actorder_True"
+}
