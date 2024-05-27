@@ -1,14 +1,8 @@
 from __future__ import annotations
-
-
-from typing import Any, Optional, Callable
+from typing import Any, Optional, Callable, List
 import enum
 
-from transformers import (
-    AutoTokenizer,
-    AutoModelForSeq2SeqLM,
-    TextIteratorStreamer,
-)
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, TextIteratorStreamer
 from vllm import AsyncLLMEngine
 from pydantic import BaseModel, Field
 
@@ -23,7 +17,6 @@ class ToxicEngine(BaseModel):
 
 class Role(str, enum.Enum):
     """Message is sent by which role?"""
-
     user = "user"
     assistant = "assistant"
     system = "system"
@@ -40,9 +33,8 @@ class ModelType(str, enum.Enum):
     cortext_ultra = "cortext-ultra"
 
 
-# Assuming the necessary import statements for AsyncLLMEngine, schemas.TextRequestModel, TextIteratorStreamer
 class RequestInfo(BaseModel):
-    messages: list[Message] = Field(
+    messages: List[Message] = Field(
         default_factory=lambda: [
             {
                 "role": "user",
@@ -51,21 +43,17 @@ class RequestInfo(BaseModel):
         ],
         description="List of messages where each message has a 'role' and 'content' key.",
     )
-
     seed: int = Field(
         ..., title="Seed", description="Seed for text generation.", example=0
     )
-
     temperature: float = Field(
         default=0.5,
         title="Temperature",
         description="Temperature for text generation.",
     )
-
     max_tokens: int = Field(
         4096, title="Max Tokens", description="Max tokens for text generation."
     )
-
     number_of_logprobs: int = Field(
         default=1,
         title="Logprobs",
@@ -74,13 +62,11 @@ class RequestInfo(BaseModel):
         gt=0,
         le=5,
     )
-
     starting_assistant_message: bool = Field(
         default=True,
         title="Starting Assistant Message",
         description="Are we starting the assistant message or continuing it? Only needs to be non true for validators",
     )
-
     top_p: float = Field(
         default=1,
         title="Top P",
