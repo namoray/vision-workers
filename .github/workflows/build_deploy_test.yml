@@ -48,10 +48,10 @@ jobs:
         run: gcloud compute ssh ${{ env.GCP_GPU_NAME }} --zone ${{ env.GCP_GPU_ZONE }} --command "rm -rf /home/runner/*"
 
       - name: Copy updated repository to remote server
-        run: gcloud compute scp --recurse /home/runner/work/vision-workers/vision-workers ${{ env.GCP_GPU_NAME }}:/home/runner/vision-workers --zone ${{ env.GCP_GPU_ZONE }}
+        run: gcloud compute scp --recurse /home/runner/work/tau-workers/tau-workers ${{ env.GCP_GPU_NAME }}:/home/runner/tau-workers --zone ${{ env.GCP_GPU_ZONE }}
       
       - name: Run script on remote server
-        run: gcloud compute ssh ${{ env.GCP_GPU_NAME }} --zone ${{ env.GCP_GPU_ZONE }} --command "export BUILD_ID=${{ github.run_id }}; docker login --username=${{ secrets.DOCKER_USER }} --password=${{ secrets.DOCKER_PASSW }}; cd /home/runner/vision-workers && chmod +x ./build-docker-ci-remote.sh && bash ./build-docker-ci-remote.sh"
+        run: gcloud compute ssh ${{ env.GCP_GPU_NAME }} --zone ${{ env.GCP_GPU_ZONE }} --command "export BUILD_ID=${{ github.run_id }}; docker login --username=${{ secrets.DOCKER_USER }} --password=${{ secrets.DOCKER_PASSW }}; cd /home/runner/tau-workers && chmod +x ./build-docker-ci-remote.sh && bash ./build-docker-ci-remote.sh"
         env:
           BUILD_ID: ${{ github.run_id }}
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
@@ -189,7 +189,7 @@ jobs:
           export_default_credentials: true
 
       - name: Copy json data for query
-        run: gcloud compute scp --recurse /home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_ORCH_TXT2IMG }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_ORCH_TXT2IMG }} --zone ${{ env.GCP_GPU_ZONE }}
+        run: gcloud compute scp --recurse /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_ORCH_TXT2IMG }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_ORCH_TXT2IMG }} --zone ${{ env.GCP_GPU_ZONE }}
       
       - name: Test gcp Orchestrator - Image
         uses: nick-fields/retry@v3
@@ -237,7 +237,7 @@ jobs:
           export_default_credentials: true
 
       - name: Copy json data to remote
-        run: gcloud compute scp --recurse /home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_ORCH_AVATAR }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_ORCH_AVATAR }} --zone ${{ env.GCP_GPU_ZONE }}
+        run: gcloud compute scp --recurse /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_ORCH_AVATAR }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_ORCH_AVATAR }} --zone ${{ env.GCP_GPU_ZONE }}
       
       - name: Test gcp Orchestrator - Image - Avatar
         uses: nick-fields/retry@v3
@@ -368,7 +368,7 @@ jobs:
           export_default_credentials: true
       
       - name: Copy json data for query
-        run: gcloud compute scp --recurse /home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_LLM_LOAD }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_LLM_LOAD }} --zone ${{ env.GCP_GPU_ZONE }}
+        run: gcloud compute scp --recurse /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_LLM_LOAD }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_LLM_LOAD }} --zone ${{ env.GCP_GPU_ZONE }}
       
       - name: Test gcp LLM server - load small model
         uses: nick-fields/retry@v3
@@ -385,7 +385,7 @@ jobs:
           LLM_PORT: ${{ env.LLM_PORT }}
       
       - name: Copy json data for query
-        run: gcloud compute scp --recurse /home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_LLM_QUERY }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_LLM_QUERY }} --zone ${{ env.GCP_GPU_ZONE }}
+        run: gcloud compute scp --recurse /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_LLM_QUERY }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_LLM_QUERY }} --zone ${{ env.GCP_GPU_ZONE }}
 
       - name: Test gcp LLM server - query model
         uses: nick-fields/retry@v3
@@ -516,7 +516,7 @@ jobs:
           export_default_credentials: true
 
       - name: Copy json data for query
-        run: gcloud compute scp --recurse /home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_IMAGE_TXT2IMG }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_IMAGE_TXT2IMG }} --zone ${{ env.GCP_GPU_ZONE }}
+        run: gcloud compute scp --recurse /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_IMAGE_TXT2IMG }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_IMAGE_TXT2IMG }} --zone ${{ env.GCP_GPU_ZONE }}
       
       - name: Test gcp Image server
         uses: nick-fields/retry@v3
@@ -564,7 +564,7 @@ jobs:
           export_default_credentials: true
 
       - name: Copy json data for query
-        run: gcloud compute scp --recurse /home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_IMAGE_AVATAR }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_IMAGE_AVATAR }} --zone ${{ env.GCP_GPU_ZONE }}
+        run: gcloud compute scp --recurse /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_IMAGE_AVATAR }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_IMAGE_AVATAR }} --zone ${{ env.GCP_GPU_ZONE }}
       
       - name: Test gcp Image server - Avatar
         uses: nick-fields/retry@v3
@@ -678,7 +678,7 @@ jobs:
           command: |
             curl --connect-timeout 0 --max-time 0 -v -f -X POST https://${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
                   -H "Content-Type: application/json" \
-                  --data-binary @/home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }}
+                  --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }}
     outputs:
       instance_id: ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}
   
@@ -704,7 +704,7 @@ jobs:
           command: |
             curl --connect-timeout 0 --max-time 0 -v -f -X POST https://${{ needs.runpod-test-orch-llm.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
                   -H "Content-Type: application/json" \
-                  --data-binary @/home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }}
+                  --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }}
     outputs:
       instance_id: ${{ needs.runpod-test-orch-llm.outputs.instance_id }}
 
@@ -783,7 +783,7 @@ jobs:
         run: |
           curl --connect-timeout 0 --max-time 0 -v -X POST https://${{ needs.runpod-deploy-llm-server.outputs.instance_id }}-${{ env.LLM_PORT }}.proxy.runpod.net/load_model \
                   -H "Content-Type: application/json" \
-                  --data-binary @/home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }}
+                  --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }}
 
       - name: Test Runpod LLM
         uses: nick-fields/retry@v3
@@ -793,7 +793,7 @@ jobs:
           command: |
             curl --connect-timeout 0 --max-time 0 -v -X POST https://${{ needs.runpod-deploy-llm-server.outputs.instance_id }}-${{ env.LLM_PORT }}.proxy.runpod.net/generate_text \
                   -H "Content-Type: application/json" \
-                  --data-binary @/home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }}
+                  --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }}
 
     outputs:
       instance_id: ${{ needs.runpod-deploy-llm-server.outputs.instance_id }}
@@ -877,7 +877,7 @@ jobs:
           command: |
             curl --connect-timeout 0 --max-time 0 -v -X POST https://${{ needs.runpod-deploy-image-server.outputs.instance_id }}-${{ env.IMAGE_PORT }}.proxy.runpod.net/txt2img \
                 -H "Content-Type: application/json" \
-                --data-binary @/home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }}
+                --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }}
     outputs:
       instance_id: ${{ needs.runpod-deploy-image-server.outputs.instance_id }}
   
@@ -903,7 +903,7 @@ jobs:
           command: |
             curl --connect-timeout 0 --max-time 0 -v -X POST https://${{ needs.runpod-test-image.outputs.instance_id }}-${{ env.IMAGE_PORT }}.proxy.runpod.net/avatar \
                 -H "Content-Type: application/json" \
-                --data-binary @/home/runner/work/vision-workers/vision-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }}
+                --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }}
     outputs:
       instance_id: ${{ needs.runpod-test-image.outputs.instance_id }}
 

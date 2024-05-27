@@ -1,6 +1,6 @@
 
 
-cd ~/vision-workers/utils
+cd ~/tau-workers/utils
 apt install git-lfs
 git lfs install
 huggingface-cli lfs-enable-largefiles .
