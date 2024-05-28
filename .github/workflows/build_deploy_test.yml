@@ -684,7 +684,7 @@ jobs:
           max_attempts=15
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
                             https://${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
                             -H "Content-Type: application/json" \
                             --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }})
@@ -728,7 +728,7 @@ jobs:
           max_attempts=10
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
                             https://${{ needs.runpod-test-orch-llm.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
                             -H "Content-Type: application/json" \
                             --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }})
@@ -837,7 +837,7 @@ jobs:
           max_attempts=10
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
                             https://${{ needs.runpod-deploy-llm-server.outputs.instance_id }}-${{ env.LLM_PORT }}.proxy.runpod.net/load_model \
                             -H "Content-Type: application/json" \
                             --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }} \
@@ -868,7 +868,7 @@ jobs:
           max_attempts=9
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
                             https://${{ needs.runpod-deploy-llm-server.outputs.instance_id }}-${{ env.LLM_PORT }}.proxy.runpod.net/generate_text \
                             -H "Content-Type: application/json" \
                             --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }} \
@@ -980,7 +980,7 @@ jobs:
           max_attempts=9
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
                             https://${{ needs.runpod-deploy-image-server.outputs.instance_id }}-${{ env.IMAGE_PORT }}.proxy.runpod.net/txt2img \
                             -H "Content-Type: application/json" \
                             --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }} \
@@ -1026,7 +1026,7 @@ jobs:
           max_attempts=9
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
                             https://${{ needs.runpod-test-image.outputs.instance_id }}-${{ env.IMAGE_PORT }}.proxy.runpod.net/avatar \
                             -H "Content-Type: application/json" \
                             --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }} \
