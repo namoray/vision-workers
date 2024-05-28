@@ -707,8 +707,8 @@ jobs:
           echo "Request succeeded."
           echo "Response: $response_body"
         timeout-minutes: 30
-      outputs:
-        instance_id: ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}
+    outputs:
+      instance_id: ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}
   
   runpod-test-orch-image:
     needs: runpod-test-orch-llm
