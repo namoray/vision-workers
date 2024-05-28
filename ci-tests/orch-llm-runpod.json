@@ -1,134 +1,426 @@
 {
+    "task": "chat-llama-3",
+    "synthetic_query": false,
+    "result": {
+        "formatted_response": [
+            {
+                "text": "D",
+                "logprob": 0.0
+            },
+            {
+                "text": "rones",
+                "logprob": 0.0
+            },
+            {
+                "text": " can",
+                "logprob": -0.0013567537534981966
+            },
+            {
+                "text": " be",
+                "logprob": -0.0003800861886702478
+            },
+            {
+                "text": " a",
+                "logprob": -0.8509432077407837
+            },
+            {
+                "text": " valuable",
+                "logprob": -0.000310730334604159
+            },
+            {
+                "text": " tool",
+                "logprob": -0.11968158930540085
+            },
+            {
+                "text": " in",
+                "logprob": 0.0
+            },
+            {
+                "text": " emergency",
+                "logprob": 0.0
+            },
+            {
+                "text": " response",
+                "logprob": 0.0
+            },
+            {
+                "text": " situations",
+                "logprob": -0.23193751275539398
+            },
+            {
+                "text": ",",
+                "logprob": 0.0
+            },
+            {
+                "text": " offering",
+                "logprob": -0.04044606164097786
+            },
+            {
+                "text": " numerous",
+                "logprob": -0.6074155569076538
+            },
+            {
+                "text": " benefits",
+                "logprob": -1.3828182090946939e-05
+            },
+            {
+                "text": " and",
+                "logprob": -0.2351134866476059
+            },
+            {
+                "text": " advantages",
+                "logprob": -0.26844626665115356
+            },
+            {
+                "text": " over",
+                "logprob": -0.3305048942565918
+            },
+            {
+                "text": " traditional",
+                "logprob": 0.0
+            },
+            {
+                "text": " response",
+                "logprob": -0.26619753241539
+            },
+            {
+                "text": " methods",
+                "logprob": 0.0
+            },
+            {
+                "text": ".",
+                "logprob": 0.0
+            },
+            {
+                "text": " Here",
+                "logprob": -3.3378546504536644e-06
+            },
+            {
+                "text": " are",
+                "logprob": 0.0
+            },
+            {
+                "text": " some",
+                "logprob": 0.0
+            },
+            {
+                "text": " ways",
+                "logprob": 0.0
+            },
+            {
+                "text": " drones",
+                "logprob": 0.0
+            },
+            {
+                "text": " can",
+                "logprob": 0.0
+            },
+            {
+                "text": " be",
+                "logprob": 0.0
+            },
+            {
+                "text": " used",
+                "logprob": 0.0
+            },
+            {
+                "text": " in",
+                "logprob": 0.0
+            },
+            {
+                "text": " emergency",
+                "logprob": 0.0
+            },
+            {
+                "text": " response",
+                "logprob": 0.0
+            },
+            {
+                "text": ":\n\n",
+                "logprob": 0.0
+            },
+            {
+                "text": "1",
+                "logprob": 0.0
+            },
+            {
+                "text": ".",
+                "logprob": 0.0
+            },
+            {
+                "text": " **",
+                "logprob": 0.0
+            },
+            {
+                "text": "A",
+                "logprob": -0.2538999617099762
+            },
+            {
+                "text": "erial",
+                "logprob": 0.0
+            },
+            {
+                "text": " Surveillance",
+                "logprob": -3.0050246715545654
+            },
+            {
+                "text": "**:",
+                "logprob": 0.0
+            },
+            {
+                "text": " D",
+                "logprob": -5.245195097813848e-06
+            },
+            {
+                "text": "rones",
+                "logprob": 0.0
+            },
+            {
+                "text": " equipped",
+                "logprob": -0.042999111115932465
+            },
+            {
+                "text": " with",
+                "logprob": 0.0
+            },
+            {
+                "text": " cameras",
+                "logprob": -0.3049529492855072
+            },
+            {
+                "text": " and",
+                "logprob": -1.4536958932876587
+            },
+            {
+                "text": " sensors",
+                "logprob": 0.0
+            },
+            {
+                "text": " can",
+                "logprob": 0.0
+            },
+            {
+                "text": " quickly",
+                "logprob": -0.0004122599493712187
+            },
+            {
+                "text": " survey",
+                "logprob": -0.0002233732520835474
+            },
+            {
+                "text": " disaster",
+                "logprob": -0.3188190758228302
+            },
+            {
+                "text": " areas",
+                "logprob": -0.004973895847797394
+            },
+            {
+                "text": ",",
+                "logprob": -2.3841855067985307e-07
+            },
+            {
+                "text": " providing",
+                "logprob": -0.0002747396647464484
+            },
+            {
+                "text": " critical",
+                "logprob": -0.5926991105079651
+            },
+            {
+                "text": " information",
+                "logprob": -3.5523738915799186e-05
+            },
+            {
+                "text": " on",
+                "logprob": -0.0015798242529854178
+            },
+            {
+                "text": " damage",
+                "logprob": -0.0001599660754436627
+            },
+            {
+                "text": ",",
+                "logprob": -6.651657167822123e-05
+            },
+            {
+                "text": " debris",
+                "logprob": -0.527310848236084
+            },
+            {
+                "text": ",",
+                "logprob": 0.0
+            },
+            {
+                "text": " and",
+                "logprob": 0.0
+            },
+            {
+                "text": " potential",
+                "logprob": -0.05295794829726219
+            },
+            {
+                "text": " hazards",
+                "logprob": 0.0
+            },
+            {
+                "text": ".\n",
+                "logprob": -1.2683839797973633
+            },
+            {
+                "text": "2",
+                "logprob": 0.0
+            },
+            {
+                "text": ".",
+                "logprob": 0.0
+            },
+            {
+                "text": " **",
+                "logprob": 0.0
+            },
+            {
+                "text": "Search",
+                "logprob": -0.03584146499633789
+            },
+            {
+                "text": " and",
+                "logprob": 0.0
+            },
+            {
+                "text": " Rescue",
+                "logprob": 0.0
+            },
+            {
+                "text": "**:",
+                "logprob": 0.0
+            },
+            {
+                "text": " D",
+                "logprob": -2.0503786799963564e-05
+            },
+            {
+                "text": "rones",
+                "logprob": 0.0
+            },
+            {
+                "text": " can",
+                "logprob": -0.0010014524450525641
+            },
+            {
+                "text": " be",
+                "logprob": -0.665729284286499
+            },
+            {
+                "text": " used",
+                "logprob": -0.2177373617887497
+            },
+            {
+                "text": " to",
+                "logprob": 0.0
+            },
+            {
+                "text": " locate",
+                "logprob": -0.025601306930184364
+            },
+            {
+                "text": " missing",
+                "logprob": -2.0265558760002023e-06
+            },
+            {
+                "text": " people",
+                "logprob": -0.017059724777936935
+            },
+            {
+                "text": ",",
+                "logprob": -0.00023064337437972426
+            },
+            {
+                "text": " especially",
+                "logprob": -1.6236398220062256
+            },
+            {
+                "text": " in",
+                "logprob": 0.0
+            },
+            {
+                "text": " remote",
+                "logprob": -0.6847607493400574
+            },
+            {
+                "text": " or",
+                "logprob": 0.0
+            },
+            {
+                "text": " hard",
+                "logprob": -1.2755313036905136e-05
+            },
+            {
+                "text": "-to",
+                "logprob": 0.0
+            },
+            {
+                "text": "-re",
+                "logprob": 0.0
+            },
+            {
+                "text": "ach",
+                "logprob": 0.0
+            },
+            {
+                "text": " areas",
+                "logprob": 0.0
+            },
+            {
+                "text": ".",
+                "logprob": -0.024726316332817078
+            },
+            {
+                "text": " They",
+                "logprob": -0.032558806240558624
+            },
+            {
+                "text": " can",
+                "logprob": 0.0
+            },
+            {
+                "text": " be",
+                "logprob": -0.30043894052505493
+            },
+            {
+                "text": " equipped",
+                "logprob": -1.1920928244535389e-07
+            },
+            {
+                "text": " with",
+                "logprob": 0.0
+            },
+            {
+                "text": " thermal",
+                "logprob": -3.349725011503324e-05
+            },
+            {
+                "text": " imaging",
+                "logprob": -4.0531076592742465e-06
+            }
+        ],
+        "axon_uid": 1,
+        "response_time": 5.3854968547821045,
+        "error_message": null,
+        "failed_axon_uids": []
+    },
     "synapse": {
         "messages": [
             {
                 "role": "user",
-                "content": "A room with hardwood floors and bath tub."
+                "content": "How can drones be used in emergency response?\n"
             }
         ],
-        "temperature": 0.8,
-        "max_tokens": 20,
-        "seed": 3831303107,
-        "model": "mixtral-8x7b",
-        "name": "Chat",
-        "timeout": 12.0,
-        "total_size": 0,
-        "header_size": 0,
-        "dendrite": {
-            "status_code": null,
-            "status_message": null,
-            "process_time": null,
-            "ip": null,
-            "port": null,
-            "version": null,
-            "nonce": null,
-            "uuid": null,
-            "hotkey": null,
-            "signature": null
-        },
-        "axon": {
-            "status_code": null,
-            "status_message": null,
-            "process_time": null,
-            "ip": null,
-            "port": null,
-            "version": null,
-            "nonce": null,
-            "uuid": null,
-            "hotkey": null,
-            "signature": null
-        },
-        "computed_body_hash": "",
-        "required_hash_fields": []
-    },
-    "synthetic_query": true,
-    "result": {
-        "formatted_response": [
-            {
-                "text": "A",
-                "logprob": -2.595240354537964
-            },
-            {
-                "text": " room",
-                "logprob": -0.010609414428472519
-            },
-            {
-                "text": " with",
-                "logprob": -0.08650609850883484
-            },
-            {
-                "text": " hard",
-                "logprob": -0.0008950994815677404
-            },
-            {
-                "text": "wood",
-                "logprob": -1.1920928244535389e-07
-            },
-            {
-                "text": " floors",
-                "logprob": -0.00011240804451517761
-            },
-            {
-                "text": " and",
-                "logprob": -0.043658237904310226
-            },
-            {
-                "text": " a",
-                "logprob": -0.017249559983611107
-            },
-            {
-                "text": " bath",
-                "logprob": -0.1325429379940033
-            },
-            {
-                "text": " tub",
-                "logprob": -4.768258077092469e-05
-            },
-            {
-                "text": " typically",
-                "logprob": -1.0526114702224731
-            },
-            {
-                "text": " suggests",
-                "logprob": -4.283380031585693
-            },
-            {
-                "text": " a",
-                "logprob": -0.0779452845454216
-            },
-            {
-                "text": " bathroom",
-                "logprob": -2.0464675426483154
-            },
-            {
-                "text": " or",
-                "logprob": -0.20292772352695465
-            },
-            {
-                "text": " a",
-                "logprob": -0.21521492302417755
-            },
-            {
-                "text": " high",
-                "logprob": -1.4157524108886719
-            },
-            {
-                "text": "-",
-                "logprob": -0.00017474555352237076
-            },
-            {
-                "text": "end",
-                "logprob": -0.0009927588980644941
-            },
-            {
-                "text": " living",
-                "logprob": -0.5206856727600098
-            }
-        ],
-        "axon_uid": 8,
-        "response_time": 1.396211862564087,
-        "error_message": null,
-        "failed_axon_uids": []
-    },
-    "task": "chat-mixtral"
+        "seed": 46756,
+        "temperature": 0.5,
+        "max_tokens": 100,
+        "top_k": 5,
+        "number_of_logprobs": 1,
+        "starting_assistant_message": true
+    }
 }
