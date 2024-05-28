@@ -687,8 +687,10 @@ jobs:
             response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
                             https://${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
                             -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }})
-            http_code=$(echo "$response" | jq -r '.http_code')
+                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }} \
+                            -w "\n%{http_code}")
+            http_code=$(echo "$response" | tail -n1)
+            response_body=$(echo "$response" | sed '$d')
             if [ "$http_code" -eq 200 ]; then
               success=true
               break
@@ -703,10 +705,10 @@ jobs:
             exit 1
           fi
           echo "Request succeeded."
-          echo "Response: $response"
+          echo "Response: $response_body"
         timeout-minutes: 30
-    outputs:
-      instance_id: ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}
+      outputs:
+        instance_id: ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}
   
   runpod-test-orch-image:
     needs: runpod-test-orch-llm
