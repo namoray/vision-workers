@@ -624,43 +624,28 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-      
+
       - name: Read cicd config file
         id: read_config
         run: |
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: Deploy to Runpod
         id: deploy-orch
         run: |
-          response=$(curl --connect-timeout 0 --max-time 0 --retry 5 -X POST https://runpod-manager.onrender.com/create-instance \
-                          -H "Content-Type: application/json" \
-                          -H "API_KEY: ${{ secrets.RUNPOD_MANAGER_API_KEY }}" \
-                          -d '{
-                            "instance_name": "v-workers-cicd-orch-${{ github.run_id }}",
-                            "gpu_type": "${{ env.RUNPOD_GPU_TYPE }}",
-                            "disk_volume": 500,
-                            "docker_image": "corcelio/cicd:orchestrator-${{ github.run_id }}",
-                            "ports": "${{ env.ORCH_PORT }}/http",
-                            "cuda_versions": [
-                              "11.8",
-                              "12.0",
-                              "12.1",
-                              "12.2",
-                              "12.3"
-                            ],
-                            "env_vars": {}
-                          }')
-          echo "Response: $response"
-          instance_id=$(echo "$response" | jq -r '.id')
-          desired_status=$(echo "$response" | jq -r '.desiredStatus')
-
-          if [ -z "$instance_id" ] || [ "$desired_status" != "RUNNING" ]; then
-            echo "Failed to create instance. Response: $response"
-            exit 1
-          fi
-
+          instance_id=$(python ci-tests/cicd_scripts.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-orch-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:orchestrator-${{ github.run_id }}" "${{ env.ORCH_PORT }}")
+          echo "Instance ID: $instance_id"
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 30
         
@@ -785,37 +770,22 @@ jobs:
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: Deploy to Runpod
         id: deploy-orch
         run: |
           sleep 5
-          response=$(curl --connect-timeout 0 --max-time 0 -X POST https://runpod-manager.onrender.com/create-instance \
-                          -H "Content-Type: application/json" \
-                          -H "API_KEY: ${{ secrets.RUNPOD_MANAGER_API_KEY }}" \
-                          -d '{
-                            "instance_name": "v-workers-cicd-llm-${{ github.run_id }}",
-                            "gpu_type": "${{ env.RUNPOD_GPU_TYPE }}",
-                            "disk_volume": 500,
-                            "docker_image": "corcelio/cicd:llm-server-${{ github.run_id }}",
-                            "ports": "${{ env.LLM_PORT }}/http",
-                            "cuda_versions": [
-                              "11.8",
-                              "12.0",
-                              "12.1",
-                              "12.2",
-                              "12.3"
-                            ],
-                            "env_vars": {}
-                          }')
-          echo "Response: $response"
-          instance_id=$(echo "$response" | jq -r '.id')
-          desired_status=$(echo "$response" | jq -r '.desiredStatus')
-
-          if [ -z "$instance_id" ] || [ "$desired_status" != "RUNNING" ]; then
-            echo "Failed to create instance. Response: $response"
-            exit 1
-          fi
-
+          instance_id=$(python ci-tests/cicd_scripts.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-llm-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:llm-server-${{ github.run_id }}" "${{ env.LLM_PORT }}")
+          echo "Instance ID: $instance_id"
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 30
 
@@ -928,37 +898,22 @@ jobs:
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: Deploy to Runpod
         id: deploy-orch
         run: |
           sleep 10
-          response=$(curl --connect-timeout 0 --max-time 0 -X POST https://runpod-manager.onrender.com/create-instance \
-                          -H "Content-Type: application/json" \
-                          -H "API_KEY: ${{ secrets.RUNPOD_MANAGER_API_KEY }}" \
-                          -d '{
-                            "instance_name": "v-workers-cicd-img-${{ github.run_id }}",
-                            "gpu_type": "${{ env.RUNPOD_GPU_TYPE }}",
-                            "disk_volume": 500,
-                            "docker_image": "corcelio/cicd:image-server-${{ github.run_id }}",
-                            "ports": "${{ env.IMAGE_PORT }}/http",
-                            "cuda_versions": [
-                              "11.8",
-                              "12.0",
-                              "12.1",
-                              "12.2",
-                              "12.3"
-                            ],
-                            "env_vars": {}
-                          }')
-          echo "Response: $response"
-          instance_id=$(echo "$response" | jq -r '.id')
-          desired_status=$(echo "$response" | jq -r '.desiredStatus')
-
-          if [ -z "$instance_id" ] || [ "$desired_status" != "RUNNING" ]; then
-            echo "Failed to create instance. Response: $response"
-            exit 1
-          fi
-
+          instance_id=$(python ci-tests/cicd_scripts.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-img-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:image-server-${{ github.run_id }}" "${{ env.IMAGE_PORT }}")
+          echo "Instance ID: $instance_id"
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 30
   
