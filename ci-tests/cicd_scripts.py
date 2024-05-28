@@ -18,7 +18,7 @@ def create_instance(api_key, instance_name, gpu_type, docker_image, port):
         "env_vars": {}
     }
     
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(url, headers=headers, json=data, timeout=3600)
     if response.status_code != 200:
         print(f"Failed to create instance. HTTP Code: {response.status_code}, Response: {response.text}")
         sys.exit(1)

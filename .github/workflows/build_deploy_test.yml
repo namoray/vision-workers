@@ -647,7 +647,7 @@ jobs:
           instance_id=$(python ci-tests/cicd_scripts.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-orch-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:orchestrator-${{ github.run_id }}" "${{ env.ORCH_PORT }}")
           echo "Instance ID: $instance_id"
           echo "::set-output name=instance_id::$instance_id"
-        timeout-minutes: 30
+        timeout-minutes: 40
         
   runpod-test-orch-llm:
     needs: runpod-deploy-orchestrator
@@ -915,7 +915,7 @@ jobs:
           instance_id=$(python ci-tests/cicd_scripts.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-img-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:image-server-${{ github.run_id }}" "${{ env.IMAGE_PORT }}")
           echo "Instance ID: $instance_id"
           echo "::set-output name=instance_id::$instance_id"
-        timeout-minutes: 30
+        timeout-minutes: 40
   
   runpod-test-image:
     needs: runpod-deploy-image-server
