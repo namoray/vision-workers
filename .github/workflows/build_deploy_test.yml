@@ -684,16 +684,16 @@ jobs:
           max_attempts=15
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --write-out "%{http_code}" --silent --output /dev/null \
-                            --connect-timeout 0 --max-time 0 -v -f -X POST \
+            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
                             https://${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
                             -H "Content-Type: application/json" \
                             --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }})
-            if [ "$response" -eq 200 ]; then
+            http_code=$(echo "$response" | jq -r '.http_code')
+            if [ "$http_code" -eq 200 ]; then
               success=true
               break
             fi
-            echo "Request failed with status code $response. Retrying in $(( attempt * 2 + 1 )) seconds..."
+            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
             sleep $(( attempt * 2 + 1 ))
             attempt=$(( attempt + 1 ))
           done
@@ -703,6 +703,7 @@ jobs:
             exit 1
           fi
           echo "Request succeeded."
+          echo "Response: $response"
         timeout-minutes: 30
     outputs:
       instance_id: ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}
@@ -727,16 +728,16 @@ jobs:
           max_attempts=10
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --write-out "%{http_code}" --silent --output /dev/null \
-                            --connect-timeout 0 --max-time 0 -v -f -X POST \
+            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
                             https://${{ needs.runpod-test-orch-llm.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
                             -H "Content-Type: application/json" \
                             --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }})
-            if [ "$response" -eq 200 ]; then
+            http_code=$(echo "$response" | jq -r '.http_code')
+            if [ "$http_code" -eq 200 ]; then
               success=true
               break
             fi
-            echo "Request failed with status code $response. Retrying in $(( attempt * 2 + 1 )) seconds..."
+            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
             sleep $(( attempt * 2 + 1 ))
             attempt=$(( attempt + 1 ))
           done
@@ -746,6 +747,7 @@ jobs:
             exit 1
           fi
           echo "Request succeeded."
+          echo "Response: $response"
         timeout-minutes: 15
     outputs:
       instance_id: ${{ needs.runpod-test-orch-llm.outputs.instance_id }}
@@ -835,16 +837,18 @@ jobs:
           max_attempts=10
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --write-out "%{http_code}" --silent --output /dev/null \
-                            --connect-timeout 0 --max-time 0 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
                             https://${{ needs.runpod-deploy-llm-server.outputs.instance_id }}-${{ env.LLM_PORT }}.proxy.runpod.net/load_model \
                             -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }})
-            if [ "$response" -eq 200 ]; then
+                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }} \
+                            -w "\n%{http_code}")
+            http_code=$(echo "$response" | tail -n1)
+            response_body=$(echo "$response" | sed '$d')
+            if [ "$http_code" -eq 200 ]; then
               success=true
               break
             fi
-            echo "Request failed with status code $response. Retrying in $(( attempt * 2 + 1 )) seconds..."
+            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
             sleep $(( attempt * 2 + 1 ))
             attempt=$(( attempt + 1 ))
           done
@@ -854,6 +858,7 @@ jobs:
             exit 1
           fi
           echo "Request succeeded."
+          echo "Response: $response_body"
         timeout-minutes: 20
 
       - name: Test Runpod LLM
@@ -863,16 +868,18 @@ jobs:
           max_attempts=9
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --write-out "%{http_code}" --silent --output /dev/null \
-                            --connect-timeout 0 --max-time 0 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
                             https://${{ needs.runpod-deploy-llm-server.outputs.instance_id }}-${{ env.LLM_PORT }}.proxy.runpod.net/generate_text \
                             -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }})
-            if [ "$response" -eq 200 ]; then
+                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }} \
+                            -w "\n%{http_code}")
+            http_code=$(echo "$response" | tail -n1)
+            response_body=$(echo "$response" | sed '$d')
+            if [ "$http_code" -eq 200 ]; then
               success=true
               break
             fi
-            echo "Request failed with status code $response. Retrying in $(( attempt * 2 + 1 )) seconds..."
+            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
             sleep $(( attempt * 2 + 1 ))
             attempt=$(( attempt + 1 ))
           done
@@ -882,6 +889,7 @@ jobs:
             exit 1
           fi
           echo "Request succeeded."
+          echo "Response: $response_body"
         timeout-minutes: 15
 
     outputs:
@@ -972,16 +980,18 @@ jobs:
           max_attempts=9
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --write-out "%{http_code}" --silent --output /dev/null \
-                            --connect-timeout 0 --max-time 0 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
                             https://${{ needs.runpod-deploy-image-server.outputs.instance_id }}-${{ env.IMAGE_PORT }}.proxy.runpod.net/txt2img \
                             -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }})
-            if [ "$response" -eq 200 ]; then
+                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }} \
+                            -w "\n%{http_code}")
+            http_code=$(echo "$response" | tail -n1)
+            response_body=$(echo "$response" | sed '$d')
+            if [ "$http_code" -eq 200 ]; then
               success=true
               break
             fi
-            echo "Request failed with status code $response. Retrying in $(( attempt * 2 + 1 )) seconds..."
+            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
             sleep $(( attempt * 2 + 1 ))
             attempt=$(( attempt + 1 ))
           done
@@ -991,6 +1001,7 @@ jobs:
             exit 1
           fi
           echo "Request succeeded."
+          echo "Response: $response_body"
         timeout-minutes: 15
     outputs:
       instance_id: ${{ needs.runpod-deploy-image-server.outputs.instance_id }}
@@ -1008,23 +1019,25 @@ jobs:
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
-      - name: Test Runpod Image
+      - name: Test Runpod Image - Avatar
         id: test-runpod-image-avatar
         run: |
           attempt=0
           max_attempts=9
           success=false
           while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --write-out "%{http_code}" --silent --output /dev/null \
-                            --connect-timeout 0 --max-time 0 -v -X POST \
+            response=$(curl --silent --show-error --connect-timeout 10 --max-time 60 -v -X POST \
                             https://${{ needs.runpod-test-image.outputs.instance_id }}-${{ env.IMAGE_PORT }}.proxy.runpod.net/avatar \
                             -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }})
-            if [ "$response" -eq 200 ]; then
+                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }} \
+                            -w "\n%{http_code}")
+            http_code=$(echo "$response" | tail -n1)
+            response_body=$(echo "$response" | sed '$d')
+            if [ "$http_code" -eq 200 ]; then
               success=true
               break
             fi
-            echo "Request failed with status code $response. Retrying in $(( attempt * 2 + 1 )) seconds..."
+            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
             sleep $(( attempt * 2 + 1 ))
             attempt=$(( attempt + 1 ))
           done
@@ -1034,6 +1047,7 @@ jobs:
             exit 1
           fi
           echo "Request succeeded."
+          echo "Response: $response_body"
         timeout-minutes: 15
     outputs:
       instance_id: ${{ needs.runpod-test-image.outputs.instance_id }}
