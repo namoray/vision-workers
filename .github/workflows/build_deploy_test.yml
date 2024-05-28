@@ -652,7 +652,15 @@ jobs:
                             ],
                             "env_vars": {}
                           }')
+          echo "Response: $response"
           instance_id=$(echo "$response" | jq -r '.id')
+          desired_status=$(echo "$response" | jq -r '.desiredStatus')
+
+          if [ -z "$instance_id" ] || [ "$desired_status" != "RUNNING" ]; then
+            echo "Failed to create instance. Response: $response"
+            exit 1
+          fi
+
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 30
         
@@ -773,15 +781,15 @@ jobs:
                             ],
                             "env_vars": {}
                           }')
-          http_code=$(echo "$response" | tail -n1)
-          response_body=$(echo "$response" | sed '$d')
-          
-          if [ "$http_code" -ge 400 ]; then
-            echo "Request failed with status code $http_code"
-            echo "Response: $response_body"
+          echo "Response: $response"
+          instance_id=$(echo "$response" | jq -r '.id')
+          desired_status=$(echo "$response" | jq -r '.desiredStatus')
+
+          if [ -z "$instance_id" ] || [ "$desired_status" != "RUNNING" ]; then
+            echo "Failed to create instance. Response: $response"
             exit 1
           fi
-          instance_id=$(echo "$response" | jq -r '.id')
+
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 30
 
@@ -884,15 +892,15 @@ jobs:
                             ],
                             "env_vars": {}
                           }')
-          http_code=$(echo "$response" | tail -n1)
-          response_body=$(echo "$response" | sed '$d')
-          
-          if [ "$http_code" -ge 400 ]; then
-            echo "Request failed with status code $http_code"
-            echo "Response: $response_body"
+          echo "Response: $response"
+          instance_id=$(echo "$response" | jq -r '.id')
+          desired_status=$(echo "$response" | jq -r '.desiredStatus')
+
+          if [ -z "$instance_id" ] || [ "$desired_status" != "RUNNING" ]; then
+            echo "Failed to create instance. Response: $response"
             exit 1
           fi
-          instance_id=$(echo "$response" | jq -r '.id')
+
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 30
   
