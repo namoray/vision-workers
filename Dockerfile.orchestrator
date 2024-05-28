@@ -93,9 +93,6 @@ USER root
 
 EXPOSE 6920
 
-WORKDIR /app/validator_orchestrator
-
-
-CMD ["bash", "-c", "cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
+CMD ["sh", "-c", "set -e && cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
 
 
