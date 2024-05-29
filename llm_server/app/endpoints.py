@@ -3,7 +3,7 @@ from fastapi import Request, Response, status
 from starlette.responses import StreamingResponse
 from app import schemas, dependencies
 from app.inference import infer
-from app.inference.state import EngineState  # Import EngineState from state.py
+from app.inference.state import EngineState
 import transformers
 
 async def load_model(
@@ -53,7 +53,7 @@ router = fastapi.APIRouter(
 
 router.add_api_route(
     "/load_model",
-    load_model,  # Replace with your actual function
+    load_model,
     methods=["POST"],
     response_model=schemas.LoadModelResponse,
     responses={
@@ -64,7 +64,7 @@ router.add_api_route(
 
 router.add_api_route(
     "/generate_text",
-    generate_text,  # Replace with your actual function
+    generate_text,
     methods=["POST"],
     response_model=schemas.TextRequestModel,
     responses={
