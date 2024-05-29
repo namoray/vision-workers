@@ -1,4 +1,5 @@
 import sys
+import time
 import requests
 import json
 
@@ -14,28 +15,40 @@ def create_instance(api_key, instance_name, gpu_type, docker_image, port):
         "disk_volume": 500,
         "docker_image": docker_image,
         "ports": f"{port}/http",
-        "cuda_versions": ["11.8", "12.0", "12.1", "12.2", "12.3"],
+        "cuda_versions": ["11.8", "12.0", "12.1", "12.2", "12.3", "12.4"],
         "env_vars": {}
     }
-    
-    response = requests.post(url, headers=headers, json=data, timeout=3600)
-    if response.status_code != 200:
-        print(f"Failed to create instance. HTTP Code: {response.status_code}, Response: {response.text}")
-        sys.exit(1)
-    
-    try:
-        response_json = response.json()
-        instance_id = response_json.get('id')
-        desired_status = response_json.get('desiredStatus')
-    except:
-        print(f"Failed to create instance. Response: {response_json}")
-        sys.exit(1)
 
-    if not instance_id or desired_status != "RUNNING":
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=60)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to create instance. Error: {e}")
+        sys.exit(1)
+    
+    response_json = response.json()
+    instance_id = response_json.get('id')
+
+    if not instance_id:
         print(f"Failed to create instance. Response: {response_json}")
         sys.exit(1)
 
     return instance_id
+
+def check_instance_status(instance_id, port):
+    url = f"https://{instance_id}-{port}.proxy.runpod.net/docs"
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=5)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to check instance status. Error: {e}")
+        sys.exit(1)
+    
+    return response.json().get('desiredStatus')
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
@@ -49,4 +62,14 @@ if __name__ == "__main__":
     port = sys.argv[5]
 
     instance_id = create_instance(api_key, instance_name, gpu_type, docker_image, port)
-    print(instance_id)
+    print(f"Instance ID: {instance_id}")
+
+    for _ in range(180):
+        status = check_instance_status(instance_id, port.split('/')[0])
+        if status == "RUNNING":
+            print(instance_id)
+            sys.exit(0)
+        time.sleep(10)
+    
+    print(f"Instance did not reach RUNNING status within the expected time.")
+    sys.exit(1)
