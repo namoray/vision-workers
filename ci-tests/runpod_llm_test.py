@@ -2,8 +2,8 @@ import sys
 import time
 import requests
 
-def test_runpod_image(instance_id, image_port, test_json_file):
-    url = f"https://{instance_id}-{image_port}.proxy.runpod.net/txt2img"
+def load_model(instance_id, llm_port, test_json_file):
+    url = f"https://{instance_id}-{llm_port}.proxy.runpod.net/load_model"
     headers = {
         "Content-Type": "application/json"
     }
@@ -12,7 +12,7 @@ def test_runpod_image(instance_id, image_port, test_json_file):
         data = f.read()
 
     attempt = 0
-    max_attempts = 9
+    max_attempts = 10
     success = False
     response_body = ""
 
@@ -28,7 +28,7 @@ def test_runpod_image(instance_id, image_port, test_json_file):
             if http_code == 200:
                 success = True
                 break
-        except requests.RequestException as e:
+        except Exception as e:
             print(f"Request failed: {e}")
 
         print(f"Retrying in {attempt * 2 + 1} seconds...")
@@ -42,8 +42,8 @@ def test_runpod_image(instance_id, image_port, test_json_file):
     print("Request succeeded.")
     print(f"::set-output name=response::{response_body}")
 
-def test_runpod_image_avatar(instance_id, image_port, test_json_file):
-    url = f"https://{instance_id}-{image_port}.proxy.runpod.net/avatar"
+def test_llm(instance_id, llm_port, test_json_file):
+    url = f"https://{instance_id}-{llm_port}.proxy.runpod.net/generate_text"
     headers = {
         "Content-Type": "application/json"
     }
@@ -59,7 +59,7 @@ def test_runpod_image_avatar(instance_id, image_port, test_json_file):
     while attempt < max_attempts:
         print(f"Attempt: {attempt + 1}")
         try:
-            response = requests.post(url, headers=headers, data=data, timeout=600)
+            response = requests.post(url, headers=headers, data=data, timeout=30)
             http_code = response.status_code
             response_body = response.text
             print(f"Response Status Code: {http_code}")
@@ -84,27 +84,27 @@ def test_runpod_image_avatar(instance_id, image_port, test_json_file):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python ci-tests/runpod_image_test.py <function_name> [args...]")
+        print("Usage: python ci-tests/llm_tests.py <function_name> [args...]")
         sys.exit(1)
 
     function_name = sys.argv[1]
 
-    if function_name == "test_runpod_image":
+    if function_name == "load_model":
         if len(sys.argv) != 5:
-            print("Usage: python ci-tests/runpod_image_test.py test_runpod_image <INSTANCE_ID> <IMAGE_PORT> <TEST_JSON_FILE>")
+            print("Usage: python ci-tests/llm_tests.py load_model <INSTANCE_ID> <LLM_PORT> <TEST_JSON_FILE>")
             sys.exit(1)
         instance_id = sys.argv[2]
-        image_port = sys.argv[3]
+        llm_port = sys.argv[3]
         test_json_file = sys.argv[4]
-        test_runpod_image(instance_id, image_port, test_json_file)
-    elif function_name == "test_runpod_image_avatar":
+        load_model(instance_id, llm_port, test_json_file)
+    elif function_name == "test_llm":
         if len(sys.argv) != 5:
-            print("Usage: python ci-tests/runpod_image_test.py test_runpod_image_avatar <INSTANCE_ID> <IMAGE_PORT> <TEST_JSON_FILE>")
+            print("Usage: python ci-tests/llm_tests.py test_llm <INSTANCE_ID> <LLM_PORT> <TEST_JSON_FILE>")
             sys.exit(1)
         instance_id = sys.argv[2]
-        image_port = sys.argv[3]
+        llm_port = sys.argv[3]
         test_json_file = sys.argv[4]
-        test_runpod_image_avatar(instance_id, image_port, test_json_file)
+        test_llm(instance_id, llm_port, test_json_file)
     else:
         print(f"Unknown function name: {function_name}")
         sys.exit(1)

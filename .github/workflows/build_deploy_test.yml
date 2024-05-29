@@ -675,7 +675,7 @@ jobs:
       - name: Test Runpod Orchestrator - LLM
         id: test-runpod-orch
         run: |
-          response=$(python ci-tests/test_runpod_orch.py test_runpod_orch \
+          response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_llm \
             ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }} \
             ${{ env.ORCH_PORT }} \
             /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }})
@@ -711,7 +711,7 @@ jobs:
       - name: Test Runpod Orchestrator - Image
         id: test-runpod-orch-image
         run: |
-          response=$(python ci-tests/test_runpod_orch.py test_runpod_orch_image \
+          response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_image \
             ${{ needs.runpod-test-orch-llm.outputs.instance_id }} \
             ${{ env.ORCH_PORT }} \
             /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }})
@@ -797,7 +797,7 @@ jobs:
       - name: Load model
         id: load-model
         run: |
-          response=$(python ci-tests/test_runpod_orch.py load_model \
+          response=$(python ci-tests/runpod_llm_test.py load_model \
             ${{ needs.runpod-deploy-llm-server.outputs.instance_id }} \
             ${{ env.LLM_PORT }} \
             /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }})
@@ -807,7 +807,7 @@ jobs:
       - name: Test Runpod LLM
         id: test-runpod-llm
         run: |
-          response=$(python ci-tests/test_runpod_orch.py test_llm \
+          response=$(python ci-tests/runpod_llm_test.py test_llm \
             ${{ needs.runpod-deploy-llm-server.outputs.instance_id }} \
             ${{ env.LLM_PORT }} \
             /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }})
