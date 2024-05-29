@@ -19,7 +19,7 @@ def load_model(instance_id, llm_port, test_json_file):
     while attempt < max_attempts:
         print(f"Attempt: {attempt + 1}")
         try:
-            response = requests.post(url, headers=headers, data=data, timeout=600)
+            response = requests.post(url, headers=headers, data=data, timeout=500)
             http_code = response.status_code
             response_body = response.text
             print(f"Response Status Code: {http_code}")
@@ -31,8 +31,7 @@ def load_model(instance_id, llm_port, test_json_file):
         except Exception as e:
             print(f"Request failed: {e}")
 
-        print(f"Retrying in {attempt * 2 + 1} seconds...")
-        time.sleep(attempt * 2 + 1)
+        time.sleep(10)
         attempt += 1
 
     if not success:
@@ -71,8 +70,7 @@ def test_llm(instance_id, llm_port, test_json_file):
         except requests.RequestException as e:
             print(f"Request failed: {e}")
 
-        print(f"Retrying in {attempt * 2 + 1} seconds...")
-        time.sleep(attempt * 2 + 1)
+        time.sleep(10)
         attempt += 1
 
     if not success:
