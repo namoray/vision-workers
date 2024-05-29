@@ -61,7 +61,6 @@ if __name__ == "__main__":
     port = sys.argv[5]
 
     instance_id = create_instance(api_key, instance_name, gpu_type, docker_image, port)
-    print(f"Instance ID: {instance_id}")
 
     for _ in range(180):
         status = check_instance_status(instance_id, port.split('/')[0])
