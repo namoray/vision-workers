@@ -795,10 +795,6 @@ jobs:
       - name: Load model
         id: load-model
         run: |
-          python ci-tests/runpod_llm_test.py "load_model" \
-            "${{ needs.runpod-deploy-llm-server.outputs.instance_id }}" \
-            "${{ env.LLM_PORT }}" \
-            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }}"
           response=$(python ci-tests/runpod_llm_test.py "load_model" \
             "${{ needs.runpod-deploy-llm-server.outputs.instance_id }}" \
             "${{ env.LLM_PORT }}" \
