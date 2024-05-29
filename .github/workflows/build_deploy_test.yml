@@ -676,9 +676,9 @@ jobs:
         id: test-runpod-orch
         run: |
           response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_llm \
-            ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }} \
-            ${{ env.ORCH_PORT }} \
-            ${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }} 2>&1)
+            "${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}" \
+            "${{ env.ORCH_PORT }}" \
+            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }})"
           echo "Response: $response"
         timeout-minutes: 30
     outputs:
@@ -712,9 +712,9 @@ jobs:
         id: test-runpod-orch-image
         run: |
           response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_image \
-            ${{ needs.runpod-test-orch-llm.outputs.instance_id }} \
-            ${{ env.ORCH_PORT }} \
-            ${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }} 2>&1)
+            "${{ needs.runpod-test-orch-llm.outputs.instance_id }}" \
+            "${{ env.ORCH_PORT }}" \
+            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }})"
           echo "Response: $response"
         timeout-minutes: 15
     outputs:
@@ -797,10 +797,10 @@ jobs:
       - name: Load model
         id: load-model
         run: |
-          response=$(python ci-tests/runpod_llm_test.py load_model \
-            ${{ needs.runpod-deploy-llm-server.outputs.instance_id }} \
-            ${{ env.LLM_PORT }} \
-            ${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }} 2>&1)
+          response=$(python ci-tests/runpod_llm_test.py "load_model" \
+            "${{ needs.runpod-deploy-llm-server.outputs.instance_id }}" \
+            "${{ env.LLM_PORT }}" \
+            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }})"
           echo "Response: $response"
         timeout-minutes: 20
 
@@ -808,9 +808,9 @@ jobs:
         id: test-runpod-llm
         run: |
           response=$(python ci-tests/runpod_llm_test.py test_llm \
-            ${{ needs.runpod-deploy-llm-server.outputs.instance_id }} \
-            ${{ env.LLM_PORT }} \
-            ${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }} 2>&1)
+            "${{ needs.runpod-deploy-llm-server.outputs.instance_id }}" \
+            "${{ env.LLM_PORT }}" \
+            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }})"
           echo "Response: $response"
         timeout-minutes: 15
 
@@ -896,9 +896,9 @@ jobs:
         id: test-runpod-image
         run: |
           response=$(python ci-tests/runpod_image_test.py test_runpod_image \
-            ${{ needs.runpod-deploy-image-server.outputs.instance_id }} \
-            ${{ env.IMAGE_PORT }} \
-            ${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }} 2>&1)
+            "${{ needs.runpod-deploy-image-server.outputs.instance_id }}" \
+            "${{ env.IMAGE_PORT }}" \
+            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }})"
           echo "Response: $response"
         timeout-minutes: 15
 
@@ -933,9 +933,9 @@ jobs:
         id: test-runpod-image-avatar
         run: |
           response=$(python ci-tests/runpod_image_test.py test_runpod_image_avatar \
-            ${{ needs.runpod-test-image.outputs.instance_id }} \
-            ${{ env.IMAGE_PORT }} \
-            ${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }} 2>&1)
+            "${{ needs.runpod-test-image.outputs.instance_id }}" \
+            "${{ env.IMAGE_PORT }}" \
+            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }})"
           echo "Response: $response"
         timeout-minutes: 15
 
