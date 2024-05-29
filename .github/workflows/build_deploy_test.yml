@@ -644,7 +644,7 @@ jobs:
       - name: Deploy to Runpod
         id: deploy-orch
         run: |
-          instance_id=$(python ci-tests/cicd_scripts.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-orch-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:orchestrator-${{ github.run_id }}" "${{ env.ORCH_PORT }}")
+          instance_id=$(python ci-tests/runpod-create.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-orch-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:orchestrator-${{ github.run_id }}" "${{ env.ORCH_PORT }}")
           echo "Instance ID: $instance_id"
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 40
@@ -655,45 +655,35 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-      
+
       - name: Read cicd config file
         id: read_config
         run: |
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: Test Runpod Orchestrator - LLM
         id: test-runpod-orch
         run: |
-          attempt=0
-          max_attempts=15
-          success=false
-          while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
-                            https://${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
-                            -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }} \
-                            -w "\n%{http_code}")
-            http_code=$(echo "$response" | tail -n1)
-            response_body=$(echo "$response" | sed '$d')
-            if [ "$http_code" -eq 200 ]; then
-              success=true
-              break
-            fi
-            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
-            sleep $(( attempt * 2 + 1 ))
-            attempt=$(( attempt + 1 ))
-          done
-
-          if [ "$success" = false ]; then
-            echo "Request failed after $max_attempts attempts."
-            exit 1
-          fi
-          echo "Request succeeded."
-          echo "Response: $response_body"
+          response=$(python ci-tests/test_runpod_orch.py test_runpod_orch \
+            ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }} \
+            ${{ env.ORCH_PORT }} \
+            /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }})
+          echo "Response: $response"
         timeout-minutes: 30
     outputs:
       instance_id: ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}
+      response: ${{ steps.test-runpod-orch.outputs.response }}
   
   runpod-test-orch-image:
     needs: runpod-test-orch-llm
@@ -708,36 +698,28 @@ jobs:
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: Test Runpod Orchestrator - Image
         id: test-runpod-orch-image
         run: |
-          attempt=0
-          max_attempts=10
-          success=false
-          while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
-                            https://${{ needs.runpod-test-orch-llm.outputs.instance_id }}-${{ env.ORCH_PORT }}.proxy.runpod.net/check-result \
-                            -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }})
-            http_code=$(echo "$response" | jq -r '.http_code')
-            if [ "$http_code" -eq 200 ]; then
-              success=true
-              break
-            fi
-            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
-            sleep $(( attempt * 2 + 1 ))
-            attempt=$(( attempt + 1 ))
-          done
-
-          if [ "$success" = false ]; then
-            echo "Request failed after $max_attempts attempts."
-            exit 1
-          fi
-          echo "Request succeeded."
+          response=$(python ci-tests/test_runpod_orch.py test_runpod_orch_image \
+            ${{ needs.runpod-test-orch-llm.outputs.instance_id }} \
+            ${{ env.ORCH_PORT }} \
+            /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }})
           echo "Response: $response"
         timeout-minutes: 15
     outputs:
       instance_id: ${{ needs.runpod-test-orch-llm.outputs.instance_id }}
+      response: ${{ steps.test-runpod-orch-image.outputs.response }}
 
   runpod-destroy-orch:
     needs: runpod-test-orch-image
@@ -784,7 +766,7 @@ jobs:
         id: deploy-orch
         run: |
           sleep 5
-          instance_id=$(python ci-tests/cicd_scripts.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-llm-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:llm-server-${{ github.run_id }}" "${{ env.LLM_PORT }}")
+          instance_id=$(python ci-tests/runpod-create.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-llm-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:llm-server-${{ github.run_id }}" "${{ env.LLM_PORT }}")
           echo "Instance ID: $instance_id"
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 30
@@ -802,70 +784,40 @@ jobs:
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: Load model
         id: load-model
         run: |
-          attempt=0
-          max_attempts=10
-          success=false
-          while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
-                            https://${{ needs.runpod-deploy-llm-server.outputs.instance_id }}-${{ env.LLM_PORT }}.proxy.runpod.net/load_model \
-                            -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }} \
-                            -w "\n%{http_code}")
-            http_code=$(echo "$response" | tail -n1)
-            response_body=$(echo "$response" | sed '$d')
-            if [ "$http_code" -eq 200 ]; then
-              success=true
-              break
-            fi
-            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
-            sleep $(( attempt * 2 + 1 ))
-            attempt=$(( attempt + 1 ))
-          done
-
-          if [ "$success" = false ]; then
-            echo "Request failed after $max_attempts attempts."
-            exit 1
-          fi
-          echo "Request succeeded."
-          echo "Response: $response_body"
+          response=$(python ci-tests/test_runpod_orch.py load_model \
+            ${{ needs.runpod-deploy-llm-server.outputs.instance_id }} \
+            ${{ env.LLM_PORT }} \
+            /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }})
+          echo "Response: $response"
         timeout-minutes: 20
 
       - name: Test Runpod LLM
         id: test-runpod-llm
         run: |
-          attempt=0
-          max_attempts=9
-          success=false
-          while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
-                            https://${{ needs.runpod-deploy-llm-server.outputs.instance_id }}-${{ env.LLM_PORT }}.proxy.runpod.net/generate_text \
-                            -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }} \
-                            -w "\n%{http_code}")
-            http_code=$(echo "$response" | tail -n1)
-            response_body=$(echo "$response" | sed '$d')
-            if [ "$http_code" -eq 200 ]; then
-              success=true
-              break
-            fi
-            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
-            sleep $(( attempt * 2 + 1 ))
-            attempt=$(( attempt + 1 ))
-          done
-
-          if [ "$success" = false ]; then
-            echo "Request failed after $max_attempts attempts."
-            exit 1
-          fi
-          echo "Request succeeded."
-          echo "Response: $response_body"
+          response=$(python ci-tests/test_runpod_orch.py test_llm \
+            ${{ needs.runpod-deploy-llm-server.outputs.instance_id }} \
+            ${{ env.LLM_PORT }} \
+            /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }})
+          echo "Response: $response"
         timeout-minutes: 15
 
     outputs:
       instance_id: ${{ needs.runpod-deploy-llm-server.outputs.instance_id }}
+      load_model_response: ${{ steps.load-model.outputs.response }}
+      test_llm_response: ${{ steps.test-runpod-llm.outputs.response }}
 
   runpod-destroy-llm:
     needs: runpod-test-llm
@@ -912,7 +864,7 @@ jobs:
         id: deploy-orch
         run: |
           sleep 10
-          instance_id=$(python ci-tests/cicd_scripts.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-img-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:image-server-${{ github.run_id }}" "${{ env.IMAGE_PORT }}")
+          instance_id=$(python ci-tests/runpod-create.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-img-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:image-server-${{ github.run_id }}" "${{ env.IMAGE_PORT }}")
           echo "Instance ID: $instance_id"
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 40
@@ -930,38 +882,29 @@ jobs:
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: Test Runpod Image
         id: test-runpod-image
         run: |
-          attempt=0
-          max_attempts=9
-          success=false
-          while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
-                            https://${{ needs.runpod-deploy-image-server.outputs.instance_id }}-${{ env.IMAGE_PORT }}.proxy.runpod.net/txt2img \
-                            -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }} \
-                            -w "\n%{http_code}")
-            http_code=$(echo "$response" | tail -n1)
-            response_body=$(echo "$response" | sed '$d')
-            if [ "$http_code" -eq 200 ]; then
-              success=true
-              break
-            fi
-            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
-            sleep $(( attempt * 2 + 1 ))
-            attempt=$(( attempt + 1 ))
-          done
-
-          if [ "$success" = false ]; then
-            echo "Request failed after $max_attempts attempts."
-            exit 1
-          fi
-          echo "Request succeeded."
-          echo "Response: $response_body"
+          response=$(python ci-tests/runpod_image_test.py test_runpod_image \
+            ${{ needs.runpod-deploy-image-server.outputs.instance_id }} \
+            ${{ env.IMAGE_PORT }} \
+            /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }})
+          echo "Response: $response"
         timeout-minutes: 15
+
     outputs:
       instance_id: ${{ needs.runpod-deploy-image-server.outputs.instance_id }}
+      response: ${{ steps.test-runpod-image.outputs.response }}
   
   runpod-test-image-avatar:
     needs: runpod-test-image
@@ -976,38 +919,29 @@ jobs:
           chmod +x ./runner-fetch-config.sh
           ./runner-fetch-config.sh
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: Test Runpod Image - Avatar
         id: test-runpod-image-avatar
         run: |
-          attempt=0
-          max_attempts=9
-          success=false
-          while [ $attempt -lt $max_attempts ]; do
-            response=$(curl --silent --show-error --connect-timeout 0 --max-time 0 -v -X POST \
-                            https://${{ needs.runpod-test-image.outputs.instance_id }}-${{ env.IMAGE_PORT }}.proxy.runpod.net/avatar \
-                            -H "Content-Type: application/json" \
-                            --data-binary @/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }} \
-                            -w "\n%{http_code}")
-            http_code=$(echo "$response" | tail -n1)
-            response_body=$(echo "$response" | sed '$d')
-            if [ "$http_code" -eq 200 ]; then
-              success=true
-              break
-            fi
-            echo "Request failed with status code $http_code. Retrying in $(( attempt * 2 + 1 )) seconds..."
-            sleep $(( attempt * 2 + 1 ))
-            attempt=$(( attempt + 1 ))
-          done
-
-          if [ "$success" = false ]; then
-            echo "Request failed after $max_attempts attempts."
-            exit 1
-          fi
-          echo "Request succeeded."
-          echo "Response: $response_body"
+          response=$(python ci-tests/runpod_image_test.py test_runpod_image_avatar \
+            ${{ needs.runpod-test-image.outputs.instance_id }} \
+            ${{ env.IMAGE_PORT }} \
+            /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }})
+          echo "Response: $response"
         timeout-minutes: 15
+
     outputs:
       instance_id: ${{ needs.runpod-test-image.outputs.instance_id }}
+      response: ${{ steps.test-runpod-image-avatar.outputs.response }}
 
   runpod-destroy-image:
     needs: runpod-test-image-avatar
