@@ -18,6 +18,15 @@ import httpx
 import uvicorn
 import json
 
+class CancelledErrorFilter:
+    def __call__(self, record):
+        if record["exception"]:
+            exc_type, _, _ = record["exception"]
+            if exc_type is asyncio.exceptions.CancelledError:
+                return False
+        return True
+logging.add(lambda msg: None, filter=CancelledErrorFilter())
+multiprocessing.set_start_method('spawn', force=True)
 
 class EngineState:
     def __init__(self):
@@ -78,6 +87,7 @@ class EngineState:
     def _model_server_process(self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool, model_ready: multiprocessing.Event) -> None:
         #sys.stderr = open(os.devnull, 'w')
 
+        logging.add(lambda msg: None, filter=CancelledErrorFilter())
         app = FastAPI()
         engine_holder = {} 
 

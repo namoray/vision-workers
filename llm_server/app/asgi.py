@@ -8,6 +8,7 @@ from fastapi.responses import PlainTextResponse
 from app.logging import logging
 from app import configuration, endpoints
 from app.inference import state
+import asyncio
 
 
 async def home():

@@ -55,20 +55,15 @@ RUN CUDA_VERSION="11.8.0" && \
 
 # LLM server requirements
 COPY llm_server/requirements.txt ./app/llm_server_requirements.txt
-RUN pip install --upgrade pip \
-    && pip install -U wheel \
-    && pip install -r ./app/llm_server_requirements.txt \
-    && pip install flash-attn --no-build-isolation
+RUN pip install -r ./app/llm_server_requirements.txt
 
 # Validator orchestrator requirements
 COPY validator_orchestrator/requirements.txt /app/validator_orchestrator_requirements.txt
-RUN conda run -n venv pip install --no-cache-dir -r /app/validator_orchestrator_requirements.txt \
-    && conda run -n venv pip install --no-cache-dir huggingface_hub[hf_transfer]
+RUN conda run -n venv pip install --no-cache-dir -r /app/validator_orchestrator_requirements.txt
 
 # --------------------------------------- Image Server Environment ---------------------------------------
 
 COPY image_server/requirements.txt /app/image_server_requirements.txt
-
 
 RUN conda run -n venv pip install --upgrade pip setuptools==69.5.1 \
     && conda run -n venv pip install -r /app/image_server_requirements.txt \
@@ -91,8 +86,4 @@ ENV APP_HOST=0.0.0.0
 ENV APP_PORT=8080
 USER root
 
-EXPOSE 6920
-
 CMD ["sh", "-c", "set -e && cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
-
-
