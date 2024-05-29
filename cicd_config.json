@@ -1,5 +1,5 @@
 {
-    "runpod-workflow": true,
+    "runpod-workflow": false,
     "gcp-workflow": true,
     "runpod-gpu-type": "NVIDIA A100-SXM4-80GB",
     "gcp-gpu-name": "a100-cuda118",
