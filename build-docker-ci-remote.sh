@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 disk_usage=$(df -h --output=pcent / | tail -n 1 | tr -d ' %')
 
