@@ -42,7 +42,7 @@ def runpod_orch_test_llm(instance_id, orch_port, test_json_file):
     print("Request succeeded.")
     print(f"::set-output name=response::{response_body}")
 
-def test_runpod_orch_image(instance_id, orch_port, test_json_file):
+def runpod_orch_test_image(instance_id, orch_port, test_json_file):
     url = f"https://{instance_id}-{orch_port}.proxy.runpod.net/check-result"
     headers = {
         "Content-Type": "application/json"
@@ -97,14 +97,14 @@ def main():
         orch_port = sys.argv[3]
         test_json_file = sys.argv[4]
         runpod_orch_test_llm(instance_id, orch_port, test_json_file)
-    elif function_name == "test_runpod_orch_image":
+    elif function_name == "runpod_orch_test_image":
         if len(sys.argv) != 5:
-            print("Usage: python ci-tests/orchestrator_tests.py test_runpod_orch_image <INSTANCE_ID> <ORCH_PORT> <TEST_JSON_FILE>")
+            print("Usage: python ci-tests/orchestrator_tests.py runpod_orch_test_image <INSTANCE_ID> <ORCH_PORT> <TEST_JSON_FILE>")
             sys.exit(1)
         instance_id = sys.argv[2]
         orch_port = sys.argv[3]
         test_json_file = sys.argv[4]
-        test_runpod_orch_image(instance_id, orch_port, test_json_file)
+        runpod_orch_test_image(instance_id, orch_port, test_json_file)
     else:
         print(f"Unknown function name: {function_name}")
         sys.exit(1)
