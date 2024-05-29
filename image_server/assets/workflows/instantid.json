@@ -24,14 +24,13 @@
       "title": "Load InstantID Model"
     }
   },
-  "13": {
+  "Image_loader": {
     "inputs": {
-      "image": "init.png",
-      "upload": "image"
+      "image": ""
     },
-    "class_type": "LoadImage",
+    "class_type": "ETN_LoadImageBase64",
     "_meta": {
-      "title": "Load Image"
+      "title": "Load Image (Base64)"
     }
   },
   "15": {
@@ -104,6 +103,19 @@
   },
   "Prompt": {
     "inputs": {
+      "text": "",
+      "clip": [
+        "75",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "Prompt_initial": {
+    "inputs": {
       "text": "(portrait:1.5), ",
       "clip": [
         "75",
@@ -141,7 +153,7 @@
         0
       ],
       "positive": [
-        "Prompt",
+        "Prompt_initial",
         0
       ],
       "negative": [
@@ -179,7 +191,7 @@
         0
       ],
       "image": [
-        "13",
+        "Image_loader",
         0
       ],
       "model": [

@@ -1,12 +1,11 @@
 {
-  "93": {
+  "Image_loader": {
     "inputs": {
-      "image": "init.png",
-      "upload": "image"
+      "image": ""
     },
-    "class_type": "LoadImage",
+    "class_type": "ETN_LoadImageBase64",
     "_meta": {
-      "title": "Load Image"
+      "title": "Load Image (Base64)"
     }
   },
   "95": {
@@ -25,7 +24,7 @@
         0
       ],
       "image": [
-        "93",
+        "Image_loader",
         0
       ]
     },

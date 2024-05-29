@@ -14,7 +14,7 @@ source activate venv
 
 vram_mode=${VRAM_MODE:-'--highvram'}
 warmup=$(echo ${WARMUP:-true} | tr '[:upper:]' '[:lower:]')
-device=${DEVICE:-0}
+device=${DEVICE:-1}
 port=${PORT:-6919}
 
 cd ComfyUI

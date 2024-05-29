@@ -50,10 +50,8 @@ class PayloadModifier:
 
     def modify_inpaint(self, input_data: InpaintingBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads["inpaint"])
-        init_img = base64_to_image(input_data.init_image)
-        init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
-        mask_img = base64_to_image(input_data.mask_image)
-        mask_img.save(f"{cst.COMFY_INPUT_PATH}mask.png")
+        payload["Image_loader"]["inputs"]["image"] = input_data.init_image
+        payload["Mask_loader"]["inputs"]["image"] = input_data.mask_image
         payload["Sampler"]["inputs"]["steps"] = input_data.steps
         payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
 
@@ -71,8 +69,7 @@ class PayloadModifier:
 
     def modify_outpaint(self, input_data: OutpaintingBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads["outpaint"])
-        init_img = base64_to_image(input_data.init_image)
-        init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
+        payload["Image_loader"]["inputs"]["image"] = input_data.init_image
 
         positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
             input_data.text_prompts
@@ -112,8 +109,7 @@ class PayloadModifier:
 
     def modify_img2img(self, input_data: Img2ImgBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads[f"img2img_{input_data.engine}"])
-        init_img = base64_to_image(input_data.init_image)
-        init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
+        payload["Image_loader"]["inputs"]["image"] = input_data.init_image
 
         positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
             input_data.text_prompts
@@ -132,18 +128,17 @@ class PayloadModifier:
 
     def modify_upscale(self, input_data: UpscaleBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads["upscale"])
-        init_img = base64_to_image(input_data.init_image)
-        init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
+        payload["Image_loader"]["inputs"]["image"] = input_data.init_image
         return payload
 
     def modify_avatar(self, input_data: AvatarBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads["instantid"])
-        init_img = base64_to_image(input_data.init_image)
-        init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
+        payload["Image_loader"]["inputs"]["image"] = input_data.init_image
 
         positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
             input_data.text_prompts
         )
+        payload["Prompt_initial"]["inputs"]["text"] += positive_prompt
         payload["Prompt"]["inputs"]["text"] += positive_prompt
         payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
 
