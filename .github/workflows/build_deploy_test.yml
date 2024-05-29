@@ -678,7 +678,7 @@ jobs:
           response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_llm \
             "${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}" \
             "${{ env.ORCH_PORT }}" \
-            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }})"
+            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }})"
           echo "Response: $response"
         timeout-minutes: 30
     outputs:
@@ -714,7 +714,7 @@ jobs:
           response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_image \
             "${{ needs.runpod-test-orch-llm.outputs.instance_id }}" \
             "${{ env.ORCH_PORT }}" \
-            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }})"
+            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_TXT2IMG }})"
           echo "Response: $response"
         timeout-minutes: 15
     outputs:
@@ -800,7 +800,7 @@ jobs:
           response=$(python ci-tests/runpod_llm_test.py "load_model" \
             "${{ needs.runpod-deploy-llm-server.outputs.instance_id }}" \
             "${{ env.LLM_PORT }}" \
-            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }})"
+            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_LOAD }})"
           echo "Response: $response"
         timeout-minutes: 20
 
@@ -810,7 +810,7 @@ jobs:
           response=$(python ci-tests/runpod_llm_test.py test_llm \
             "${{ needs.runpod-deploy-llm-server.outputs.instance_id }}" \
             "${{ env.LLM_PORT }}" \
-            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }})"
+            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_LLM_QUERY }})"
           echo "Response: $response"
         timeout-minutes: 15
 
@@ -898,7 +898,7 @@ jobs:
           response=$(python ci-tests/runpod_image_test.py test_runpod_image \
             "${{ needs.runpod-deploy-image-server.outputs.instance_id }}" \
             "${{ env.IMAGE_PORT }}" \
-            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }})"
+            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_TXT2IMG }})"
           echo "Response: $response"
         timeout-minutes: 15
 
@@ -935,7 +935,7 @@ jobs:
           response=$(python ci-tests/runpod_image_test.py test_runpod_image_avatar \
             "${{ needs.runpod-test-image.outputs.instance_id }}" \
             "${{ env.IMAGE_PORT }}" \
-            "${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }})"
+            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_IMAGE_AVATAR }})"
           echo "Response: $response"
         timeout-minutes: 15
 
