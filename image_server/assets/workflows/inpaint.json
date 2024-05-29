@@ -47,83 +47,10 @@
       "title": "VAE Encode (for Inpainting)"
     }
   },
-  "108": {
-    "inputs": {
-      "seed": 863302694090560,
-      "steps": 20,
-      "cfg": 3,
-      "sampler_name": "dpmpp_2m_sde_gpu",
-      "scheduler": "karras",
-      "denoise": 0.25,
-      "model": [
-        "109",
-        0
-      ],
-      "positive": [
-        "Prompt",
-        0
-      ],
-      "negative": [
-        "Negative_prompt",
-        0
-      ],
-      "latent_image": [
-        "110",
-        0
-      ]
-    },
-    "class_type": "KSampler",
-    "_meta": {
-      "title": "KSampler"
-    }
-  },
-  "109": {
-    "inputs": {
-      "ckpt_name": "dreamshaperturbo.safetensors",
-      "key_opt": "",
-      "mode": "Auto"
-    },
-    "class_type": "CheckpointLoaderSimpleShared //Inspire",
-    "_meta": {
-      "title": "Shared Checkpoint Loader (Inspire)"
-    }
-  },
-  "110": {
-    "inputs": {
-      "pixels": [
-        "77",
-        0
-      ],
-      "vae": [
-        "109",
-        2
-      ]
-    },
-    "class_type": "VAEEncode",
-    "_meta": {
-      "title": "VAE Encode"
-    }
-  },
-  "111": {
-    "inputs": {
-      "samples": [
-        "108",
-        0
-      ],
-      "vae": [
-        "109",
-        2
-      ]
-    },
-    "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Decode"
-    }
-  },
   "112": {
     "inputs": {
       "images": [
-        "111",
+        "77",
         0
       ]
     },

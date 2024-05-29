@@ -103,7 +103,7 @@
   },
   "Prompt": {
     "inputs": {
-      "text": "",
+      "text": "(portrait:1.5), ",
       "clip": [
         "75",
         1

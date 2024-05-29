@@ -51,7 +51,7 @@ class PayloadModifier:
     def modify_inpaint(self, input_data: InpaintingBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads["inpaint"])
         payload["Image_loader"]["inputs"]["image"] = input_data.init_image
-        payload["Mask_loader"]["inputs"]["image"] = input_data.mask_image
+        payload["Mask_loader"]["inputs"]["mask"] = input_data.mask_image
         payload["Sampler"]["inputs"]["steps"] = input_data.steps
         payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
 
