@@ -43,11 +43,11 @@ def check_instance_status(instance_id, port):
 
     try:
         response = requests.get(url, headers=headers, timeout=5)
-        response.raise_for_status()
-        return response.json().get('desiredStatus')
+        if response.status_code == 200:
+            return "RUNNING"
     except Exception as e:
         print(f"Failed to check instance status. Error: {e}")
-        return ''
+        return "IDLE"
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
