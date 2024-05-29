@@ -84,12 +84,12 @@ class EngineState:
 
         logging.info("Unloaded model")
 
-    def _model_server_process(self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool, model_ready: multiprocessing.Event) -> None:
-        #sys.stderr = open(os.devnull, 'w')
+    def _model_server_process(self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool, model_ready: multiprocessing.Event)-> None:
+        sys.stderr = open(os.devnull, 'w')
 
         logging.add(lambda msg: None, filter=CancelledErrorFilter())
         app = FastAPI()
-        engine_holder = {} 
+        engine_holder = {}
 
         @app.post("/generate")
         async def generate_text(request: RequestInfo):
@@ -113,8 +113,9 @@ class EngineState:
             )
             engine_holder['engine'] = llm_engine
             model_ready.set()
-
+        logging.error(f"-Child- loading model")
         asyncio.run(load_model())
+        logging.error(f"-Child- running api")
         uvicorn.run(app, host="0.0.0.0", port=6910)
 
     async def forward_request(self, request_info: models.RequestInfo):

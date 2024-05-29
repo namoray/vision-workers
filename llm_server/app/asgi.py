@@ -10,6 +10,16 @@ from app import configuration, endpoints
 from app.inference import state
 import asyncio
 
+# Hide process termination error from logs (when swapping models)
+class CancelledErrorFilter:
+    def __call__(self, record):
+        if record["exception"]:
+            exc_type, _, _ = record["exception"]
+            if exc_type is asyncio.exceptions.CancelledError:
+                return False
+        return True
+logging.add(lambda msg: None, filter=CancelledErrorFilter())
+
 
 async def home():
     return PlainTextResponse("LLM")

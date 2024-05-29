@@ -13,7 +13,7 @@ async def _get_last_message_content(messages: List[models.Message]):
 
 async def infer(
     request: schemas.TextRequestModel,
-    engine_state: EngineState,  
+    engine_state: EngineState,
     toxic_engine: models.ToxicEngine,
 ):
     last_message_content = await _get_last_message_content(request.messages)
@@ -23,6 +23,7 @@ async def infer(
         ):
             yield o + " "
     else:
+        # Forward the request to the model process and stream the response back
         request_info = models.RequestInfo(**request.dict())
         response_stream = engine_state.forward_request(request_info)
         async for line in response_stream:

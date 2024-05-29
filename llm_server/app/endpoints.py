@@ -3,7 +3,7 @@ from fastapi import Request, Response, status
 from starlette.responses import StreamingResponse
 from app import schemas, dependencies
 from app.inference import infer
-from app.inference.state import EngineState
+from app.inference.state import EngineState  # Import EngineState from state.py
 import transformers
 
 async def load_model(
@@ -22,11 +22,9 @@ async def load_model(
 
 async def generate_text(
     raw_request: Request,
-    request: schemas.TextRequestModel,
-    EngineState: EngineState = fastapi.Depends(dependencies.get_engine_state),
+    request: schemas.TextRequestModel,    EngineState: EngineState = fastapi.Depends(dependencies.get_engine_state),
 ):
-    if not EngineState.model_loaded:
-        return Response(
+    if not EngineState.model_loaded:        return Response(
             content='{"error": "No model has been loaded, please use the load_model endpoint to load a model"}',
             status_code=status.HTTP_400_BAD_REQUEST,
             media_type="application/json",
@@ -53,7 +51,7 @@ router = fastapi.APIRouter(
 
 router.add_api_route(
     "/load_model",
-    load_model,
+    load_model, 
     methods=["POST"],
     response_model=schemas.LoadModelResponse,
     responses={
@@ -64,7 +62,7 @@ router.add_api_route(
 
 router.add_api_route(
     "/generate_text",
-    generate_text,
+    generate_text,  
     methods=["POST"],
     response_model=schemas.TextRequestModel,
     responses={
