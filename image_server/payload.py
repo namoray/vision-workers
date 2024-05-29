@@ -138,7 +138,6 @@ class PayloadModifier:
         positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
             input_data.text_prompts
         )
-        payload["Prompt_initial"]["inputs"]["text"] += positive_prompt
         payload["Prompt"]["inputs"]["text"] += positive_prompt
         payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
 

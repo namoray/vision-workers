@@ -114,19 +114,6 @@
       "title": "CLIP Text Encode (Prompt)"
     }
   },
-  "Prompt_initial": {
-    "inputs": {
-      "text": "(portrait:1.5), ",
-      "clip": [
-        "75",
-        1
-      ]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
   "Negative_prompt": {
     "inputs": {
       "text": "embedding:negativeXL_A, ",
@@ -153,7 +140,7 @@
         0
       ],
       "positive": [
-        "Prompt_initial",
+        "Prompt",
         0
       ],
       "negative": [
