@@ -44,7 +44,7 @@ def check_instance_status(instance_id, port):
     try:
         response = requests.get(url, headers=headers, timeout=5)
         response.raise_for_status()
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         print(f"Failed to check instance status. Error: {e}")
         sys.exit(1)
     
