@@ -20,9 +20,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     && rm Miniconda3-latest-Linux-x86_64.sh
 
 ENV PATH="/root/miniconda3/bin:${PATH}"
-RUN conda create -n venv python=3.10.13 -y \
-    && echo "source activate venv" > ~/.bashrc
-ENV PATH="/root/miniconda3/envs/venv/bin:${PATH}"
+RUN conda create -n venv_image python=3.10.13 -y
+ENV PATH="/root/miniconda3/envs/venv_image/bin:${PATH}"
 
 RUN apt-get update \
     && apt-get upgrade -y \
@@ -50,10 +49,12 @@ RUN apt-get update \
 RUN apt-get update && apt-get install -y unzip
 
 COPY image_server/requirements.txt /app/requirements.txt
+
 RUN pip install --upgrade pip
 RUN pip install --upgrade pip setuptools==69.5.1
 RUN  pip install -r /app/requirements.txt 
 RUN pip install huggingface_hub[hf_transfer]
+
 RUN rm -rf /root/.cache/pip/* 
 
 COPY image_server /app/image_server
@@ -70,4 +71,4 @@ RUN chmod +x /app/image_server/entrypoint.sh
 RUN chmod +x /app/image_server/setup.sh
 
 
-CMD ["bash", "-c", "cd /app/image_server && ./setup.sh && ./entrypoint.sh"]
+CMD ["sh", "-c", "set -e && cd /app/image_server && ./setup.sh && ./entrypoint.sh"]

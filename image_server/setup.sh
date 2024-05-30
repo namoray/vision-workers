@@ -1,6 +1,3 @@
-#!/bin/bash
-set -e
-
 if [ ! -d ComfyUI ]; then 
   git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
   cd ComfyUI

@@ -671,13 +671,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Test Runpod Orchestrator - LLM
+      - name: Test Runpod Orchestrator - LLM task - llama3
         id: test-runpod-orch
         run: |
           response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_llm \
             "${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}" \
             "${{ env.ORCH_PORT }}" \
-            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM }}")
+            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM_LLAMA3 }}")
+          echo "Response: $response"
+        timeout-minutes: 30
+
+      - name: Test Runpod Orchestrator - LLM task - finetune
+        id: test-runpod-orch
+        run: |
+          response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_llm \
+            "${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}" \
+            "${{ env.ORCH_PORT }}" \
+            "/home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.RUNPOD_TEST_ORCH_LLM_FINETUNE }}")
           echo "Response: $response"
         timeout-minutes: 30
     outputs:
