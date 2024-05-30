@@ -672,7 +672,7 @@ jobs:
           pip install requests
 
       - name: Test Runpod Orchestrator - LLM task - llama3
-        id: test-runpod-orch
+        id: test-runpod-orch-llama3
         run: |
           response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_llm \
             "${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}" \
@@ -682,7 +682,7 @@ jobs:
         timeout-minutes: 30
 
       - name: Test Runpod Orchestrator - LLM task - finetune
-        id: test-runpod-orch
+        id: test-runpod-orch-finetune
         run: |
           response=$(python ci-tests/runpod_orch_test.py runpod_orch_test_llm \
             "${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}" \
@@ -692,7 +692,6 @@ jobs:
         timeout-minutes: 30
     outputs:
       instance_id: ${{ needs.runpod-deploy-orchestrator.outputs.instance_id }}
-      response: ${{ steps.test-runpod-orch.outputs.response }}
   
   runpod-test-orch-image:
     needs: runpod-test-orch-llm
