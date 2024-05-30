@@ -71,4 +71,4 @@ RUN chmod +x /app/image_server/entrypoint.sh
 RUN chmod +x /app/image_server/setup.sh
 
 
-CMD ["sh", "-c", "set -e && cd /app/image_server && ./setup.sh && ./entrypoint.sh"]
+CMD ["sh", "-c", "cd /app/image_server && ./setup.sh && ./entrypoint.sh"]
