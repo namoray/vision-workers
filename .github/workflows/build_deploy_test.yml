@@ -253,8 +253,56 @@ jobs:
         env:
           LLM_PORT: ${{ env.IMAGE_PORT }}
 
-  gcp-stop-test-orch:
+  gcp-test-orchestrator-llm:
     needs: gcp-test-orchestrator-avatar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Read cicd config file
+        id: read_config
+        run: |
+          chmod +x ./runner-fetch-config.sh
+          ./runner-fetch-config.sh
+
+      - name: Decode SSH keys
+        run: |
+          mkdir /home/runner/.ssh
+          echo "$SSH_PRIVATE_KEY" | base64 --decode > /home/runner/.ssh/google_compute_engine
+          echo "$SSH_PUBLIC_KEY" | base64 --decode > /home/runner/.ssh/google_compute_engine.pub
+          chmod 600 ~/.ssh/google_compute_engine
+          chmod 644 ~/.ssh/google_compute_engine.pub
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.3.0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Copy json data for query
+        run: gcloud compute scp --recurse /home/runner/work/tau-workers/tau-workers/${{ env.TEST_JSON_FOLDER }}/${{ env.TEST_GCP_ORCH_LLM }} ${{ env.GCP_GPU_NAME }}:/home/runner/${{ env.TEST_GCP_ORCH_LLM }} --zone ${{ env.GCP_GPU_ZONE }}
+      
+      - name: Test gcp Orchestrator - llm
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 3
+          retry_on: timeout
+          timeout_minutes: 15
+          command: |
+            gcloud compute ssh ${{ env.GCP_GPU_NAME }} --zone ${{ env.GCP_GPU_ZONE }} --command "\
+              curl --connect-timeout 0 --max-time 0 -X POST localhost:${{ env.ORCH_PORT }}/check-result \
+              -H 'Content-Type: application/json' \
+              --data-binary @/home/runner/${{ env.TEST_GCP_ORCH_LLM }}"
+        env:
+          PORT_ORCH: ${{ env.ORCH_PORT }}
+
+  gcp-stop-test-orch:
+    needs: gcp-test-orchestrator-llm
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository

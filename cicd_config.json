@@ -9,6 +9,7 @@
     "image-server-port": "6919",
     "test-json-folder": "ci-tests",
     "gcp-test-orch-text2image": "orch-image-txt2img.json",
+    "gcp-test-orch-llm": "orch-llm-finetune-gcp.json",
     "gcp-test-orch-avatar": "avatar-test.json",
     "gcp-test-llm-load-model": "load_model_small.json",
     "gcp-test-llm-query-model": "query_llm.json",

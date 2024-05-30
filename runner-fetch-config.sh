@@ -24,6 +24,9 @@ echo "TEST_JSON_FOLDER=$TEST_JSON_FOLDER" >> $GITHUB_ENV
 TEST_GCP_ORCH_TXT2IMG=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-orch-text2image"')
 echo "TEST_GCP_ORCH_TXT2IMG=$TEST_GCP_ORCH_TXT2IMG" >> $GITHUB_ENV
 
+TEST_GCP_ORCH_LLM=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-orch-llm"')
+echo "TEST_GCP_ORCH_LLM=$TEST_GCP_ORCH_LLM" >> $GITHUB_ENV
+
 TEST_GCP_ORCH_AVATAR=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-orch-avatar"')
 echo "TEST_GCP_ORCH_AVATAR=$TEST_GCP_ORCH_AVATAR" >> $GITHUB_ENV
 

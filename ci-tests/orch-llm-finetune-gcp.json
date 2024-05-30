@@ -10,6 +10,8 @@
         "max_tokens": 20,
         "seed": 3831303107,
         "model": "bittensor-finetune",
+        "starting_assistant_message": true,
+        "top_k": 5,
         "name": "Chat",
         "timeout": 12.0,
         "total_size": 0,
