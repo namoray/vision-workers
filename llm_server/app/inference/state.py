@@ -98,7 +98,7 @@ class EngineState:
                 llm_engine = engine_holder['engine']
                 async def stream_response():
                     async for chunk in completions.complete_vllm(llm_engine, request):
-                        yield f"{json.dumps({'text': chunk})}\n"
+                        yield chunk
 
                 return StreamingResponse(stream_response(), media_type="application/json")
             except Exception as e:
