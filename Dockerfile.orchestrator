@@ -86,4 +86,4 @@ ENV APP_HOST=0.0.0.0
 ENV APP_PORT=8080
 USER root
 
-CMD ["sh", "-c", "set -e && cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
+CMD ["sh", "-c", "cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
