@@ -47,6 +47,13 @@ if [ ! -d ComfyUI_InstantID ]; then
   cd ..
 fi
 
+if [ ! -d comfyui-tooling-nodes ]; then 
+  git clone https://github.com/Acly/comfyui-tooling-nodes
+  cd comfyui-tooling-nodes
+  git checkout 96dd277b533d71cdfdc5f01b98899045315b56e7
+  cd ..
+fi
+
 cd ../..
 
 mkdir -p ComfyUI/models/insightface/models
