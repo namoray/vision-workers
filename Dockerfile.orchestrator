@@ -86,4 +86,13 @@ ENV APP_HOST=0.0.0.0
 ENV APP_PORT=8080
 USER root
 
+# Change HF cache dir
+RUN mkdir /app/cache \
+    && mkdir /app/cache/hub \
+    && chmod -R 777 /app/cache \
+    && chmod -R 777 /app/cache/hub
+    
+ENV HF_HOME=/app/cache
+ENV HF_HUB_CACHE=/app/cache/hub
+
 CMD ["sh", "-c", "cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]

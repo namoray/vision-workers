@@ -50,10 +50,10 @@ RUN apt-get update && apt-get install -y unzip
 
 COPY image_server/requirements.txt /app/requirements.txt
 
-RUN pip install --upgrade pip
-RUN pip install --upgrade pip setuptools==69.5.1
-RUN  pip install -r /app/requirements.txt 
-RUN pip install huggingface_hub[hf_transfer]
+RUN pip install --upgrade pip \
+    && pip install --upgrade pip setuptools==69.5.1 \
+    && pip install -r /app/requirements.txt \
+    && pip install huggingface_hub[hf_transfer]
 
 RUN rm -rf /root/.cache/pip/* 
 
@@ -70,5 +70,13 @@ ENV DEVICE=0
 RUN chmod +x /app/image_server/entrypoint.sh
 RUN chmod +x /app/image_server/setup.sh
 
+# Change HF cache dir
+RUN mkdir /app/cache \
+    && mkdir /app/cache/hub \
+    && chmod -R 777 /app/cache \
+    && chmod -R 777 /app/cache/hub
+    
+ENV HF_HOME=/app/cache
+ENV HF_HUB_CACHE=/app/cache/hub
 
 CMD ["sh", "-c", "cd /app/image_server && ./setup.sh && ./entrypoint.sh"]

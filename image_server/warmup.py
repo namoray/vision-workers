@@ -2,6 +2,7 @@ import os
 import constants as cst
 import json
 import utils.api_gate as api_gate
+from loguru import logger
 
 # Warmup script to run all workflows once in order to cache the models in VRAM
 print("Warming up...")
@@ -15,6 +16,6 @@ for filename in os.listdir(directory):
                 payload = json.load(file)
                 image = api_gate.generate(payload)
             except json.JSONDecodeError as e:
-                print(f"Error decoding JSON from {filename}: {e}")
+                logger.error(f"Error decoding JSON from {filename}: {e}")
 
-print("Warmup Completed")
+logger.info("Warmup Completed")

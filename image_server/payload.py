@@ -11,6 +11,7 @@ from base_model import (
 from typing import Dict, Any, Tuple, List
 from utils.base64_utils import base64_to_image
 import os
+from loguru import logger
 import copy
 import random
 
@@ -46,7 +47,7 @@ class PayloadModifier:
                         data = json.load(file)
                         self._payloads[os.path.splitext(filename)[0]] = data
                     except json.JSONDecodeError as e:
-                        print(f"Error decoding JSON from {filename}: {e}")
+                        logger.error(f"Error decoding JSON from {filename}: {e}")
 
     def modify_inpaint(self, input_data: InpaintingBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads["inpaint"])

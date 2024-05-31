@@ -4,6 +4,7 @@ import sys
 import multiprocessing
 
 import torch
+from huggingface_hub import scan_cache_dir
 
 from app.logging import logging
 from app import models
@@ -16,7 +17,7 @@ import asyncio
 from typing import Optional
 import httpx
 import uvicorn
-import json
+import errno
 
 class CancelledErrorFilter:
     def __call__(self, record):
@@ -108,9 +109,21 @@ class EngineState:
         async def load_model():
             gc.collect()
             torch.cuda.empty_cache()
-            llm_engine = await engines.get_llm_engine(
-                model_name, revision, tokenizer_name, half_precision
-            )
+            try:
+                llm_engine = await engines.get_llm_engine(
+                    model_name, revision, tokenizer_name, half_precision
+                )
+            except OSError as e:
+                if e.errno == errno.ENOSPC:
+                    logging.info("OSError was thrown, clearing disk before loading model...")
+                    self.clean_cache_hf()
+                    self.llm_engine = await engines.get_llm_engine(
+                        model_name, revision, tokenizer_name, half_precision
+                    )
+                else:
+                    raise
+
+
             engine_holder['engine'] = llm_engine
             model_ready.set()
         logging.error(f"-Child- loading model")
@@ -125,3 +138,13 @@ class EngineState:
                 async for line in response.aiter_lines():
                     if line:
                         yield line
+    
+    def clean_cache_hf(self):
+        logging.info("Clearing HuggingFace cache dir...")
+        cache_info = scan_cache_dir()
+        to_clean = []
+        for repo in cache_info.repos:
+            to_clean += [revision.commit_hash for revision in repo.revisions]
+        delete_strategy = cache_info.delete_revisions(*to_clean)
+        logging.info(f"Will free {delete_strategy.expected_freed_size_str}.")
+        delete_strategy.execute()
