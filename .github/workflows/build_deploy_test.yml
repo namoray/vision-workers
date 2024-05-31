@@ -639,7 +639,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests tenacity
 
       - name: Deploy to Runpod
         id: deploy-orch
@@ -669,7 +669,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests tenacity
 
       - name: Test Runpod Orchestrator - LLM task - llama3
         id: test-runpod-orch-llama3
@@ -714,7 +714,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests tenacity
 
       - name: Test Runpod Orchestrator - Image
         id: test-runpod-orch-image
@@ -768,7 +768,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests tenacity
 
       - name: Deploy to Runpod
         id: deploy-orch
@@ -799,7 +799,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests tenacity
 
       - name: Load model
         id: load-model
@@ -865,7 +865,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests tenacity
 
       - name: Deploy to Runpod
         id: deploy-orch
@@ -896,7 +896,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests tenacity
 
       - name: Test Runpod Image
         id: test-runpod-image
@@ -933,7 +933,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests tenacity
 
       - name: Test Runpod Image - Avatar
         id: test-runpod-image-avatar

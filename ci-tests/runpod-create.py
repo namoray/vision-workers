@@ -1,8 +1,9 @@
 import sys
 import time
 import requests
-import json
+from tenacity import retry, stop_after_attempt, wait_fixed
 
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(10))
 def create_instance(api_key, instance_name, gpu_type, docker_image, port):
     url = "https://runpod-manager.onrender.com/create-instance"
     headers = {
