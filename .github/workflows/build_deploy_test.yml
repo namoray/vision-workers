@@ -875,13 +875,6 @@ jobs:
           instance_id=$(python ci-tests/runpod-create.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-img-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:image-server-${{ github.run_id }}" "${{ env.IMAGE_PORT }}" 2>&1) # Capture stderr
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 40
-        continue-on-error: true  # Continue the workflow even if this step fails
-        shell: bash
-      - name: Print Deploy Logs
-        if: failure() && steps.deploy-orch.outcome == 'failure'  # Check if the previous step failed
-        run: |
-          echo "Deployment failed. Here are the logs:"
-          cat /path/to/logfile  # Assuming logs are redirected to a file
         shell: bash
   
   runpod-test-image:
