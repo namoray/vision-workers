@@ -870,10 +870,12 @@ jobs:
       - name: Deploy to Runpod
         id: deploy-orch
         run: |
+          set -x  # Enable shell debugging
           sleep 10
-          instance_id=$(python ci-tests/runpod-create.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-img-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:image-server-${{ github.run_id }}" "${{ env.IMAGE_PORT }}")
+          instance_id=$(python ci-tests/runpod-create.py ${{ secrets.RUNPOD_MANAGER_API_KEY }} "v-workers-cicd-img-${{ github.run_id }}" "${{ env.RUNPOD_GPU_TYPE }}" "corcelio/cicd:image-server-${{ github.run_id }}" "${{ env.IMAGE_PORT }}" 2>&1) # Capture stderr
           echo "::set-output name=instance_id::$instance_id"
         timeout-minutes: 40
+        shell: bash
   
   runpod-test-image:
     needs: runpod-deploy-image-server
