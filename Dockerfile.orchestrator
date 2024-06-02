@@ -53,14 +53,12 @@ RUN CUDA_VERSION="11.8.0" && \
     CUDA_VERSION_SIMPLE="${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}.0" && \
     conda install nvidia/label/cuda-${CUDA_VERSION_SIMPLE}::cuda-toolkit -y
 
-# Vllm patch for cuda118
-COPY cu118_vllm_patch.sh /app/cu118_vllm_patch.sh
-RUN chmod +x /app/cu118_vllm_patch.sh
-RUN /app/cu118_vllm_patch.sh
-
 # LLM server requirements
-COPY llm_server/requirements.txt ./app/llm_server_requirements.txt
-RUN pip install -r ./app/llm_server_requirements.txt
+COPY llm_server/requirements.txt /app/llm_server_requirements.txt
+RUN pip install --upgrade pip \
+    && pip install -U wheel \
+    && pip install -r /app/llm_server_requirements.txt \
+    && pip install flash-attn --no-build-isolation
 
 # Validator orchestrator requirements
 COPY validator_orchestrator/requirements.txt /app/validator_orchestrator_requirements.txt
