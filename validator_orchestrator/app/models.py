@@ -25,6 +25,7 @@ class ServerType(Enum):
 class Tasks(Enum):
     chat_bittensor_finetune = "chat-bittensor-finetune"
     chat_mixtral = "chat-mixtral"
+    chat_mixtral4b = "chat-mixtral4b"
     chat_llama_3 = "chat-llama-3"
     proteus_text_to_image = "proteus-text-to-image"
     playground_text_to_image = "playground-text-to-image"
@@ -60,33 +61,64 @@ class TaskConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-
 class TaskConfigMapping(BaseModel):
     tasks: Dict[Tasks, TaskConfig]
 
+class TestInstanceResults(BaseModel):
+    task: Tasks
+    score: float
+    miner_server: ServerInstance
+    validator_server: ServerInstance
+    messages : List[Message]
+    temperature: float
+    seed: int
+    
 class CheckResultsRequest(BaseModel):
     task: Tasks
     synthetic_query: bool
     result: QueryResult
     synapse: Dict[str, Any]
 
+    def dict(self, *args, **kwargs):
+        obj_dict = super().dict(*args, **kwargs)
+        # Converting Enum instance to its value
+        obj_dict["task"] = obj_dict["task"].value 
+        return obj_dict 
 
 class Message(BaseModel):
     role: str
     content: str
-
 
 class ChatRequestModel(BaseModel):
     messages: list[Message]
     seed: int
     temperature: float
     max_tokens: int
+    top_k: int
     number_of_logprobs: int
     starting_assistant_message: bool 
 
 class MinerChatResponse(BaseModel):
     text: str
     logprob: float
+
+class ValidationTest(BaseModel):
+    validator_server: ServerInstance
+    validator_task: Tasks
+    miners_to_test: List[ServerInstance]
+    prompts_to_check: List[ChatRequestModel]
+    checking_function: Callable[[QueryResult, Dict[str, Any], TaskConfig], Coroutine[Any, Any, Union[float, None]]]
+
+class ServerDetails(BaseModel):
+    id: str
+    cuda_version: str
+    gpu: str
+    endpoint: str
+
+class ServerInstance(BaseModel):
+    server_details: ServerDetails
+    model: Optional[ModelConfigDetails]
+
 
 class Logprob(BaseModel):
     index: int
