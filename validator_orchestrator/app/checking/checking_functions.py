@@ -233,11 +233,17 @@ async def check_text_result(
 
     total_distance = 0
     checks = 0
+
+    synapse["starting_assistant_message"] = True
     synapse["number_of_logprobs"] = 5
+    synapse["top_k"] = 5
+
     llm_request = models.ChatRequestModel(**synapse)
     llm_request.max_tokens = 1
 
     for index in range(1, len(miner_chat_responses)):
+        llm_request.starting_assistant_message = False
+
         if checks >= 10 or index not in selected_indices:
             continue
 
@@ -252,8 +258,7 @@ async def check_text_result(
                 }
             )
         )
-        llm_request.starting_assistant_message = False
-
+        
         distance = await calculate_distance_for_token(
             task_config, llm_request, miner_chat_responses, index
         )
