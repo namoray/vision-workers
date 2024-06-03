@@ -12,4 +12,4 @@ pydantic_settings==2.2.1
 pymongo==4.6.3
 vllm==0.4.3
 torchvision==0.18.0
-huggingface_hub[hf_transfer]
+huggingface_hub\[hf_transfer\]==0.23.2
