@@ -1,10 +1,9 @@
 from app import schemas
-
-
 from typing import List
 from app import models
 from app.inference import toxic
-
+from app.inference.state import EngineState
+import json
 
 async def _get_last_message_content(messages: List[models.Message]):
     if len(messages) == 0:
@@ -12,10 +11,9 @@ async def _get_last_message_content(messages: List[models.Message]):
     last_prompt = messages[-1]
     return last_prompt.content
 
-
 async def infer(
     request: schemas.TextRequestModel,
-    engine: models.LLMEngine,
+    engine_state: EngineState,
     toxic_engine: models.ToxicEngine,
 ):
     last_message_content = await _get_last_message_content(request.messages)
@@ -24,10 +22,10 @@ async def infer(
             " "
         ):
             yield o + " "
-        pass
     else:
-        # below line does nothing before i came in, so just commented it out
-        # prompt = await grab_the_right_prompt(request.messages)
-        # TODO: FIX THIS
-        async for chunk in engine.completion_method(engine, request):
-            yield chunk
+        # Forward the request to the model process and stream the response back
+        request_info = models.RequestInfo(**request.dict())
+        response_stream = engine_state.forward_request(request_info)
+        async for line in response_stream:
+            if line:
+                yield line+'\n\n'

@@ -3,14 +3,13 @@ from fastapi import Request, Response, status
 from starlette.responses import StreamingResponse
 from app import schemas, dependencies
 from app.inference import infer
-from app.inference import state
+from app.inference.state import EngineState
 import transformers
 
-
 async def load_model(
-    request: schemas.LoadModelRequest,
-    EngineState: state.EngineState = fastapi.Depends(dependencies.get_engine_state),
-) -> schemas.LoadModelResponse:
+        request: schemas.LoadModelRequest,
+        EngineState: EngineState = fastapi.Depends(dependencies.get_engine_state),
+    ) -> schemas.LoadModelResponse:
     model = request.model
     tokenizer = request.tokenizer
     revision = request.revision
@@ -21,24 +20,23 @@ async def load_model(
     )
     return schemas.LoadModelResponse(success=True)
 
-
 async def generate_text(
-    raw_request: Request,
-    request: schemas.TextRequestModel,
-    EngineState: state.EngineState = fastapi.Depends(dependencies.get_engine_state),
-):
-    if EngineState.llm_engine is None:
+        raw_request: Request,
+        request: schemas.TextRequestModel,    
+        EngineState: EngineState = fastapi.Depends(dependencies.get_engine_state),
+    ):
+    if not EngineState.model_loaded:        
         return Response(
-            content='{"error": "No model have been loaded, please use the load_model endpoint to load a model"}',
+            content='{"error": "No model has been loaded, please use the load_model endpoint to load a model"}',
             status_code=status.HTTP_400_BAD_REQUEST,
             media_type="application/json",
         )
 
     transformers.set_seed(request.seed)
+    
     try:
-        # TODO: What does this mean?
         async_text_generator = infer.infer(
-            request, EngineState.llm_engine, EngineState.toxic_checker
+            request, EngineState, EngineState.toxic_checker
         )
         return StreamingResponse(async_text_generator, media_type="text/plain")
     except Exception as e:
@@ -48,7 +46,6 @@ async def generate_text(
             media_type="application/json",
         )
 
-
 router = fastapi.APIRouter(
     prefix="",
     tags=["LLM"],
@@ -57,7 +54,7 @@ router = fastapi.APIRouter(
 
 router.add_api_route(
     "/load_model",
-    load_model,  # Replace with your actual function
+    load_model, 
     methods=["POST"],
     response_model=schemas.LoadModelResponse,
     responses={
@@ -68,7 +65,7 @@ router.add_api_route(
 
 router.add_api_route(
     "/generate_text",
-    generate_text,  # Replace with your actual function
+    generate_text,  
     methods=["POST"],
     response_model=schemas.TextRequestModel,
     responses={
