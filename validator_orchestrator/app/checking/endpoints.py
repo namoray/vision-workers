@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app import models
 from app.checking import scoring
+from loguru import logger
 from app import server_management
 from app.settings import task_configs
 from fastapi import Depends
@@ -40,6 +41,7 @@ async def check_result(
         task_config = task_configs.tasks[request.task]
         server_needed = task_config.server_needed
         await server_manager.start_server(server_needed)
+
         logger.debug(f"Task config: {task_config}")
         load_model_config = task_config.load_model_config
         if load_model_config is not None:
@@ -55,4 +57,3 @@ async def check_result(
             task_config=task_config,
             synapse=request.synapse,
         )
-

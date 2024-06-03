@@ -8,7 +8,6 @@ FAILED_RESPONSE_SCORE = 0.25
 SYNTHETIC_ENDPOINT_PREFIX = "synthetic"
 CHECKING_ENDPOINT_PREFIX = "checking"
 
-BASE_URL = "http://localhost:6919"
 
 MJ_BANNED_WORDS = [
     "blood",
