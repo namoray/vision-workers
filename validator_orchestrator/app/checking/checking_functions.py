@@ -241,9 +241,12 @@ async def check_text_result(
     llm_request = models.ChatRequestModel(**synapse)
     llm_request.max_tokens = 1
 
-    for index in range(1, len(miner_chat_responses)):
-        llm_request.starting_assistant_message = False
-
+    for index in range(0, len(miner_chat_responses)):
+        if index == 0:
+            llm_request.starting_assistant_message = True
+        else:
+            llm_request.starting_assistant_message = False
+            
         if checks >= 10 or index not in selected_indices:
             continue
 
