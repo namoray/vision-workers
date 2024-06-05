@@ -202,7 +202,7 @@ async def check_image_result(
         [hash_distances]
     )[0][1]
 
-    print(probability_same_image_xg, clip_embedding_similiarity)
+    logger.info(probability_same_image_xg, clip_embedding_similiarity)
 
     # MODEL has a very low threshold
     if probability_same_image_xg > 0.01:
@@ -264,7 +264,7 @@ async def check_text_result(
     try:
         average_distance = total_distance / checks
     except:
-        print('Error with average distance', total_distance, checks)
+        logger.info('Error with average distance', total_distance, checks)
         average_distance = 0.1
 
     def scoring_func(x):

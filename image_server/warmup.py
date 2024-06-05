@@ -5,7 +5,7 @@ import utils.api_gate as api_gate
 from loguru import logger
 
 # Warmup script to run all workflows once in order to cache the models in VRAM
-print("Warming up...")
+logger.info("Warming up...")
 
 directory = cst.WARMUP_WORKFLOWS_DIR
 for filename in os.listdir(directory):
