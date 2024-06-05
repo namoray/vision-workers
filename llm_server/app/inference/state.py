@@ -1,6 +1,7 @@
 
 import gc
 import os
+import signal
 import sys
 import multiprocessing
 
@@ -70,8 +71,10 @@ class EngineState:
 
     async def _unload_model(self) -> None:
         if self.model_process is not None:
-            self.model_process.terminate()
-            self.model_process.join()
+            try:
+                self.model_process.join(timeout=7)
+            except TimeoutError:
+                os.kill(self.model_process.pid, signal.SIGKILL)
             logging.info("Terminated previous model loading process")
 
         self.model_loaded = False
