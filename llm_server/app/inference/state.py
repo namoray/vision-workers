@@ -86,7 +86,7 @@ class EngineState:
         logging.info("Unloaded model")
 
     def _model_server_process(self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool, model_ready: multiprocessing.Event)-> None:
-        if os.getenv("DEBUG_MODE", 'no') == 'yes':
+        if os.getenv("DEBUG_MODE", 'false').lower() == 'true':
             pass
         else:
             sys.stderr = open(os.devnull, 'w')
