@@ -55,4 +55,3 @@ async def check_result(
             task_config=task_config,
             synapse=request.synapse,
         )
-
