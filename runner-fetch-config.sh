@@ -18,53 +18,5 @@ echo "LLM_PORT=$LLM_PORT" >> $GITHUB_ENV
 IMAGE_PORT=$(echo "$CONFIG_CONTENT" | jq -r '."image-server-port"')
 echo "IMAGE_PORT=$IMAGE_PORT" >> $GITHUB_ENV
 
-TEST_JSON_FOLDER=$(echo "$CONFIG_CONTENT" | jq -r '."test-json-folder"')
-echo "TEST_JSON_FOLDER=$TEST_JSON_FOLDER" >> $GITHUB_ENV
-
-TEST_GCP_ORCH_TXT2IMG=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-orch-text2image"')
-echo "TEST_GCP_ORCH_TXT2IMG=$TEST_GCP_ORCH_TXT2IMG" >> $GITHUB_ENV
-
-TEST_GCP_ORCH_LLM=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-orch-llm"')
-echo "TEST_GCP_ORCH_LLM=$TEST_GCP_ORCH_LLM" >> $GITHUB_ENV
-
-TEST_GCP_ORCH_AVATAR=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-orch-avatar"')
-echo "TEST_GCP_ORCH_AVATAR=$TEST_GCP_ORCH_AVATAR" >> $GITHUB_ENV
-
-TEST_GCP_LLM_LOAD=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-llm-load-model"')
-echo "TEST_GCP_LLM_LOAD=$TEST_GCP_LLM_LOAD" >> $GITHUB_ENV
-
-TEST_GCP_LLM_QUERY=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-llm-query-model"')
-echo "TEST_GCP_LLM_QUERY=$TEST_GCP_LLM_QUERY" >> $GITHUB_ENV
-
-TEST_GCP_IMAGE_TXT2IMG=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-image-text2image"')
-echo "TEST_GCP_IMAGE_TXT2IMG=$TEST_GCP_IMAGE_TXT2IMG" >> $GITHUB_ENV
-
-TEST_GCP_IMAGE_AVATAR=$(echo "$CONFIG_CONTENT" | jq -r '."gcp-test-image-avatar"')
-echo "TEST_GCP_IMAGE_AVATAR=$TEST_GCP_IMAGE_AVATAR" >> $GITHUB_ENV
-
 RUNPOD_ENABLED=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-workflow"')
 echo "RUNPOD_ENABLED=$RUNPOD_ENABLED" >> $GITHUB_ENV
-
-RUNPOD_GPU_TYPE=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-gpu-type"')
-echo "RUNPOD_GPU_TYPE=$RUNPOD_GPU_TYPE" >> $GITHUB_ENV
-
-RUNPOD_TEST_ORCH_TXT2IMG=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-test-orch-text2image"')
-echo "RUNPOD_TEST_ORCH_TXT2IMG=$RUNPOD_TEST_ORCH_TXT2IMG" >> $GITHUB_ENV
-
-RUNPOD_TEST_ORCH_LLM_LLAMA3=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-test-orch-llm-llama3"')
-echo "RUNPOD_TEST_ORCH_LLM_LLAMA3=$RUNPOD_TEST_ORCH_LLM_LLAMA3" >> $GITHUB_ENV
-
-RUNPOD_TEST_ORCH_LLM_FINETUNE=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-test-orch-llm-finetune"')
-echo "RUNPOD_TEST_ORCH_LLM_FINETUNE=$RUNPOD_TEST_ORCH_LLM_FINETUNE" >> $GITHUB_ENV
-
-RUNPOD_TEST_LLM_LOAD=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-test-llm-load-model"')
-echo "RUNPOD_TEST_LLM_LOAD=$RUNPOD_TEST_LLM_LOAD" >> $GITHUB_ENV
-
-RUNPOD_TEST_LLM_QUERY=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-test-llm-query-model"')
-echo "RUNPOD_TEST_LLM_QUERY=$RUNPOD_TEST_LLM_QUERY" >> $GITHUB_ENV
-
-RUNPOD_TEST_IMAGE_TXT2IMG=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-test-image-text2image"')
-echo "RUNPOD_TEST_IMAGE_TXT2IMG=$RUNPOD_TEST_IMAGE_TXT2IMG" >> $GITHUB_ENV
-
-RUNPOD_TEST_IMAGE_AVATAR=$(echo "$CONFIG_CONTENT" | jq -r '."runpod-test-image-avatar"')
-echo "RUNPOD_TEST_IMAGE_AVATAR=$RUNPOD_TEST_IMAGE_AVATAR" >> $GITHUB_ENV

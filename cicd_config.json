@@ -6,20 +6,5 @@
     "gcp-gpu-zone": "us-central1-b",
     "orchestrator-port": "6920",
     "llm-server-port": "6919",
-    "image-server-port": "6919",
-    "test-json-folder": "ci-tests",
-    "gcp-test-orch-text2image": "orch-image-txt2img.json",
-    "gcp-test-orch-llm": "orch-llm-finetune-gcp.json",
-    "gcp-test-orch-avatar": "avatar-test.json",
-    "gcp-test-llm-load-model": "load_model_small.json",
-    "gcp-test-llm-query-model": "query_llm.json",
-    "gcp-test-image-text2image": "image-server-test.json",
-    "gcp-test-image-avatar": "avatar-test.json",
-    "runpod-test-orch-text2image": "orch-image-txt2img.json",
-    "runpod-test-orch-llm-llama3": "orch-llm-llama3-runpod.json",
-    "runpod-test-orch-llm-finetune": "orch-llm-finetune-runpod.json",
-    "runpod-test-llm-load-model": "load_model.json",
-    "runpod-test-llm-query-model": "query_llm.json",
-    "runpod-test-image-text2image": "image-server-test.json",
-    "runpod-test-image-avatar": "avatar-test.json"
+    "image-server-port": "6919"
 }
