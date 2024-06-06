@@ -1,0 +1,19 @@
+[
+    {
+         "model": "anakin87/gemma-2b-orpo"
+ 
+     },
+     {
+         "model": "TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
+         "revision": "gptq-8bit-128g-actorder_True", 
+         "half_precision": true
+     },
+      {
+         "model": "lgodwangl/new_01m"
+     },
+      {
+         "model": "TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
+         "revision": "gptq-4bit-128g-actorder_True", 
+         "half_precision": true
+     }
+ ]

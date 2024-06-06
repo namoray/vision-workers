@@ -4,7 +4,7 @@ from app.checking import checking_functions, speed_scoring_functions
 from app.synthetic import synthetic_generation
 from app import utility_models
 from enum import Enum
-
+from app.constants import BASE_URL
 
 class Settings(BaseSettings):
     version: str = "1.0.0"
@@ -25,12 +25,9 @@ class Endpoints(Enum):
 settings = Settings()
 
 
-BASE_URL = "http://localhost:6919"
-
-
 task_configs = models.TaskConfigMapping(
     tasks={
-        models.Tasks.chat_bittensor_finetune.value: models.TaskConfig(
+         models.Tasks.chat_bittensor_finetune.value: models.TaskConfig(
             server_needed=models.ServerType.LLM,
             load_model_config=models.ModelConfigDetails(
                 model="tau-vision/sn6-finetune",
@@ -45,7 +42,23 @@ task_configs = models.TaskConfigMapping(
             },
             task=models.Tasks.chat_bittensor_finetune,
         ),
-        models.Tasks.chat_mixtral.value: models.TaskConfig(
+        models.Tasks.chat_mixtral4b.value: models.TaskConfig(
+            server_needed=models.ServerType.LLM,
+            load_model_config=models.ModelConfigDetails(
+                model="TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
+                half_precision=True,
+                revision="gptq-4bit-128g-actorder_True",
+            ),
+            endpoint=BASE_URL + "/generate_text",
+            checking_function=checking_functions.check_text_result,
+            speed_scoring_function=speed_scoring_functions.speed_scoring_chat,
+            synthetic_generation_function=synthetic_generation.generate_chat_synthetic,
+            synthetic_generation_params={
+                "model": utility_models.ChatModels.mixtral.value
+            },
+            task=models.Tasks.chat_mixtral4b,
+        ),
+         models.Tasks.chat_mixtral.value: models.TaskConfig(
             server_needed=models.ServerType.LLM,
             load_model_config=models.ModelConfigDetails(
                 model="TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",

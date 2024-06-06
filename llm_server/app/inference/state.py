@@ -86,7 +86,10 @@ class EngineState:
         logging.info("Unloaded model")
 
     def _model_server_process(self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool, model_ready: multiprocessing.Event)-> None:
-        sys.stderr = open(os.devnull, 'w')
+        if os.getenv("DEBUG_MODE", 'false').lower() == 'true':
+            pass
+        else:
+            sys.stderr = open(os.devnull, 'w')
 
         logging.add(lambda msg: None, filter=CancelledErrorFilter())
         app = FastAPI()
