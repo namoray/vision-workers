@@ -1,11 +1,13 @@
 
 import gc
 import os
+from time import sleep
 import signal
 import sys
 import multiprocessing
 
 import torch
+from vllm.distributed.parallel_state import destroy_model_parallel
 from huggingface_hub import scan_cache_dir
 
 from app.logging import logging
@@ -72,13 +74,16 @@ class EngineState:
     async def _unload_model(self) -> None:
         if self.model_process is not None:
             try:
-                self.model_process.join(timeout=7)
+                self.model_process.terminate()
+                self.model_process.join(timeout=10)
             except TimeoutError:
                 os.kill(self.model_process.pid, signal.SIGKILL)
+                sleep(5)
             logging.info("Terminated previous model loading process")
 
         self.model_loaded = False
         self.current_model = None
+        destroy_model_parallel()
         gc.collect()
         torch.cuda.empty_cache()
 
