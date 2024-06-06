@@ -11,26 +11,8 @@ This section provides a step-by-step guide to install CUDA 11.8 (drivers, toolki
 
 - [Setting up CUDA 11.8 on Ubuntu 22.04](#setting-up-cuda-118-on-ubuntu-2204)
   - [Prerequisites](#prerequisites)
+  - [Table of Contents](#table-of-contents)
   - [Steps](#steps)
-    - [Verify your GPU is CUDA-capable](#verify-your-gpu-is-cuda-capable)
-    - [Remove previous NVIDIA installations](#remove-previous-nvidia-installations)
-    - [Update your system](#update-your-system)
-    - [Install required packages](#install-required-packages)
-    - [Add the NVIDIA PPA repository and update](#add-the-nvidia-ppa-repository-and-update)
-    - [Find recommended driver versions for you](#find-recommended-driver-versions-for-you)
-    - [Install NVIDIA driver (e.g. version 515)](#install-nvidia-driver-eg-version-515)
-    - [Reboot your system](#reboot-your-system)
-    - [Verify the NVIDIA driver installation](#verify-the-nvidia-driver-installation)
-    - [Download and set up CUDA repository](#download-and-set-up-cuda-repository)
-    - [Update and upgrade](#update-and-upgrade)
-    - [Install CUDA 11.8](#install-cuda-118)
-    - [Set up environment variables](#set-up-environment-variables)
-    - [Install cuDNN 8.7](#install-cudnn-87)
-    - [Verify the installation](#verify-the-installation)
-    - [NVIDIA Container Toolkit - Add the NVIDIA GPG key](#nvidia-container-toolkit---add-the-nvidia-gpg-key)
-    - [NVIDIA Container Toolkit - Install package](#nvidia-container-toolkit---install-package)
-    - [NVIDIA Container Toolkit - Configuring Docker to Use NVIDIA GPUs](#nvidia-container-toolkit---configuring-docker-to-use-nvidia-gpus)
-    - [If any problems arrive with 'docker run' using GPUs, try this](#if-any-problems-arrive-with-docker-run-using-gpus-try-this)
 
 ## Steps
 
@@ -71,6 +53,7 @@ This section provides a step-by-step guide to install CUDA 11.8 (drivers, toolki
 
 6. **find recommended driver versions for you**
    ```bash
+   sudo apt install ubuntu-drivers-common
    ubuntu-drivers devices
    ```
 
@@ -104,7 +87,9 @@ This section provides a step-by-step guide to install CUDA 11.8 (drivers, toolki
 11. **Update and upgrade**
 
     ```bash
+    sudo apt --fix-broken install
     sudo apt update && sudo apt upgrade -y
+    sudo apt autoremove -y
     ```
 
 12. **Install CUDA 11.8**
@@ -135,6 +120,11 @@ This section provides a step-by-step guide to install CUDA 11.8 (drivers, toolki
     sudo cp -P cuda/include/cudnn.h /usr/local/cuda-11.8/include
     sudo cp -P cuda/lib/libcudnn* /usr/local/cuda-11.8/lib64/
     sudo chmod a+r /usr/local/cuda-11.8/lib64/libcudnn*
+    ```
+
+    - Reboot the system:
+    ```bash
+    sudo reboot
     ```
 
 15. **Verify the installation**
@@ -169,7 +159,7 @@ This section provides a step-by-step guide to install CUDA 11.8 (drivers, toolki
     systemctl --user restart docker
     ```
 
-18. **If any problems arrive with 'docker run' using GPUs, try this**
+19. **If any problems arrive with 'docker run' using GPUs, try this**
 
     ```bash
     sudo nano /etc/docker/daemon.json
