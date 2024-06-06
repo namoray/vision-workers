@@ -62,13 +62,11 @@ RUN pip install --upgrade pip \
 
 # Validator orchestrator requirements
 COPY validator_orchestrator/requirements.txt /app/validator_orchestrator_requirements.txt
-RUN conda run -n venv pip install --no-cache-dir -r /app/validator_orchestrator_requirements.txt \
-    && conda run -n venv pip install --no-cache-dir huggingface_hub[hf_transfer]
+RUN conda run -n venv pip install --no-cache-dir -r /app/validator_orchestrator_requirements.txt
 
 # --------------------------------------- Image Server Environment ---------------------------------------
 
 COPY image_server/requirements.txt /app/image_server_requirements.txt
-
 
 RUN conda run -n venv pip install --upgrade pip setuptools==69.5.1 \
     && conda run -n venv pip install -r /app/image_server_requirements.txt \
@@ -91,11 +89,13 @@ ENV APP_HOST=0.0.0.0
 ENV APP_PORT=8080
 USER root
 
-EXPOSE 6920
+# Create new cache dir
+RUN mkdir /app/cache \
+    && mkdir /app/cache/hub \
+    && chmod -R 777 /app/cache \
+    && chmod -R 777 /app/cache/hub
+# Change HF cache dir
+ENV HF_HOME=/app/cache
+ENV HF_HUB_CACHE=/app/cache/hub
 
-WORKDIR /app/validator_orchestrator
-
-
-CMD ["bash", "-c", "cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
-
-
+CMD ["sh", "-c", "cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]

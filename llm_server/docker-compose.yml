@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     command:
-      - "/app/entrypoint.sh"
+      - "/entrypoint.sh"
     restart: always
     ports:
       - 8080:8080

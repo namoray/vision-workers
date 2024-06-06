@@ -12,6 +12,8 @@ from PIL import Image
 
 import websocket
 
+from loguru import logger
+
 server_address = "127.0.0.1:8188"
 client_id = str(uuid.uuid4())
 ws = websocket.WebSocket()
@@ -21,9 +23,7 @@ while True:
         ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
         break
     except ConnectionRefusedError:
-        print(
-            "Could not connect to ComfyUI because it is not up yet. Sleeping for 2 seconds before trying again."
-        )
+        logger.error("Could not connect to ComfyUI because it is not up yet. Sleeping for 2 seconds before trying again.")
         time.sleep(2)
 
 
