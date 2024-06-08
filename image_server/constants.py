@@ -1,5 +1,6 @@
 DEFAULT_DEVICE = "cuda:0"
 COMFY_INPUT_PATH = "ComfyUI/input/"
+COMFY_TEMP_PATH = "ComfyUI/temp/"
 WORKFLOWS_DIR = "assets/workflows/"
 WARMUP_WORKFLOWS_DIR = "assets/workflows/warmup"
 SAFETY_CHECKER_REPO_PATH = "Lykon/DreamShaper"
