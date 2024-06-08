@@ -59,7 +59,7 @@
       "title": "Preview Image"
     }
   },
-  "79": {
+  "Image_loader": {
     "inputs": {
       "image": ""
     },
@@ -102,7 +102,7 @@
       "bottom": 0,
       "feathering": 150,
       "image": [
-        "79",
+        "Image_loader",
         0
       ]
     },
