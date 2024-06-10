@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
-from typing import Dict
+from typing import Dict, Union
 from uuid import uuid4
 from app import models
 from app.checking import scoring
@@ -16,7 +16,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-task_status: Dict[str, str] = {}
+task_status: Dict[str, Union[str, Dict]] = {}
 lock = Lock()
 current_task_id = None
 
@@ -68,10 +68,11 @@ async def process_check_result(task_id: str, request: models.CheckResultsRequest
                 task_config=task_config,
                 synapse=request.synapse,
             )
-            task_status[task_id] = "Completed"
+            task_status[task_id] = result  # Save the result as the task status
         except Exception as e:
-            logger.error(f"Error processing task {task_id}: {e}")
-            task_status[task_id] = "Failed"
+            error_message = f"Error processing task {task_id}: {str(e)}"
+            logger.error(error_message)
+            task_status[task_id] = {"status": "Failed", "error": error_message}
         finally:
             current_task_id = None  # Reset the current task ID when done
 
@@ -80,4 +81,8 @@ async def process_check_result(task_id: str, request: models.CheckResultsRequest
 async def check_task(task_id: str):
     if task_id not in task_status:
         raise HTTPException(status_code=404, detail="Task not found")
-    return {"task_id": task_id, "status": task_status[task_id]}
+    
+    status = task_status[task_id]
+    if isinstance(status, str) and status == "Processing":
+        return {"task_id": task_id, "status": "Processing"}
+    return {"task_id": task_id, "result": status}
