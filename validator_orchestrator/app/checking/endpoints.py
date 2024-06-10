@@ -9,6 +9,7 @@ from fastapi import Depends
 from asyncio import Lock
 from app import dependencies
 from loguru import logger
+import traceback
 
 router = APIRouter(
     prefix="",
@@ -71,8 +72,9 @@ async def process_check_result(task_id: str, request: models.CheckResultsRequest
             task_status[task_id] = result  # Save the result as the task status
         except Exception as e:
             error_message = f"Error processing task {task_id}: {str(e)}"
-            logger.error(error_message)
-            task_status[task_id] = {"status": "Failed", "error": error_message}
+            error_traceback = traceback.format_exc()
+            logger.error(f"{error_message}\n{error_traceback}")
+            task_status[task_id] = {"status": "Failed", "error": error_message, "traceback": error_traceback}
         finally:
             current_task_id = None  # Reset the current task ID when done
 
