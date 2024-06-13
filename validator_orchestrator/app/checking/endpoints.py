@@ -55,7 +55,7 @@ async def check_result(
     
     if current_task_id is not None:
         if task_status.get(current_task_id) == "Processing":
-            return models.CheckResultResponse(task_id="None", status="A task is already WIP")
+            return models.CheckResultResponse(task_id=None, status="A task is already WIP")
 
     task_id = str(uuid4())
     current_task_id = task_id

@@ -134,7 +134,7 @@ class SyntheticGenerationRequest(BaseModel):
     task: Tasks
 
 class CheckResultResponse(BaseModel):
-    task_id: str
+    task_id: Union[str, None]
     status: str
 
 class TaskResultResponse(BaseModel):
