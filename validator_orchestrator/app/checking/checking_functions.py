@@ -202,8 +202,6 @@ async def check_image_result(
         [hash_distances]
     )[0][1]
 
-    logger.info(probability_same_image_xg, clip_embedding_similiarity)
-
     # MODEL has a very low threshold
     if probability_same_image_xg > 0.01:
         score = 1

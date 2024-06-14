@@ -132,3 +132,16 @@ class ValidatorCheckingResponse(BaseModel):
 
 class SyntheticGenerationRequest(BaseModel):
     task: Tasks
+
+class CheckResultResponse(BaseModel):
+    task_id: Union[str, None]
+    status: str
+
+class TaskResultResponse(BaseModel):
+    task_id: str
+    result: Union[Dict, str]
+
+class CheckTaskResponse(BaseModel):
+    task_id: str
+    result: Union[Dict, str, None]
+    status: Union[str, None]
