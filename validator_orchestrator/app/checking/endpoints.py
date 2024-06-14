@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
-from typing import Dict
+from typing import Dict, Any
 from uuid import uuid4
 from app import models
 from app.checking import scoring
@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 task_status: Dict[str, str] = {}
-task_results: Dict[str, Dict] = {}
+task_results: Dict[str, Any] = {}
 lock = Lock()
 current_task_id = None
 RESULT_EXPIRY_TIME = timedelta(hours=1)
