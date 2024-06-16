@@ -9,10 +9,12 @@ import xgboost as xgb
 import math
 from loguru import logger
 from PIL import Image
+import os
 import io
 from PIL import UnidentifiedImageError
 from typing import Optional
 from app.constants import BASE_URL
+
 
 images_are_same_classifier = xgb.XGBClassifier()
 images_are_same_classifier.load_model("image_similarity_xgb_model.json")
@@ -103,6 +105,7 @@ async def query_endpoint_for_clip_text_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ClipTextEmbeddingsResponse:
     async with httpx.AsyncClient(timeout=10) as client:
+        logger.info(f"Querying : {endpoint}")
         response = await client.post(endpoint, json=data)
         return utility_models.ClipTextEmbeddingsResponse(**response.json())
 
@@ -111,6 +114,7 @@ async def query_endpoint_for_clip_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ClipEmbeddingsResponse:
     async with httpx.AsyncClient(timeout=10) as client:
+        logger.info(f"Querying : {endpoint}")
         response = await client.post(endpoint, json=data)
         return utility_models.ClipEmbeddingsResponse(**response.json())
 
@@ -152,8 +156,9 @@ async def query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
     async with httpx.AsyncClient(
-        timeout=600
+        timeout=10
     ) as client:  # 10 min timeout due to initial load on some runpod gpus
+        logger.info(f"Querying : {endpoint}")
         response = await client.post(endpoint, json=data)
         logger.info(response.status_code)
         return utility_models.ImageResponseBody(**response.json())
@@ -288,6 +293,7 @@ async def query_endpoint_for_iterator(
     endpoint: str, data: Dict[str, Any]
 ) -> httpx.Response:
     async with httpx.AsyncClient(timeout=5) as client:
+        logger.info(f"Querying : {endpoint}")
         response = await client.post(endpoint, json=data)
         return response
 

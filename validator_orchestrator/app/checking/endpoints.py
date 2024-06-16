@@ -1,6 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from typing import Dict, Any
 from uuid import uuid4
+import os
 from app import models
 from app.checking import scoring
 from app import server_management
@@ -80,6 +81,7 @@ async def process_check_result(task_id: str, request: models.CheckResultsRequest
                     load_model_config_dumped["force_reload"] = True
                 await server_manager.load_model(load_model_config_dumped)
             last_task = request.task
+            task_config.endpoint = task_config.endpoint.replace('localhost', os.getenv('CURRENT_SERVER_NAME', None))
             result = await scoring.score_results(
                 result=request.result,
                 task_config=task_config,

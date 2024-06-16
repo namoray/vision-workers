@@ -1,5 +1,5 @@
-if [ ! -d ComfyUI ]; then 
-  git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
+if [ ! -d ComfyUI ] || [ -z "$(ls -A ComfyUI)" ]; then 
+  git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI
   cd ComfyUI
   git fetch --depth 1 origin 57753c964affd18d2b87d2a47fe6b375bca39004
   git checkout 57753c964affd18d2b87d2a47fe6b375bca39004
@@ -26,21 +26,21 @@ fi
 
 cd ComfyUI/custom_nodes
 
-if [ ! -d ComfyUI-Inspire-Pack ]; then 
+if [ ! -d ComfyUI-Inspire-Pack ] || [ -z "$(ls -A ComfyUI-Inspire-Pack)" ]; then 
   git clone https://github.com/ltdrdata/ComfyUI-Inspire-Pack
   cd ComfyUI-Inspire-Pack
   git checkout 985f6a239b1aed0c67158f64bf579875ec292cb2
   cd ..
 fi
 
-if [ ! -d ComfyUI_IPAdapter_plus ]; then 
+if [ ! -d ComfyUI_IPAdapter_plus ] || [ -z "$(ls -A ComfyUI_IPAdapter_plus)" ]; then 
   git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus
   cd ComfyUI_IPAdapter_plus
   git checkout 0d0a7b3693baf8903fe2028ff218b557d619a93d
   cd ..
 fi
 
-if [ ! -d ComfyUI_InstantID ]; then 
+if [ ! -d ComfyUI_InstantID ] || [ -z "$(ls -A ComfyUI_InstantID)" ]; then 
   git clone https://github.com/cubiq/ComfyUI_InstantID
   cd ComfyUI_InstantID
   git checkout 50445991e2bd1d5ec73a8633726fe0b33a825b5b
@@ -50,7 +50,6 @@ fi
 cd ../..
 
 mkdir -p ComfyUI/models/insightface/models
-
 cd ComfyUI/models/insightface/models
 
 [ -f antelopev2.zip ] || wget -O antelopev2.zip https://huggingface.co/tau-vision/insightface-antelopev2/resolve/main/antelopev2.zip
@@ -60,7 +59,6 @@ cd ComfyUI/models/insightface/models
 cd ../../../..
 
 mkdir -p ComfyUI/models/instantid
-
 cd ComfyUI/models/instantid
 
 [ -f ip-adapter.bin ] || wget -O ip-adapter.bin https://huggingface.co/InstantX/InstantID/resolve/main/ip-adapter.bin?download=true

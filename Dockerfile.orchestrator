@@ -1,15 +1,11 @@
-FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
+FROM python:3.10.13-slim
 
 WORKDIR /app
 
-# --------------------------------------- Common ---------------------------------------
-
-# In order to avoid interruptions
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/London
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Node.js, PM2, Miniconda and other packages 
 RUN apt-get update && apt-get install -y \
     wget \ 
     git \
@@ -29,73 +25,52 @@ RUN apt-get update && apt-get install -y \
     git-lfs \
     unzip \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -sL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g pm2 \
-    && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O Miniconda.sh \
-    && chmod +x Miniconda.sh \
-    && ./Miniconda.sh -b \
-    && rm Miniconda.sh
-    
+    && rm -rf /var/lib/apt/lists/*
 
-ENV PATH="/root/miniconda3/bin:${PATH}"
+RUN pip install --upgrade pip
 
-# --------------------------------------- LLM Server + Orchestrator Environment ---------------------------
-
-RUN conda create -n venv python=3.10.13 -y \
-    && echo "source activate venv" > ~/.bashrc
-ENV PATH="/root/miniconda3/envs/venv/bin:${PATH}"
-
-RUN CUDA_VERSION="11.8.0" && \
-    CUDA_VERSION_MAJOR=$(echo $CUDA_VERSION | cut -d'.' -f1) && \
-    CUDA_VERSION_MINOR=$(echo $CUDA_VERSION | cut -d'.' -f2) && \
-    CUDA_VERSION_SIMPLE="${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}.0" && \
-    conda install nvidia/label/cuda-${CUDA_VERSION_SIMPLE}::cuda-toolkit -y
-
-# LLM server requirements
-COPY llm_server/requirements.txt /app/llm_server_requirements.txt
-RUN pip install --upgrade pip \
-    && pip install -U wheel \
-    && pip install -r /app/llm_server_requirements.txt \
-    && pip install flash-attn --no-build-isolation
-
-# Validator orchestrator requirements
 COPY validator_orchestrator/requirements.txt /app/validator_orchestrator_requirements.txt
-RUN conda run -n venv pip install --no-cache-dir -r /app/validator_orchestrator_requirements.txt
 
-# --------------------------------------- Image Server Environment ---------------------------------------
+RUN pip install --no-cache-dir -r /app/validator_orchestrator_requirements.txt
 
-COPY image_server/requirements.txt /app/image_server_requirements.txt
+# Install Docker
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN conda run -n venv pip install --upgrade pip setuptools==69.5.1 \
-    && conda run -n venv pip install -r /app/image_server_requirements.txt \
-    && conda run -n venv pip install protobuf huggingface_hub[hf_transfer]
+# Install NVIDIA Container Toolkit
+RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+    && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+       sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+       tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+    && sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+    && apt-get update \
+    && apt-get install -y nvidia-container-toolkit \
+    && rm -rf /var/lib/apt/lists/*
 
-ENV HF_HUB_ENABLE_HF_TRANSFER=1
+# Configure Docker to use the NVIDIA runtime
+RUN echo '{ \
+  "default-runtime": "nvidia", \
+  "runtimes": { \
+    "nvidia": { \
+      "path": "nvidia-container-runtime", \
+      "runtimeArgs": [] \
+    } \
+  } \
+}' | tee /etc/docker/daemon.json
 
-# Copying server directories
-COPY image_server/ /app/image_server
-COPY llm_server /app/llm_server
 COPY validator_orchestrator /app/validator_orchestrator
 
-# Making entrypoint scripts executable
-RUN chmod +x /app/llm_server/entrypoint.sh \
-    && chmod +x /app/image_server/entrypoint.sh \
-    && chmod +x /app/image_server/entrypoint_vali.sh \
-    && chmod +x /app/image_server/setup.sh
+RUN chmod +x /app/validator_orchestrator/entrypoint.sh
 
-ENV APP_HOST=0.0.0.0
-ENV APP_PORT=8080
 USER root
 
-# Create new cache dir
-RUN mkdir /app/cache \
-    && mkdir /app/cache/hub \
-    && chmod -R 777 /app/cache \
-    && chmod -R 777 /app/cache/hub
-# Change HF cache dir
-ENV HF_HOME=/app/cache
-ENV HF_HUB_CACHE=/app/cache/hub
-
-CMD ["sh", "-c", "cd /app/image_server && ./setup.sh && cd /app/validator_orchestrator && ./entrypoint.sh"]
+CMD ["sh", "-c", "cd /app/validator_orchestrator && ./entrypoint.sh"]

@@ -5,6 +5,7 @@ from app.synthetic import synthetic_generation
 from app import utility_models
 from enum import Enum
 from app.constants import BASE_URL
+import os
 
 class Settings(BaseSettings):
     version: str = "1.0.0"

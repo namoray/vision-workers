@@ -18,9 +18,12 @@ class ChatTokens(BaseModel):
 
 
 class ServerType(Enum):
-    LLM = "llm"
+    LLM = "llm_server"
     IMAGE = "image_server"
 
+class ProdDockerImages(Enum):
+    LLM = "corcelio/vision:llm_server-latest"
+    IMAGE = "corcelio/vision:image_server-latest"
 
 class Tasks(Enum):
     chat_bittensor_finetune = "chat-bittensor-finetune"
