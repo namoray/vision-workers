@@ -102,6 +102,18 @@ docker build -t corcelio/vision:orchestrator-latest .
 docker run --gpus all  -p 6919:6919 corcelio/vision:orchestrator-latest
 ```
 
+**Combined command for local dev/ testing**
+NOTE: this will use prod image server & llm server images unless otherwise specified
+```bash
+docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator
+docker run -p 6920:6920 -e PORT=6920 -e CUDA_VISIBLE_DEVICES=0 -e DEVICE=0 --gpus '"device=0"' --runtime=nvidia corcelio/test:orch-test
+```
+or
+NOTE: this will use prod image server & llm server images unless otherwise specified
+```bash
+docker kill orchestrator || true; docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator; ./launch_orchestrator.sh corcelio/test:orch-test
+```
+
 ### Uploading to docker hub
 Get your credentials ready for docker hub
 ```bash

@@ -107,34 +107,14 @@ This section provides a step-by-step guide to install CUDA 11.8 (drivers, toolki
     sudo ldconfig
     ```
 
-14. **Install cuDNN 8.7**
-
-    - (if needed) Register at [NVIDIA Developer](https://developer.nvidia.com/developer-program/signup) and download cuDNN.
-
-    ```bash
-    CUDNN_TAR_FILE="cudnn-linux-x86_64-8.7.0.84_cuda11-archive.tar.xz"
-    sudo wget https://developer.download.nvidia.com/compute/redist/cudnn/v8.7.0/local_installers/11.8/${CUDNN_TAR_FILE}
-    sudo tar -xvf ${CUDNN_TAR_FILE}
-    sudo mv cudnn-linux-x86_64-8.7.0.84_cuda11-archive cuda
-
-    sudo cp -P cuda/include/cudnn.h /usr/local/cuda-11.8/include
-    sudo cp -P cuda/lib/libcudnn* /usr/local/cuda-11.8/lib64/
-    sudo chmod a+r /usr/local/cuda-11.8/lib64/libcudnn*
-    ```
-
-    - Reboot the system:
-    ```bash
-    sudo reboot
-    ```
-
-15. **Verify the installation**
+14. **Verify the installation**
 
     ```bash
     nvidia-smi
     nvcc -V
     ```
 
-16. **NVIDIA Container Toolkit - Add the NVIDIA GPG key**
+15. **NVIDIA Container Toolkit - Add the NVIDIA GPG key**
 
     ```bash
     curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
@@ -143,14 +123,14 @@ This section provides a step-by-step guide to install CUDA 11.8 (drivers, toolki
         sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
     ```
 
-17. **NVIDIA Container Toolkit - Install package**
+16. **NVIDIA Container Toolkit - Install package**
 
     ```bash
     sudo apt-get update
     sudo apt-get install -y nvidia-container-toolkit
     ```
 
-18. **NVIDIA Container Toolkit - Configuring Docker to Use NVIDIA GPUs**
+17. **NVIDIA Container Toolkit - Configuring Docker to Use NVIDIA GPUs**
 
     ```bash
     sudo nvidia-ctk runtime configure --runtime=docker
@@ -159,7 +139,7 @@ This section provides a step-by-step guide to install CUDA 11.8 (drivers, toolki
     systemctl --user restart docker
     ```
 
-19. **If any problems arrive with 'docker run' using GPUs, try this**
+18. **If any problems arrive with 'docker run' using GPUs, try this**
 
     ```bash
     sudo nano /etc/docker/daemon.json

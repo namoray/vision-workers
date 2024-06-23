@@ -9,6 +9,7 @@ from loguru import logger
 from app.Workers import worker_config
 from app.models import ServerType
 
+
 class ServerManager:
     """
     This class manages starting, stopping, and handling of language and image servers.
@@ -36,21 +37,29 @@ class ServerManager:
                 ["docker", "ps", "--filter", f"publish={port}", "--format", "{{.ID}}"],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
             container_id = result.stdout.strip()
-            
+
             if container_id:
                 subprocess.run(["docker", "stop", container_id], check=True)
                 subprocess.run(["docker", "rm", container_id], check=True)
-                logger.info(f"Successfully stopped and removed the container running on port {port}.")
+                logger.info(
+                    f"Successfully stopped and removed the container running on port {port}."
+                )
             else:
                 logger.info(f"No container is running on port {port}.")
-                
+
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to stop the container running on port {port}: {e}")
 
-    async def is_server_healthy(self, port: int, server_name: str, sleep_time: int = 5, total_attempts : int = 250) -> bool:
+    async def is_server_healthy(
+        self,
+        port: int,
+        server_name: str,
+        sleep_time: int = 5,
+        total_attempts: int = 250,
+    ) -> bool:
         """
         Check if server is healthy.
         """
@@ -60,7 +69,7 @@ class ServerManager:
         async with httpx.AsyncClient(timeout=5) as client:
             while not server_is_healthy:
                 try:
-                    logger.info('Pinging '+f"http://{server_name}:{port}")
+                    logger.info("Pinging " + f"http://{server_name}:{port}")
                     response = await client.get(f"http://{server_name}:{port}")
                     server_is_healthy = response.status_code == 200
                     if not server_is_healthy:
@@ -72,8 +81,6 @@ class ServerManager:
                 i += 1
                 if i > total_attempts:
                     return server_is_healthy
-                if not self._is_container_running(server_name):
-                    return False
         return server_is_healthy
 
     async def load_model(self, load_model_config: Dict[str, Any]) -> None:
@@ -81,7 +88,7 @@ class ServerManager:
         Load a new model configuration
         """
         try:
-            async with httpx.AsyncClient(timeout=600) as client:
+            async with httpx.AsyncClient(timeout=1200) as client:
                 server_name = os.getenv("CURRENT_SERVER_NAME")
                 response = await client.post(
                     url=f"http://{server_name}:6919/load_model",
@@ -96,18 +103,29 @@ class ServerManager:
         Start a server with the given name.
         """
         server_name_str = server_name.value
-        if self.running_servers.get(server_name_str, False):
+        server_config = self.servers[server_name_str]
+        server_is_up = await self.is_server_healthy(
+            port=server_config.port,
+            server_name=server_name_str,
+            sleep_time=1,
+            total_attempts=3,
+        )
+        if self.running_servers.get(server_name_str, False) and server_is_up:
             return
 
-        server_config = self.servers[server_name_str]
         await self.stop_server()
         self._kill_process_on_port(server_config.port)
-        res = subprocess.Popen(f"docker rm -f {server_config.name}", shell=True)
+        subprocess.Popen(f"docker rm -f {server_config.name}", shell=True)
         sleep(1)
 
         command = (
             f"docker run -d --rm --name {server_config.name} "
-            + " ".join([f"-v {volume}:{mount_path}" for volume, mount_path in server_config.volumes.items()])
+            + " ".join(
+                [
+                    f"-v {volume}:{mount_path}"
+                    for volume, mount_path in server_config.volumes.items()
+                ]
+            )
             + f" {self.docker_run_flags} "
             + f"-p {server_config.port}:{server_config.port} "
             + f"--network {server_config.network} "
@@ -115,16 +133,17 @@ class ServerManager:
         )
 
         logger.info(f"Starting server: {server_config.name} 🦄")
-        
+
         self.server_process = subprocess.Popen(command, shell=True)
 
-        server_is_up = await self.is_server_healthy(server_config.port, server_config.name)
+        server_is_up = await self.is_server_healthy(
+            server_config.port, server_config.name
+        )
         if not server_is_up:
             raise Exception(f"Timeout when starting server {server_name_str}")
-        
-        os.environ['CURRENT_SERVER_NAME'] = server_config.name
-        self.running_servers[server_name_str] = True
 
+        os.environ["CURRENT_SERVER_NAME"] = server_config.name
+        self.running_servers[server_name_str] = True
 
     async def stop_server(self):
         """
@@ -137,7 +156,9 @@ class ServerManager:
                 try:
                     subprocess.run(["docker", "stop", server_name], check=True)
                     subprocess.run(["docker", "rm", server_name], check=True)
-                    logger.info(f"Successfully stopped and removed the container: {server_name}")
+                    logger.info(
+                        f"Successfully stopped and removed the container: {server_name}"
+                    )
                 except subprocess.CalledProcessError as e:
                     logger.error(f"Failed to stop the container {server_name}: {e}")
 
@@ -148,8 +169,17 @@ class ServerManager:
     def _is_container_running(self, container_name: str) -> bool:
         try:
             result = subprocess.run(
-                ["docker", "ps", "--filter", f"name={container_name}", "--format", "{{.Names}}"],
-                capture_output=True, text=True, check=True
+                [
+                    "docker",
+                    "ps",
+                    "--filter",
+                    f"name={container_name}",
+                    "--format",
+                    "{{.Names}}",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
             )
             return container_name in result.stdout.split()
         except subprocess.CalledProcessError:
