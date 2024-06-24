@@ -55,7 +55,12 @@ The Device to use for the image server (each image server can only use 1) (defau
 Here's just an example command
 ```bash
 docker pull corcelio/vision:image_server-latest
-docker run --gpus '"device=0"' --runtime=nvidia -p 6919:6919 -e PORT=6919 -e DEVICE=0 corcelio/vision:image_server-latest
+docker run --rm -d -p 6919:6919 --runtime=nvidia --gpus '"device=0"' -e PORT=6919 -e DEVICE=0 -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache corcelio/vision:image_server-latest
+```
+or
+```bash
+docker pull corcelio/vision:llm_server-latest
+docker run --rm -d -p 6919:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0 -v HF:/app/cache corcelio/vision:llm_server-latest
 ```
 
 To start another machine on the same instance:
@@ -63,8 +68,15 @@ To start another machine on the same instance:
 KEEP THE ENV VAR -e DEVICE=0 the same!
 
 ```bash
-docker run --gpus '"device=1"' --runtime=nvidia -p 6918:6918 -e PORT=6918 -e DEVICE=0 corcelio/vision:image_server-latest
+docker run --rm -d -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache corcelio/vision:image_server-latest
 ```
+or
+```bash
+docker pull corcelio/vision:llm_server-latest
+docker run --rm -d -p 6918:6918 --runtime=nvidia --gpus=all -e PORT=6918 -e DEVICE=0 -v HF:/app/cache corcelio/vision:llm_server-latest
+```
+
+
 
 
 ## [Troubleshooting](../../generic_docs/troubleshooting.md)
