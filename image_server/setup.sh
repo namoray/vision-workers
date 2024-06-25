@@ -98,6 +98,11 @@ download_file "ComfyUI/models/vae/sdxl_vae.safetensors" \
               "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix" \
               "sdxl.vae.safetensors"
 
+download_file "ComfyUI/models/upscale_models/ultrasharp.pt" \
+              "https://huggingface.co/Corcelio/upscale/resolve/main/ultrasharp.pt?download=true" \
+              "https://huggingface.co/Corcelio/upscale" \
+              "ultrasharp.pt"
+
 # Set up input images
 [ -f ComfyUI/input/init.png ] || mv ComfyUI/input/example.png ComfyUI/input/init.png
 [ -f ComfyUI/input/mask.png ] || cp ComfyUI/input/init.png ComfyUI/input/mask.png
