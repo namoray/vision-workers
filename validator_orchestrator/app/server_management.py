@@ -58,7 +58,7 @@ class ServerManager:
         port: int,
         server_name: str,
         sleep_time: int = 5,
-        total_attempts: int = 250,
+        total_attempts: int = 12 * 10 * 2,  # 20 minutes worth
     ) -> bool:
         """
         Check if server is healthy.
