@@ -1,3 +1,62 @@
+#!/bin/bash
+
+# Function to get LFS sha256 hash
+get_lfs_sha256() {
+    local repo_url=$1
+    local file_path=$2
+    
+    # Clone only the LFS pointers without downloading the actual files
+    tmp_dir=$(mktemp -d)
+    git clone --no-checkout --filter=blob:none $repo_url $tmp_dir
+    
+    cd $tmp_dir
+    git checkout HEAD -- $file_path
+    
+    # Extract the SHA256 from the LFS pointer file
+    sha256=$(cat $file_path | grep -oP '(?<=sha256:)[a-f0-9]{64}')
+    
+    cd - > /dev/null
+    rm -rf $tmp_dir
+    
+    echo $sha256
+}
+
+# Function to download file if it doesn't exist or has wrong hash
+download_file() {
+    local file=$1
+    local url=$2
+    local repo_url=$3
+    local file_path=$4
+    local temp_file="${file}.tmp"
+
+    expected_hash=$(get_lfs_sha256 $repo_url $file_path)
+
+    if [ -f "$file" ]; then
+        local_hash=$(sha256sum "$file" | awk '{print $1}')
+        if [ "$local_hash" = "$expected_hash" ]; then
+            echo "File $file exists and has correct hash. Skipping download."
+            return
+        else
+            echo "File $file exists but has incorrect hash. Re-downloading."
+        fi
+    else
+        echo "File $file does not exist. Downloading."
+    fi
+
+    wget -O "$temp_file" "$url"
+    downloaded_hash=$(sha256sum "$temp_file" | awk '{print $1}')
+
+    if [ "$downloaded_hash" = "$expected_hash" ]; then
+        mv "$temp_file" "$file"
+        echo "File $file downloaded successfully and verified."
+    else
+        echo "Downloaded file $file has incorrect hash. Please check the source and try again."
+        rm "$temp_file"
+        exit 1
+    fi
+}
+
+# ComfyUI setup
 if [ ! -d ComfyUI ] || [ -z "$(ls -A ComfyUI)" ]; then 
   git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI
   cd ComfyUI
@@ -6,24 +65,50 @@ if [ ! -d ComfyUI ] || [ -z "$(ls -A ComfyUI)" ]; then
   cd ..
 fi
 
-[ -f ComfyUI/models/checkpoints/juggerinpaint.safetensors ] || wget -O ComfyUI/models/checkpoints/juggerinpaint.safetensors https://huggingface.co/tau-vision/jugger-inpaint/resolve/main/juggerinpaint.safetensors?download=true
+# Download checkpoints
+download_file "ComfyUI/models/checkpoints/juggerinpaint.safetensors" \
+              "https://huggingface.co/tau-vision/jugger-inpaint/resolve/main/juggerinpaint.safetensors?download=true" \
+              "https://github.com/tau-vision/jugger-inpaint" \
+              "juggerinpaint.safetensors"
 
-[ -f ComfyUI/models/checkpoints/dreamshaperturbo.safetensors ] || wget -O ComfyUI/models/checkpoints/dreamshaperturbo.safetensors https://huggingface.co/Lykon/dreamshaper-xl-v2-turbo/resolve/main/DreamShaperXL_Turbo_v2_1.safetensors?download=true
+download_file "ComfyUI/models/checkpoints/dreamshaperturbo.safetensors" \
+              "https://huggingface.co/Lykon/dreamshaper-xl-v2-turbo/resolve/main/DreamShaperXL_Turbo_v2_1.safetensors?download=true" \
+              "https://github.com/Lykon/dreamshaper-xl-v2-turbo" \
+              "DreamShaperXL_Turbo_v2_1.safetensors"
 
-[ -f ComfyUI/models/checkpoints/proteus.safetensors ] || wget -O ComfyUI/models/checkpoints/proteus.safetensors https://huggingface.co/dataautogpt3/ProteusV0.4-Lightning/resolve/main/ProteusV0.4-Lighting.safetensors?download=true
+download_file "ComfyUI/models/checkpoints/proteus.safetensors" \
+              "https://huggingface.co/dataautogpt3/ProteusV0.4-Lightning/resolve/main/ProteusV0.4-Lighting.safetensors?download=true" \
+              "https://github.com/dataautogpt3/ProteusV0.4-Lightning" \
+              "ProteusV0.4-Lighting.safetensors"
 
-[ -f ComfyUI/models/checkpoints/playground.safetensors ] || wget -O ComfyUI/models/checkpoints/playground.safetensors https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic/resolve/main/playground-v2.5-1024px-aesthetic.fp16.safetensors?download=true
+download_file "ComfyUI/models/checkpoints/playground.safetensors" \
+              "https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic/resolve/main/playground-v2.5-1024px-aesthetic.fp16.safetensors?download=true" \
+              "https://github.com/playgroundai/playground-v2.5-1024px-aesthetic" \
+              "playground-v2.5-1024px-aesthetic.fp16.safetensors"
 
-[ -f ComfyUI/models/embeddings/negativeXL_A.safetensors ] || wget -O ComfyUI/models/embeddings/negativeXL_A.safetensors https://huggingface.co/gsdf/CounterfeitXL/resolve/main/embeddings/negativeXL_A.safetensors?download=true
+# Download embeddings
+download_file "ComfyUI/models/embeddings/negativeXL_A.safetensors" \
+              "https://huggingface.co/gsdf/CounterfeitXL/resolve/main/embeddings/negativeXL_A.safetensors?download=true" \
+              "https://github.com/gsdf/CounterfeitXL" \
+              "embeddings/negativeXL_A.safetensors"
 
-[ -f ComfyUI/models/vae/sdxl_vae.safetensors ] || wget -O ComfyUI/models/vae/sdxl_vae.safetensors https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors?download=true
+# Download VAE
+download_file "ComfyUI/models/vae/sdxl_vae.safetensors" \
+              "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors?download=true" \
+              "https://github.com/madebyollin/sdxl-vae-fp16-fix" \
+              "sdxl.vae.safetensors"
 
-[ -f ComfyUI/models/upscale_models/ultrasharp.pt ] || wget -O ComfyUI/models/upscale_models/ultrasharp.pt https://civitai.com/api/download/models/125843
+# Download upscale model
+download_file "ComfyUI/models/upscale_models/ultrasharp.pt" \
+              "https://civitai.com/api/download/models/125843" \
+              "https://github.com/civitai/models" \
+              "125843"  # This might need adjustment depending on how Civitai structures their repos
 
+# Set up input images
 [ -f ComfyUI/input/init.png ] || mv ComfyUI/input/example.png ComfyUI/input/init.png
-
 [ -f ComfyUI/input/mask.png ] || cp ComfyUI/input/init.png ComfyUI/input/mask.png
 
+# Custom nodes setup
 cd ComfyUI/custom_nodes
 
 if [ ! -d ComfyUI-Inspire-Pack ] || [ -z "$(ls -A ComfyUI-Inspire-Pack)" ]; then 
@@ -49,25 +134,39 @@ fi
 
 cd ../..
 
+# InsightFace models setup
 mkdir -p ComfyUI/models/insightface/models
 cd ComfyUI/models/insightface/models
 
-[ -f antelopev2.zip ] || wget -O antelopev2.zip https://huggingface.co/tau-vision/insightface-antelopev2/resolve/main/antelopev2.zip
+download_file "antelopev2.zip" \
+              "https://huggingface.co/tau-vision/insightface-antelopev2/resolve/main/antelopev2.zip" \
+              "https://github.com/tau-vision/insightface-antelopev2" \
+              "antelopev2.zip"
 
 [ -d antelopev2 ] || unzip antelopev2.zip
 
 cd ../../../..
 
+# InstantID models setup
 mkdir -p ComfyUI/models/instantid
 cd ComfyUI/models/instantid
 
-[ -f ip-adapter.bin ] || wget -O ip-adapter.bin https://huggingface.co/InstantX/InstantID/resolve/main/ip-adapter.bin?download=true
+download_file "ip-adapter.bin" \
+              "https://huggingface.co/InstantX/InstantID/resolve/main/ip-adapter.bin?download=true" \
+              "https://github.com/InstantX/InstantID" \
+              "ip-adapter.bin"
 
 cd ../../..
 
-[ ! -d "ComfyUI/models/controlnet" ] && mkdir ComfyUI/models/controlnet
+# ControlNet setup
+mkdir -p ComfyUI/models/controlnet
 cd ComfyUI/models/controlnet
 
-[ -f diffusion_pytorch_model.safetensors ] || wget -O diffusion_pytorch_model.safetensors https://huggingface.co/InstantX/InstantID/resolve/main/ControlNetModel/diffusion_pytorch_model.safetensors?download=true
+download_file "diffusion_pytorch_model.safetensors" \
+              "https://huggingface.co/InstantX/InstantID/resolve/main/ControlNetModel/diffusion_pytorch_model.safetensors?download=true" \
+              "https://github.com/InstantX/InstantID" \
+              "ControlNetModel/diffusion_pytorch_model.safetensors"
 
 cd ../../..
+
+echo "Setup completed successfully."
