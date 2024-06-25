@@ -29,6 +29,18 @@ download_file() {
     local file_path=$4
     local temp_file="${file}.tmp"
 
+    # Check if the file is a ZIP file
+    if [[ "${file}" == *.zip ]]; then
+        echo "ZIP file detected. Skipping checksum verification for ${file}."
+        if [ ! -f "$file" ]; then
+            wget -O "$file" "$url"
+            echo "Downloaded ZIP file ${file}."
+        else
+            echo "ZIP file ${file} already exists. Skipping download."
+        fi
+        return
+    fi
+
     expected_hash=$(get_lfs_sha256 $repo_url $file_path)
 
     if [ -f "$file" ]; then
@@ -98,6 +110,7 @@ download_file "ComfyUI/models/vae/sdxl_vae.safetensors" \
               "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix" \
               "sdxl.vae.safetensors"
 
+# Download upscale model
 download_file "ComfyUI/models/upscale_models/ultrasharp.pt" \
               "https://huggingface.co/Corcelio/upscale/resolve/main/ultrasharp.pt?download=true" \
               "https://huggingface.co/Corcelio/upscale" \
@@ -139,7 +152,7 @@ cd ComfyUI/models/insightface/models
 
 download_file "antelopev2.zip" \
               "https://huggingface.co/tau-vision/insightface-antelopev2/resolve/main/antelopev2.zip" \
-              "https://github.com/tau-vision/insightface-antelopev2" \
+              "https://huggingface.co/tau-vision/insightface-antelopev2" \
               "antelopev2.zip"
 
 [ -d antelopev2 ] || unzip antelopev2.zip
@@ -152,7 +165,7 @@ cd ComfyUI/models/instantid
 
 download_file "ip-adapter.bin" \
               "https://huggingface.co/InstantX/InstantID/resolve/main/ip-adapter.bin?download=true" \
-              "https://github.com/InstantX/InstantID" \
+              "https://huggingface.co/InstantX/InstantID" \
               "ip-adapter.bin"
 
 cd ../../..
@@ -163,7 +176,7 @@ cd ComfyUI/models/controlnet
 
 download_file "diffusion_pytorch_model.safetensors" \
               "https://huggingface.co/InstantX/InstantID/resolve/main/ControlNetModel/diffusion_pytorch_model.safetensors?download=true" \
-              "https://github.com/InstantX/InstantID" \
+              "https://huggingface.co/InstantX/InstantID" \
               "ControlNetModel/diffusion_pytorch_model.safetensors"
 
 cd ../../..
