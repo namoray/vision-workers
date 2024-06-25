@@ -74,6 +74,8 @@ class ServerManager:
                     server_is_healthy = response.status_code == 200
                     if not server_is_healthy:
                         await asyncio.sleep(sleep_time)
+                    else:
+                        return server_is_healthy
                 except httpx.RequestError:
                     await asyncio.sleep(sleep_time)
                 except KeyboardInterrupt:
@@ -113,10 +115,9 @@ class ServerManager:
         if self.running_servers.get(server_name_str, False) and server_is_up:
             return
 
-        await self.stop_server()
         self._kill_process_on_port(server_config.port)
-        subprocess.Popen(f"docker rm -f {server_config.name}", shell=True)
-        sleep(1)
+        subprocess.Popen(f"docker rm -f {server_config.name}", shell=True).wait()
+        sleep(2)
 
         command = (
             f"docker run -d --rm --name {server_config.name} "
@@ -133,7 +134,7 @@ class ServerManager:
         )
 
         logger.info(f"Starting server: {server_config.name} 🦄")
-
+        
         self.server_process = subprocess.Popen(command, shell=True)
 
         server_is_up = await self.is_server_healthy(

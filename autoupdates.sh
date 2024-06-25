@@ -73,7 +73,7 @@ check_and_update_script() {
 
     # Fetch changes from the remote repository and store the output
     sudo -u $USER git stash
-    PULL_OUTPUT=$(sudo -u $USER git pull)
+    PULL_OUTPUT=$(sudo -u $USER git pull --rebase --autostash)
 
     # Check if the script file is mentioned in the pull output
     if echo "$PULL_OUTPUT" | grep -q "$SCRIPT_NAME"; then
