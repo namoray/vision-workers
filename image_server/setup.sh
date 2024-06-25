@@ -68,41 +68,35 @@ fi
 # Download checkpoints
 download_file "ComfyUI/models/checkpoints/juggerinpaint.safetensors" \
               "https://huggingface.co/tau-vision/jugger-inpaint/resolve/main/juggerinpaint.safetensors?download=true" \
-              "https://github.com/tau-vision/jugger-inpaint" \
+              "https://huggingface.co/tau-vision/jugger-inpaint" \
               "juggerinpaint.safetensors"
 
 download_file "ComfyUI/models/checkpoints/dreamshaperturbo.safetensors" \
               "https://huggingface.co/Lykon/dreamshaper-xl-v2-turbo/resolve/main/DreamShaperXL_Turbo_v2_1.safetensors?download=true" \
-              "https://github.com/Lykon/dreamshaper-xl-v2-turbo" \
+              "https://huggingface.co/Lykon/dreamshaper-xl-v2-turbo" \
               "DreamShaperXL_Turbo_v2_1.safetensors"
 
 download_file "ComfyUI/models/checkpoints/proteus.safetensors" \
               "https://huggingface.co/dataautogpt3/ProteusV0.4-Lightning/resolve/main/ProteusV0.4-Lighting.safetensors?download=true" \
-              "https://github.com/dataautogpt3/ProteusV0.4-Lightning" \
+              "https://huggingface.co/dataautogpt3/ProteusV0.4-Lightning" \
               "ProteusV0.4-Lighting.safetensors"
 
 download_file "ComfyUI/models/checkpoints/playground.safetensors" \
               "https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic/resolve/main/playground-v2.5-1024px-aesthetic.fp16.safetensors?download=true" \
-              "https://github.com/playgroundai/playground-v2.5-1024px-aesthetic" \
+              "https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic" \
               "playground-v2.5-1024px-aesthetic.fp16.safetensors"
 
 # Download embeddings
 download_file "ComfyUI/models/embeddings/negativeXL_A.safetensors" \
               "https://huggingface.co/gsdf/CounterfeitXL/resolve/main/embeddings/negativeXL_A.safetensors?download=true" \
-              "https://github.com/gsdf/CounterfeitXL" \
+              "https://huggingface.co/gsdf/CounterfeitXL" \
               "embeddings/negativeXL_A.safetensors"
 
 # Download VAE
 download_file "ComfyUI/models/vae/sdxl_vae.safetensors" \
               "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors?download=true" \
-              "https://github.com/madebyollin/sdxl-vae-fp16-fix" \
+              "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix" \
               "sdxl.vae.safetensors"
-
-# Download upscale model
-download_file "ComfyUI/models/upscale_models/ultrasharp.pt" \
-              "https://civitai.com/api/download/models/125843" \
-              "https://github.com/civitai/models" \
-              "125843"  # This might need adjustment depending on how Civitai structures their repos
 
 # Set up input images
 [ -f ComfyUI/input/init.png ] || mv ComfyUI/input/example.png ComfyUI/input/init.png
