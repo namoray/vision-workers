@@ -2,6 +2,11 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
+if [ "$(id -u)" -ne 0 ]; then
+  sudo "$0" "$@"
+  exit
+fi
+
 # Pre-configure debconf to automatically select the desired option for openssh-server
 echo "openssh-server openssh-server/permit-root-login boolean true" | sudo debconf-set-selections
 echo "openssh-server openssh-server/sshd_config select keep" | sudo debconf-set-selections

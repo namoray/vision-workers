@@ -3,6 +3,11 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
+if [ "$(id -u)" -ne 0 ]; then
+  sudo "$0" "$@"
+  exit
+fi
+
 handle_broken_install() {
   sudo apt --fix-broken install -y
   if [ $? -ne 0 ]; then
@@ -17,6 +22,12 @@ handle_broken_install() {
     sudo apt-get install -f -y
     sudo apt-get upgrade -y
   fi
+
+  # Handle unmet dependencies manually
+  unmet_deps=$(apt-cache depends cuda-11-8 | grep "Depends:" | awk '{print $2}')
+  for dep in $unmet_deps; do
+    sudo apt-get install -y $dep
+  done  
 }
 
 # add nvidia repository

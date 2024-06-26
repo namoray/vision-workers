@@ -2,6 +2,11 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
+if [ "$(id -u)" -ne 0 ]; then
+  sudo "$0" "$@"
+  exit
+fi
+
 # Add Docker's official GPG key:
 sudo apt-get update -y
 sudo apt-get install -y ca-certificates curl

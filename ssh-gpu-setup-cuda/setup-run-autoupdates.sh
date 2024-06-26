@@ -60,6 +60,16 @@ echo -n "Enter Personal Access Token (PAT) for private repository (leave blank i
 read -s PAT
 echo
 
+echo -n "Enter Docker Username (leave blank if not needed): "
+read DOCKER_USER
+echo
+
+if [ -n "$DOCKER_USER" ]; then
+  echo -n "Enter Docker Password: "
+  read -s DOCKER_PASSWORD
+  echo
+fi
+
 chmod +x meta-setup.sh 
 ./meta-setup.sh -h $SSH_HOST -k $SSH_KEY -u $SSH_USER -p $SSH_PORT
 
@@ -77,7 +87,13 @@ if [ $? -eq 0 ]; then
   if [ $? -eq 0 ]; then
     echo "Git repository cloned and checked out to branch $BRANCH_NAME successfully."
     
-    RUN_AUTO_UPDATES="cd $(basename $GIT_REPO .git) && chmod +x autoupdates.sh && pm2 start autoupdates.sh --name autoupdates -- $ORCHESTRATOR_IMAGE $LLM_IMAGE $IMAGE_SERVER_IMAGE"    
+    if [ -n "$DOCKER_USER" ] && [ -n "$DOCKER_PASSWORD" ]; then
+      DOCKER_LOGIN_CMD="docker login -u $DOCKER_USER -p $DOCKER_PASSWORD"
+    else
+      DOCKER_LOGIN_CMD=""
+    fi
+
+    RUN_AUTO_UPDATES="${DOCKER_LOGIN_CMD} && cd $(basename $GIT_REPO .git) && chmod +x autoupdates.sh && pm2 start autoupdates.sh --name autoupdates -- $ORCHESTRATOR_IMAGE $LLM_IMAGE $IMAGE_SERVER_IMAGE"
     ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $SSH_KEY -p $SSH_PORT $SSH_USER@$SSH_HOST "$RUN_AUTO_UPDATES"
 
     if [ $? -eq 0 ]; then
