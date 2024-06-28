@@ -3,6 +3,4 @@
 1. **Make sure you checkout to the main branch, then run**
 
 ```bash
-chmod +x autoupdates.sh
-sudo ./autoupdates.sh
-```
+python3 run_autoupdates_validator.py```

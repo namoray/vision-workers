@@ -101,7 +101,7 @@ fi
 sleep 2
 
 # Test nvcc --version command (toolkit)
-if output_nvcc=$(ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $SSH_KEY -p $SSH_PORT $SSH_USER@$SSH_HOST "source ~/.bashrc; export PATH=/usr/local/cuda-11.8/bin:\$PATH; nvcc --version"); then
+if output_nvcc=$(ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $SSH_KEY -p $SSH_PORT $SSH_USER@$SSH_HOST "export PATH=/usr/local/cuda/bin:\$PATH && nvcc --version"); then
   echo "nvcc --version command succeeded."
   echo "Output of nvcc --version:"
   echo "$output_nvcc"

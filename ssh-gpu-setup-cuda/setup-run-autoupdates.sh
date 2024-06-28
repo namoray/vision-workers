@@ -88,18 +88,18 @@ if [ $? -eq 0 ]; then
     echo "Git repository cloned and checked out to branch $BRANCH_NAME successfully."
     
     if [ -n "$DOCKER_USER" ] && [ -n "$DOCKER_PASSWORD" ]; then
-      DOCKER_LOGIN_CMD="docker login -u $DOCKER_USER -p $DOCKER_PASSWORD"
+      DOCKER_LOGIN_CMD="docker login -u $DOCKER_USER -p $DOCKER_PASSWORD &&"
     else
       DOCKER_LOGIN_CMD=""
     fi
 
-    RUN_AUTO_UPDATES="${DOCKER_LOGIN_CMD} && cd $(basename $GIT_REPO .git) && chmod +x autoupdates.sh && pm2 start autoupdates.sh --name autoupdates -- $ORCHESTRATOR_IMAGE $LLM_IMAGE $IMAGE_SERVER_IMAGE"
+    RUN_AUTO_UPDATES="${DOCKER_LOGIN_CMD} cd $(basename $GIT_REPO .git) && pm2 start --name run_autoupdates_validator --interpreter python3 run_autoupdates_validator.py -- --orchestrator_image $ORCHESTRATOR_IMAGE --llm_image $LLM_IMAGE --image_server_image $IMAGE_SERVER_IMAGE"
     ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $SSH_KEY -p $SSH_PORT $SSH_USER@$SSH_HOST "$RUN_AUTO_UPDATES"
 
     if [ $? -eq 0 ]; then
-      echo "autoupdates.sh started successfully."
+      echo "autoupdates started successfully."
     else
-      echo "Failed to start autoupdates.sh."
+      echo "Failed to start autoupdates."
       exit 1
     fi
 

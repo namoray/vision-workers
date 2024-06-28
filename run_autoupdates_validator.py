@@ -1,0 +1,53 @@
+import os
+import subprocess
+import time
+import argparse
+
+def should_update_local(local_commit, remote_commit):
+    return local_commit != remote_commit
+
+def run_auto_updater(orchestrator_image, llm_image, image_server_image):
+    launch_command = f"./launch_orchestrator.sh {orchestrator_image} {llm_image} {image_server_image}"
+    os.system(launch_command)
+    time.sleep(10)
+
+    while True:
+        current_branch = subprocess.getoutput("git rev-parse --abbrev-ref HEAD")
+        local_commit = subprocess.getoutput("git rev-parse HEAD")
+        os.system("git fetch")
+        remote_commit = subprocess.getoutput(f"git rev-parse origin/{current_branch}")
+
+        if should_update_local(local_commit, remote_commit):
+            print("Local repo is not up-to-date. Updating...")
+            reset_cmd = f"git reset --hard {remote_commit}"
+            process = subprocess.Popen(reset_cmd.split(), stdout=subprocess.PIPE)
+            output, error = process.communicate()
+
+            if error:
+                print("Error in updating:", error)
+            else:
+                print("Updated local repo to latest version:", remote_commit)
+
+                print("Running the autoupdate steps...")
+                os.system("./autoupdates_validator_steps.sh")
+                time.sleep(20)
+
+                print("Finished running the autoupdate steps! Ready to go 😎")
+
+        else:
+            print("Repo is up-to-date.")
+
+        time.sleep(60) 
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run auto updates for a validator")
+    parser.add_argument('--orchestrator_image', type=str, default="corcelio/vision:orchestrator-latest",
+                        help='Docker image for the orchestrator')
+    parser.add_argument('--llm_image', type=str, default="corcelio/vision:llm_server-latest",
+                        help='Docker image for the LLM worker')
+    parser.add_argument('--image_server_image', type=str, default="corcelio/vision:image_server-latest",
+                        help='Docker image for the image worker')
+
+    args = parser.parse_args()
+
+    run_auto_updater(args.orchestrator_image, args.llm_image, args.image_server_image)
