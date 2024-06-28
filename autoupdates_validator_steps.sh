@@ -1,5 +1,5 @@
 #!/bin/bash
 
-## STEPS TO RUN IN AUTOUPDATES
+## STEPS TO RUN IN AUTOUPDATES (you can pass on custom docker images - orchestrator, llm, image - )
 
-./pull_reload.sh "corcelio/vision:orchestrator-latest" "corcelio/vision:llm_server-latest" "corcelio/vision:image_server-latest"
+./launch_orchestrator.sh

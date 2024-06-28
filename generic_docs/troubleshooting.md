@@ -59,7 +59,8 @@ sudo nano /etc/docker/daemon.json
 sudo systemctl restart docker
 ```
 
-If it still fails, I would advise reaching out for support
+If it still fails, I would advise doing a full cuda installation as detailed here:
+[Full cuda installation](full_cuda_install.md)
 
 
 

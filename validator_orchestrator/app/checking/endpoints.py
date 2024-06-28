@@ -63,7 +63,6 @@ async def process_check_result(
             server_needed = task_config.server_needed
             await server_manager.start_server(server_needed)
 
-            logger.debug(f"Task config: {task_config}")
             load_model_config = task_config.load_model_config
 
             if load_model_config is not None:

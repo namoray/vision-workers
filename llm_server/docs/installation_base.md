@@ -1,22 +1,15 @@
 **Vision LLM inference server**
 
-In order to run the server on bare metal, you will need docker!
+In order to run the server on bare metal, you will need Nvidia drivers, cuda toolkit & docker!
 
-### Install docker
-[docker readme](../../generic_docs/install_docker.md)
+## 1. Prerequisites
+[Prerequisites here](../../generic_docs/prerequisites.md)
 
-### Pull the image
+## 2. Pull the image
 ```bash
 docker pull corcelio/vision:llm_server-latest
 ```
-### Install conda
-I recommend conda for an easy installation of nvidia-toolkit
-[Conda installation](../../generic_docs/install_conda.md)
-
-### Install nvidia stuff
-[nvidia readme](../../generic_docs/install_nvidia_stuff.md)
-
-### Running the image
+## 3. Running the image
 
 RUNNING WITH ENV VARS:
 
@@ -44,9 +37,15 @@ which revision of the model to use e.g.: `gptq-8bit-128g-actorder_True`
 
 ## Running the docker image
 
+=> In case you wanna use docker volumes in order to avoid re-downloading models after reloading containers, create these two volumes: 
+```bash
+docker volume create HF
+```
+
+
 Here's just an example command
 ```bash
-docker run -p 6919:6919 --gpus '"device=0"' --runtime=nvidia -e PORT=6919 -e MODEL=TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ -e HALF_PRECISION=true -e REVISION=gptq-8bit-128g-actorder_True -e CUDA_VISIBLE_DEVICES=0 corcelio/vision:llm_server-latest
+docker run --rm -d -v HF:/app/cache -p 6919:6919 --gpus '"device=0"' --runtime=nvidia -e PORT=6919 -e MODEL=TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ -e HALF_PRECISION=true -e REVISION=gptq-8bit-128g-actorder_True -e CUDA_VISIBLE_DEVICES=0 corcelio/vision:llm_server-latest
 ```
 
 If that doesn't run properly, try removing the flag

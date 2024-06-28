@@ -1,22 +1,16 @@
 **Vision ComfyUI Inference Server**
 
-In order to run the server on bare metal, you will need docker!
+In order to run the server on bare metal, you will need Nvidia drivers, cuda toolkit & docker!
 
-### Install docker
-[docker readme](../../generic_docs/install_docker.md)
+## 1. Prerequisites
+[Prerequisites here](../../generic_docs/prerequisites.md)
 
-### Pull the image
+
+## 2. Pull the image
 ```bash
 docker pull corcelio/vision:image_server-latest
 ```
-### Install conda
-I recommend conda for an easy installation of nvidia-toolkit
-[Conda installation](../../generic_docs/install_conda.md)
-
-### Install nvidia stuff
-[nvidia readme](../../generic_docs/install_nvidia_stuff.md)
-
-### Running the image
+## 3. Running the image
 
 **ENV VARS**
 
@@ -49,18 +43,25 @@ The Device to use for the image server (each image server can only use 1) (defau
 - USe an A100 or similar with --high-vram or --gpu-only, and have WARMUP true
 - Use a 4090 with --high-vram/ --gpu-only, WARMUP FALSE, and only use the server with certain models. For example, use a load balancer to direct all `proteus` requests to this server, and then make another 4090 for playground, etc - depending on what you want to support.
 
-
 ### Running locally
 
-Here's just an example command
+=> In case you wanna use docker volumes in order to avoid re-downloading models after reloading containers, create these two volumes: 
+```bash
+docker volume create HF
+docker volume create COMFY
+```
+
+
+
+Here's just an example command (with docker volumes)
 ```bash
 docker pull corcelio/vision:image_server-latest
-docker run --rm -d -p 6919:6919 --runtime=nvidia --gpus '"device=0"' -e PORT=6919 -e DEVICE=0 -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache corcelio/vision:image_server-latest
+docker run --rm -d -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6919:6919 --runtime=nvidia --gpus '"device=0"' -e PORT=6919 -e DEVICE=0 corcelio/vision:image_server-latest
 ```
 or
 ```bash
 docker pull corcelio/vision:llm_server-latest
-docker run --rm -d -p 6919:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0 -v HF:/app/cache corcelio/vision:llm_server-latest
+docker run --rm -d -v HF:/app/cache -p 6919:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0  corcelio/vision:llm_server-latest
 ```
 
 To start another machine on the same instance:
@@ -68,15 +69,12 @@ To start another machine on the same instance:
 KEEP THE ENV VAR -e DEVICE=0 the same!
 
 ```bash
-docker run --rm -d -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache corcelio/vision:image_server-latest
+docker run --rm -d -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 corcelio/vision:image_server-latest
 ```
 or
 ```bash
 docker pull corcelio/vision:llm_server-latest
-docker run --rm -d -p 6918:6918 --runtime=nvidia --gpus=all -e PORT=6918 -e DEVICE=0 -v HF:/app/cache corcelio/vision:llm_server-latest
+docker run --rm -d -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus=all -e PORT=6918 -e DEVICE=0 corcelio/vision:llm_server-latest
 ```
-
-
-
 
 ## [Troubleshooting](../../generic_docs/troubleshooting.md)
