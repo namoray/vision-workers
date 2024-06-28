@@ -82,4 +82,4 @@ docker volume inspect COMFY > /dev/null 2>&1 || docker volume create COMFY
 
 docker network inspect $NETWORK > /dev/null 2>&1 || docker network create $NETWORK
 
-docker run -d --rm --name $ORCHESTRATOR_CONTAINER_NAME $DOCKER_RUN_FLAGS -p $ORCHESTRATOR_PORT:$ORCHESTRATOR_PORT $ORCHESTRATOR_IMAGE
+docker run -d --rm --name $ORCHESTRATOR_CONTAINER_NAME $DOCKER_RUN_FLAGS -e PORT=$ORCHESTRATOR_PORT -p $ORCHESTRATOR_PORT:$ORCHESTRATOR_PORT $ORCHESTRATOR_IMAGE
