@@ -8,7 +8,7 @@ DEFAULT_IMAGE_SERVER_IMAGE="corcelio/vision:image_server-latest"
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --no-runtime-flag) NO_RUNTIME_FLAG=1 ;;
+        --nvidia-runtime) NVIDIA_RUNTIME_FLAG=1 ;;
         --device) DEVICE="$2"; shift ;;
         --orchestrator-image) ORCHESTRATOR_IMAGE="$2"; shift ;;
         --llm-image) LLM_IMAGE="$2"; shift ;;
@@ -34,7 +34,8 @@ DOCKER_RUN_FLAGS="--rm \
                   --network $NETWORK"
 
 # Add the --runtime=nvidia flag unless --no-runtime-flag is specified
-if [[ -z "$NO_RUNTIME_FLAG" ]]; then
+
+if [[ -n "$NVIDIA_RUNTIME_FLAG" ]]; then
     DOCKER_RUN_FLAGS+=" --runtime=nvidia"
 fi
 
