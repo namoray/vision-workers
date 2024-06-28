@@ -1,7 +1,8 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: $0 -o ORCHESTRATOR_IMAGE -l LLM_IMAGE -i IMAGE_SERVER_IMAGE"
+    echo "Usage: $0 [-o ORCHESTRATOR_IMAGE] [-l LLM_IMAGE] [-i IMAGE_SERVER_IMAGE]"
+    echo "At least one of -o, -l, or -i must be specified."
     echo "Optional: -d DESTINATION_PREFIX (default: corcelio/vision)"
     echo "Optional: -s SUFFIX (default: latest)"
     exit 1
@@ -22,13 +23,10 @@ while getopts "o:l:i:d:s:" opt; do
     esac
 done
 
-if [ -z "$ORCHESTRATOR_IMAGE" ] || [ -z "$LLM_IMAGE" ] || [ -z "$IMAGE_SERVER_IMAGE" ]; then
+if [ -z "$ORCHESTRATOR_IMAGE" ] && [ -z "$LLM_IMAGE" ] && [ -z "$IMAGE_SERVER_IMAGE" ]; then
+    echo "Error: At least one of ORCHESTRATOR_IMAGE, LLM_IMAGE, or IMAGE_SERVER_IMAGE must be specified."
     usage
 fi
-
-ORCHESTRATOR_TAG="$DEST_PREFIX:orchestrator-$SUFFIX"
-LLM_TAG="$DEST_PREFIX:llm_server-$SUFFIX"
-IMAGE_SERVER_TAG="$DEST_PREFIX:image_server-$SUFFIX"
 
 # Prompt for Docker Hub credentials
 read -p "Docker Hub Username: " DOCKER_USER
@@ -71,47 +69,47 @@ tag_and_push() {
     return 0
 }
 
-tag_and_push $ORCHESTRATOR_IMAGE $ORCHESTRATOR_TAG
-ORCHESTRATOR_RESULT=$?
+process_image() {
+    local IMAGE=$1
+    local TYPE=$2
+    local DEST_TAG="$DEST_PREFIX:${TYPE,,}_server-$SUFFIX"
 
-tag_and_push $LLM_IMAGE $LLM_TAG
-LLM_RESULT=$?
-
-tag_and_push $IMAGE_SERVER_IMAGE $IMAGE_SERVER_TAG
-IMAGE_SERVER_RESULT=$?
+    if [ -n "$IMAGE" ]; then
+        tag_and_push $IMAGE $DEST_TAG
+        local RESULT=$?
+        if [ $RESULT -eq 0 ]; then
+            echo "$TYPE image ($IMAGE) tagged and pushed as:"
+            echo "  $DEST_TAG"
+            echo "Source: $IMAGE -> Destination: $DEST_TAG"
+        else
+            echo "Failed to process $TYPE image ($IMAGE)"
+        fi
+        return $RESULT
+    fi
+    return 0
+}
 
 echo "Summary of actions:"
-if [ $ORCHESTRATOR_RESULT -eq 0 ]; then
-    echo "Orchestrator image ($ORCHESTRATOR_IMAGE) tagged and pushed as:"
-    echo "  $ORCHESTRATOR_TAG"
-else
-    echo "Failed to process orchestrator image ($ORCHESTRATOR_IMAGE)"
-fi
+process_image "$ORCHESTRATOR_IMAGE" "Orchestrator"
+ORCHESTRATOR_RESULT=$?
 
-if [ $LLM_RESULT -eq 0 ]; then
-    echo "LLM image ($LLM_IMAGE) tagged and pushed as:"
-    echo "  $LLM_TAG"
-else
-    echo "Failed to process LLM image ($LLM_IMAGE)"
-fi
+process_image "$LLM_IMAGE" "LLM"
+LLM_RESULT=$?
 
-if [ $IMAGE_SERVER_RESULT -eq 0 ]; then
-    echo "Image server image ($IMAGE_SERVER_IMAGE) tagged and pushed as:"
-    echo "  $IMAGE_SERVER_TAG"
-else
-    echo "Failed to process image server image ($IMAGE_SERVER_IMAGE)"
-fi
+process_image "$IMAGE_SERVER_IMAGE" "Image"
+IMAGE_SERVER_RESULT=$?
 
 echo "-------------------------------------"
 echo "Summary:"
 echo "-------------------------------------"
-[ $ORCHESTRATOR_RESULT -eq 0 ] && echo "Source: $ORCHESTRATOR_IMAGE -> Destination: $ORCHESTRATOR_TAG"
-[ $LLM_RESULT -eq 0 ] && echo "Source: $LLM_IMAGE -> Destination: $LLM_TAG"
-[ $IMAGE_SERVER_RESULT -eq 0 ] && echo "Source: $IMAGE_SERVER_IMAGE -> Destination: $IMAGE_SERVER_TAG"
+[ -n "$ORCHESTRATOR_IMAGE" ] && [ $ORCHESTRATOR_RESULT -eq 0 ] && echo "Source: $ORCHESTRATOR_IMAGE -> Destination: $DEST_PREFIX:orchestrator_server-$SUFFIX"
+[ -n "$LLM_IMAGE" ] && [ $LLM_RESULT -eq 0 ] && echo "Source: $LLM_IMAGE -> Destination: $DEST_PREFIX:llm_server-$SUFFIX"
+[ -n "$IMAGE_SERVER_IMAGE" ] && [ $IMAGE_SERVER_RESULT -eq 0 ] && echo "Source: $IMAGE_SERVER_IMAGE -> Destination: $DEST_PREFIX:image_server-$SUFFIX"
 echo "-------------------------------------"
 
 if [ $ORCHESTRATOR_RESULT -ne 0 ] || [ $LLM_RESULT -ne 0 ] || [ $IMAGE_SERVER_RESULT -ne 0 ]; then
+    echo "Some images failed to process."
     exit 1
 fi
 
-echo "All images processed successfully."
+echo "All specified images processed successfully."
