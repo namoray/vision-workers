@@ -5,6 +5,7 @@
 1. [Install Docker](install_docker.md)
 2. [Install Conda](install_miniconda_create_venv.md)
 3. [Install CUDA Toolkit](install_cuda_toolkit.md)
+4. [Install PM2](install_pm2.md)
 
 If any cuda problems persist, please check out:
 

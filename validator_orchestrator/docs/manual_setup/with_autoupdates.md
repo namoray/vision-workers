@@ -18,7 +18,7 @@ Port 6919 does not need to be exposed. Instead, port 6920 should be exposed (or 
 Run the server using the following command (with autoupdates):
 
 ```bash
-python3 run_autoupdates_validator.py
+pm2 start --name run_autoupdates_validator --interpreter python3 run_autoupdates_validator.py
 ```
 
 ## Troubleshooting
