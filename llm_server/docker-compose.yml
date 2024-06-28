@@ -1,0 +1,10 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - "/entrypoint.sh"
+    restart: always
+    ports:
+      - 8080:8080
