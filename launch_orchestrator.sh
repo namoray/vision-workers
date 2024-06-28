@@ -3,7 +3,7 @@
 DEFAULT_ORCHESTRATOR_IMAGE="corcelio/vision:orchestrator-latest"
 DEFAULT_LLM_IMAGE="corcelio/vision:llm_server-latest"
 DEFAULT_IMAGE_SERVER_IMAGE="corcelio/vision:image_server-latest"
-
+DEFAULT_ORCHESTRATOR_PORT=6920
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
@@ -13,6 +13,7 @@ while [[ "$#" -gt 0 ]]; do
         --orchestrator-image) ORCHESTRATOR_IMAGE="$2"; shift ;;
         --llm-image) LLM_IMAGE="$2"; shift ;;
         --image-server-image) IMAGE_SERVER_IMAGE="$2"; shift ;;
+        --port) PORT="$2"; shift ;;
         *) echo "Unknown parameter: $1"; exit 1 ;;
     esac
     shift
@@ -22,7 +23,8 @@ done
 ORCHESTRATOR_IMAGE=${ORCHESTRATOR_IMAGE:-$DEFAULT_ORCHESTRATOR_IMAGE}
 LLM_IMAGE=${LLM_IMAGE:-$DEFAULT_LLM_IMAGE}
 IMAGE_SERVER_IMAGE=${IMAGE_SERVER_IMAGE:-$DEFAULT_IMAGE_SERVER_IMAGE}
-ORCHESTRATOR_PORT=6920
+PORT=${PORT:-$DEFAULT_ORCHESTRATOR_PORT}s
+
 
 NETWORK="comm"
 ORCHESTRATOR_CONTAINER_NAME="orchestrator"
