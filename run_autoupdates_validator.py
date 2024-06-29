@@ -7,7 +7,7 @@ def should_update_local(local_commit, remote_commit):
     return local_commit != remote_commit
 
 def run_auto_updater(orchestrator_image, llm_image, image_server_image):
-    launch_command = f"./launch_orchestrator.sh -o {orchestrator_image} -l {llm_image} -i {image_server_image}"
+    launch_command = f"./launch_orchestrator.sh --orchestrator-image {orchestrator_image} --llm-image {llm_image} --image-server-image {image_server_image}"
     os.system(launch_command)
     time.sleep(10)
 
