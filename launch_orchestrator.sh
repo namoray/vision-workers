@@ -79,14 +79,21 @@ check_and_pull_image $ORCHESTRATOR_IMAGE
 check_and_pull_image $LLM_IMAGE
 check_and_pull_image $IMAGE_SERVER_IMAGE
 
+echo "Got up to date images, Making volumes...."
+
 docker volume inspect HF > /dev/null 2>&1 || docker volume create HF
 docker volume inspect COMFY > /dev/null 2>&1 || docker volume create COMFY
 
 docker network inspect $NETWORK > /dev/null 2>&1 || docker network create $NETWORK
 
+echo "Volumes & networks created. Launching orchestrator..."
 
-
-docker stop $ORCHESTRATOR_CONTAINER_NAME 2>/dev/null || true
-docker rm $ORCHESTRATOR_CONTAINER_NAME 2>/dev/null || true
+if [ -n "$(docker ps -q -f name=$ORCHESTRATOR_CONTAINER_NAME)" ]; then
+  echo "Container $ORCHESTRATOR_CONTAINER_NAME found. Stopping and removing it..."
+  docker stop $ORCHESTRATOR_CONTAINER_NAME 2>/dev/null || true
+  sleep 5
+  docker rm -f "$ORCHESTRATOR_CONTAINER_NAME" 2>/dev/null || true
+  sleep 5
+fi
 
 docker run -d --rm --name $ORCHESTRATOR_CONTAINER_NAME $DOCKER_RUN_FLAGS -e PORT=$PORT -p $PORT:$PORT $ORCHESTRATOR_IMAGE
