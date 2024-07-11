@@ -77,4 +77,4 @@ RUN mkdir /app/cache \
 ENV HF_HOME=/app/cache
 ENV HF_HUB_CACHE=/app/cache/hub
 
-CMD ["sh", "-c", "cd /app/image_server && ./setup.sh && ./entrypoint.sh"]
+CMD ["sh", "-c", "cd /app/image_server && ./entrypoint.sh"]
