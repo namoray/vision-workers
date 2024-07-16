@@ -28,6 +28,35 @@ VALIDATOR_TASKS = [Tasks.chat_llama_3]
 
 print("Starting script...")
 
+
+class Sleeper:
+    def __init__(self) -> None:
+        self.consecutive_errors = 0
+
+    def _get_sleep_time(self) -> float:
+        sleep_time = 0
+        if self.consecutive_errors == 1:
+            sleep_time = 60 * 1
+        elif self.consecutive_errors == 2:
+            sleep_time = 60 * 2
+        elif self.consecutive_errors == 3:
+            sleep_time = 60 * 4
+        elif self.consecutive_errors >= 4:
+            sleep_time = 60 * 5
+
+        print(f"Sleeping for {sleep_time} seconds after a http error with the orchestrator server")
+        return sleep_time
+
+    async def sleep(self) -> None:
+        self.consecutive_errors += 1
+        sleep_time = self._get_sleep_time()
+        await asyncio.sleep(sleep_time)
+
+    def reset_sleep_time(self) -> None:
+        self.consecutive_errors = 0
+
+sleeper = Sleeper()
+
 def load_json(file_path: str) -> Dict[str, Any]:
     print(f"Loading JSON from {file_path}")
     with open(file_path) as f:
@@ -73,11 +102,68 @@ def create_validation_tests(validator_server: ServerInstance ,validator_tasks: L
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(300))
 async def make_request(server: ServerInstance, payload: Union[ChatRequestModel, CheckResultsRequest], endpoint: str) -> httpx.Response:
     print(f"Making request to {server.server_details.endpoint + endpoint}")
-    async with httpx.AsyncClient(timeout=(10, 300)) as client:
-        response = await client.post(server.server_details.endpoint + endpoint, json=payload.dict())
-        print(f"Response: {response.status_code}, {response.json()}")
-        response.raise_for_status()
-        return response
+    
+    async with httpx.AsyncClient(timeout=180) as client:
+        try:
+            j = 0
+            while True:
+                print("Sending result to be scored...")
+                response = await client.post(server.server_details.endpoint + endpoint, json=payload.dict())
+                response.raise_for_status()
+                response_json = response.json()
+                task_id = response.json().get("task_id")
+                print(f"Task ID: {task_id}")
+                if task_id is None:
+                    if response_json.get("status") == "Busy":
+                        print(
+                            f"Attempt: {j}; There's already a task being checked, will sleep and try again..."
+                            f"\nresponse: {response.json()}"
+                        )
+                        await asyncio.sleep(20)
+                        j += 1
+                    else:
+                        print(
+                            "Checking server seems broke, please check!" f"response: {response.json()}"
+                        )
+                        await sleeper.sleep()
+                        break
+
+                else:
+                    break
+
+            # Ping the check-task endpoint until the task is complete
+            while True:
+                await asyncio.sleep(3)
+                task_response = await client.get(f"{server.server_details.endpoint}/check-task/{task_id}")
+                task_response.raise_for_status()
+                task_response_json = task_response.json()
+
+                if task_response_json.get("status") != "Processing":
+                    task_status = task_response_json.get("status")
+                    if task_status == "Failed":
+                        print(
+                            f"Task {task_id} failed: {task_response_json.get('error')}"
+                            f"\nTraceback: {task_response_json.get('traceback')}"
+                        )
+                        await sleeper.sleep()
+                    break
+        except httpx.HTTPStatusError as stat_err:
+            print(f"When scoring, HTTP status error occurred: {stat_err}")
+
+        except (httpx.RemoteProtocolError, httpx.ReadError, httpx.ReadTimeout) as read_err:
+            print(f"When scoring, Read timeout occurred: {read_err}")
+            await sleeper.sleep()
+
+        except httpx.HTTPError as http_err:
+            print(f"When scoring, HTTP error occurred: {http_err}")
+            if response.status_code == 502:
+                print("Is your orchestrator server running?")
+            else:
+                print(f"Status code: {response.status_code}")
+            await sleeper.sleep()
+
+        return task_response_json
+
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(300))
 async def make_load_model_request(server: ServerInstance) -> httpx.Response:
@@ -86,7 +172,8 @@ async def make_load_model_request(server: ServerInstance) -> httpx.Response:
     payload = {
         "model": model_config.model,
         "tokenizer": model_config.tokenizer,
-        "revision": model_config.revision
+        "revision": model_config.revision,
+        "half_precision": model_config.half_precision
     }
     async with httpx.AsyncClient(timeout=(10, 300)) as client:
         response = await client.post(server.server_details.endpoint + "/load_model", json=payload)
@@ -142,7 +229,7 @@ async def process_validation_test(test: ValidationTest) -> None:
             print(f"Making check request with payload: {payload}")
             check = await make_request(test.validator_server, payload, "/check-result")
             try:
-                score = check.json()["axon_scores"][miner.server_details.id]
+                score = check.json()["result"]["axon_scores"][miner.server_details.id]
                 test_res = TestInstanceResults(score=score, miner_server=miner, validator_server=test.validator_server,
                                                messages=prompt.messages, seed=prompt.seed, temperature=prompt.temperature, task=test.validator_task)
                 print(test_res.dict())
