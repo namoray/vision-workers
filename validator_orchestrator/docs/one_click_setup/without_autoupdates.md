@@ -68,7 +68,7 @@ Or edit the script to your liking.
 
 If the script doesn't run properly, try this:
 ```bash
-./launch_orchestrator.sh --no-runtime-flag
+./launch_orchestrator.sh --nvidia-runtime
 ```
 
 Optionally specifying your GPU.
