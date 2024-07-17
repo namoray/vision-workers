@@ -38,10 +38,10 @@ Or edit the script to your liking.
 
 ### Troubleshooting
 
-If that doesn't run properly, try this:
+If that doesn't run properly, or you get nvidia runtime issues, try this:
 
 ```bash
-./launch_orchestrator.sh --no-runtime-flag
+./launch_orchestrator.sh --nvidia-runtime
 ```
 
 Optionally specifying your GPU.

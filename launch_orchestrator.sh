@@ -3,25 +3,31 @@
 DEFAULT_ORCHESTRATOR_IMAGE="corcelio/vision:orchestrator-latest"
 DEFAULT_LLM_IMAGE="corcelio/vision:llm_server-latest"
 DEFAULT_IMAGE_SERVER_IMAGE="corcelio/vision:image_server-latest"
-
-ORCHESTRATOR_IMAGE=${1:-$DEFAULT_ORCHESTRATOR_IMAGE}
-LLM_IMAGE=${2:-$DEFAULT_LLM_IMAGE}
-IMAGE_SERVER_IMAGE=${3:-$DEFAULT_IMAGE_SERVER_IMAGE}
-
-ORCHESTRATOR_PORT=6920
-
-NETWORK="comm"
-ORCHESTRATOR_CONTAINER_NAME="orchestrator"
+DEFAULT_ORCHESTRATOR_PORT=6920
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --no-runtime-flag) NO_RUNTIME_FLAG=1 ;;
+        --nvidia-runtime) NVIDIA_RUNTIME_FLAG=1 ;;
         --device) DEVICE="$2"; shift ;;
-        *) ;;
+        --orchestrator-image) ORCHESTRATOR_IMAGE="$2"; shift ;;
+        --llm-image) LLM_IMAGE="$2"; shift ;;
+        --image-server-image) IMAGE_SERVER_IMAGE="$2"; shift ;;
+        --port) PORT="$2"; shift ;;
+        *) echo "Unknown parameter: $1"; exit 1 ;;
     esac
     shift
 done
+
+# Set default values if not provided
+ORCHESTRATOR_IMAGE=${ORCHESTRATOR_IMAGE:-$DEFAULT_ORCHESTRATOR_IMAGE}
+LLM_IMAGE=${LLM_IMAGE:-$DEFAULT_LLM_IMAGE}
+IMAGE_SERVER_IMAGE=${IMAGE_SERVER_IMAGE:-$DEFAULT_IMAGE_SERVER_IMAGE}
+PORT=${PORT:-$DEFAULT_ORCHESTRATOR_PORT}
+
+
+NETWORK="comm"
+ORCHESTRATOR_CONTAINER_NAME="orchestrator"
 
 DOCKER_RUN_FLAGS="--rm \
                   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -30,7 +36,8 @@ DOCKER_RUN_FLAGS="--rm \
                   --network $NETWORK"
 
 # Add the --runtime=nvidia flag unless --no-runtime-flag is specified
-if [[ -z "$NO_RUNTIME_FLAG" ]]; then
+
+if [[ -n "$NVIDIA_RUNTIME_FLAG" ]]; then
     DOCKER_RUN_FLAGS+=" --runtime=nvidia"
 fi
 
@@ -72,9 +79,21 @@ check_and_pull_image $ORCHESTRATOR_IMAGE
 check_and_pull_image $LLM_IMAGE
 check_and_pull_image $IMAGE_SERVER_IMAGE
 
+echo "Got up to date images, Making volumes...."
+
 docker volume inspect HF > /dev/null 2>&1 || docker volume create HF
 docker volume inspect COMFY > /dev/null 2>&1 || docker volume create COMFY
 
 docker network inspect $NETWORK > /dev/null 2>&1 || docker network create $NETWORK
 
-docker run -d --rm --name $ORCHESTRATOR_CONTAINER_NAME $DOCKER_RUN_FLAGS -p $ORCHESTRATOR_PORT:$ORCHESTRATOR_PORT $ORCHESTRATOR_IMAGE
+echo "Volumes & networks created. Launching orchestrator..."
+
+if [ -n "$(docker ps -q -f name=$ORCHESTRATOR_CONTAINER_NAME)" ]; then
+  echo "Container $ORCHESTRATOR_CONTAINER_NAME found. Stopping and removing it..."
+  docker stop $ORCHESTRATOR_CONTAINER_NAME 2>/dev/null || true
+  sleep 5
+  docker rm -f "$ORCHESTRATOR_CONTAINER_NAME" 2>/dev/null || true
+  sleep 5
+fi
+
+docker run -d --rm --name $ORCHESTRATOR_CONTAINER_NAME $DOCKER_RUN_FLAGS -e PORT=$PORT -p $PORT:$PORT $ORCHESTRATOR_IMAGE
