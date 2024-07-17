@@ -8,12 +8,10 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
-source activate venv
-
 ./setup.sh
 
 vram_mode=${VRAM_MODE:-'--highvram'}
-warmup=$(echo ${WARMUP:-true} | tr '[:upper:]' '[:lower:]')
+warmup=$(echo ${WARMUP:-false} | tr '[:upper:]' '[:lower:]')
 device=${DEVICE:-0}
 port=${PORT:-6919}
 

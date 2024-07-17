@@ -15,7 +15,7 @@ kornia>=0.7.1
 websocket_client==1.7.0
 insightface==0.7.3
 onnxruntime==1.17.1
-onnxruntime-gpu==1.17.1
+onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 diffusers[torch]==0.27.1
 fastapi==0.110.0
 uvicorn==0.28.1

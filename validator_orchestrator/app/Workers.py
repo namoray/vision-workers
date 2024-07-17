@@ -3,6 +3,7 @@ from typing import List, Dict
 import os
 from app.models import ServerType, ProdDockerImages
 
+DEFAULT_NETWORK_NAME = "comm"
 class WorkerConfig(BaseModel):
     name: str
     docker_image: str
@@ -13,7 +14,7 @@ class WorkerConfig(BaseModel):
 class Workers(BaseModel):
     workers: List[WorkerConfig]
 
-shared_network = os.getenv("SHARED_NETWORK_NAME", "comm")
+shared_network = os.getenv("SHARED_NETWORK_NAME", DEFAULT_NETWORK_NAME)
 
 worker_config = Workers(
     workers=[

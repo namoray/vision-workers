@@ -2,6 +2,9 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Any, Union, Callable, Coroutine
 from enum import Enum
 from pydantic import BaseModel
+from datetime import datetime
+
+AxonScores = Dict[int, float]
 
 
 class QueryResult(BaseModel):
@@ -21,12 +24,13 @@ class ServerType(Enum):
     LLM = "llm_server"
     IMAGE = "image_server"
 
+
 class ProdDockerImages(Enum):
     LLM = "corcelio/vision:llm_server-latest"
     IMAGE = "corcelio/vision:image_server-latest"
 
+
 class Tasks(Enum):
-    chat_bittensor_finetune = "chat-bittensor-finetune"
     chat_mixtral = "chat-mixtral"
     chat_mixtral4b = "chat-mixtral4b"
     chat_llama_3 = "chat-llama-3"
@@ -55,8 +59,10 @@ class TaskConfig(BaseModel):
     server_needed: Optional[ServerType]
     load_model_config: Optional[ModelConfigDetails]
     endpoint: Optional[str]
-    checking_function: Callable[[QueryResult, Dict[str, Any], TaskConfig], Coroutine[Any, Any, Union[float, None]]]
-    speed_scoring_function: Callable[[QueryResult, Dict[str, Any], TaskConfig], Coroutine[Any, Any, Union[float, None]]]
+    checking_function: Callable[
+        [QueryResult, Dict[str, Any], TaskConfig],
+        Coroutine[Any, Any, Union[float, None]],
+    ]
     synthetic_generation_function: Optional[Callable] = None
     synthetic_generation_params: Optional[Dict[str, Any]] = None
     task: Tasks
@@ -64,18 +70,21 @@ class TaskConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+
 class TaskConfigMapping(BaseModel):
     tasks: Dict[Tasks, TaskConfig]
+
 
 class TestInstanceResults(BaseModel):
     task: Tasks
     score: float
     miner_server: ServerInstance
     validator_server: ServerInstance
-    messages : List[Message]
+    messages: List[Message]
     temperature: float
     seed: int
-    
+
+
 class CheckResultsRequest(BaseModel):
     task: Tasks
     synthetic_query: bool
@@ -85,12 +94,14 @@ class CheckResultsRequest(BaseModel):
     def dict(self, *args, **kwargs):
         obj_dict = super().dict(*args, **kwargs)
         # Converting Enum instance to its value
-        obj_dict["task"] = obj_dict["task"].value 
-        return obj_dict 
+        obj_dict["task"] = obj_dict["task"].value
+        return obj_dict
+
 
 class Message(BaseModel):
     role: str
     content: str
+
 
 class ChatRequestModel(BaseModel):
     messages: list[Message]
@@ -99,24 +110,31 @@ class ChatRequestModel(BaseModel):
     max_tokens: int
     top_k: int
     number_of_logprobs: int
-    starting_assistant_message: bool 
+    starting_assistant_message: bool
+
 
 class MinerChatResponse(BaseModel):
     text: str
     logprob: float
+
 
 class ValidationTest(BaseModel):
     validator_server: ServerInstance
     validator_task: Tasks
     miners_to_test: List[ServerInstance]
     prompts_to_check: List[ChatRequestModel]
-    checking_function: Callable[[QueryResult, Dict[str, Any], TaskConfig], Coroutine[Any, Any, Union[float, None]]]
+    checking_function: Callable[
+        [QueryResult, Dict[str, Any], TaskConfig],
+        Coroutine[Any, Any, Union[float, None]],
+    ]
+
 
 class ServerDetails(BaseModel):
     id: str
     cuda_version: str
     gpu: str
     endpoint: str
+
 
 class ServerInstance(BaseModel):
     server_details: ServerDetails
@@ -133,18 +151,41 @@ class ValidatorCheckingResponse(BaseModel):
     text: str
     logprobs: List[Logprob]
 
+
 class SyntheticGenerationRequest(BaseModel):
     task: Tasks
 
+
 class CheckResultResponse(BaseModel):
     task_id: Union[str, None]
-    status: str
+    status: TaskStatus
+
 
 class TaskResultResponse(BaseModel):
     task_id: str
     result: Union[Dict, str]
 
+
 class CheckTaskResponse(BaseModel):
     task_id: str
-    result: Union[Dict, str, None]
-    status: Union[str, None]
+    result: Optional[TaskResult] = None
+    status: TaskStatus
+
+
+class TaskResult(BaseModel):
+    axon_scores: Optional[AxonScores] = None
+    timestamp: datetime
+    error_message: Optional[str] = None
+    traceback: Optional[str] = None
+
+
+class TaskStatus(Enum):
+    Processing = "Processing"
+    Success = "Success"
+    Failed = "Failed"
+    Busy = "Busy"
+    Missing = "Missing"
+
+class AllTaskStatusResponse(BaseModel):
+    tasks: Dict[str, TaskStatus]
+

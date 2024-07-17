@@ -156,8 +156,8 @@ async def query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
     async with httpx.AsyncClient(
-        timeout=10
-    ) as client:  # 10 min timeout due to initial load on some runpod gpus
+        timeout=60 * 2
+    ) as client:
         logger.info(f"Querying : {endpoint}")
         response = await client.post(endpoint, json=data)
         logger.info(response.status_code)

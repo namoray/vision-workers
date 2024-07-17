@@ -7,7 +7,6 @@ from pydantic import BaseModel
 class ChatModels(str, enum.Enum):
     """Model is used for the chat"""
 
-    bittensor_finetune = "bittensor-finetune"
     mixtral = "mixtral-8x7b"
     llama_3 = "llama-3"
 
