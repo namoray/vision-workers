@@ -32,8 +32,9 @@ Refer to the [Runpod Setup Guide](https://github.com/namoray/vision/blob/main/do
 ## For Bare Metal Users
 
 Refer to the following guides:
-1. [Image Server Installation](image_server/docs/installation_base.md)
-2. [LLM Server Installation](llm_server/docs/installation_base.md)
+1. [Setting Up Your Hardware](generic_docs/bootstrapping.md)
+2. [Image Server Installation](image_server/docs/installation_base.md)
+3. [LLM Server Installation](llm_server/docs/installation_base.md)
 
 # Conclusion
 

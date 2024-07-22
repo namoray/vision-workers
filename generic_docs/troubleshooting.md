@@ -1,5 +1,14 @@
 # Troubleshooting
 
+# Issues with dpkg
+
+Some hosting providers run post-boot initialisation scripts that can block
+`bootstrap.sh` from running. You will see this if the script complains that it
+couldn't acquire a lock for dpkg because another process has it.
+
+If this is the case, allow the machine to continue it's initialization (10-15 minutes) 
+and then reattempt to run `bootstrap.sh`.
+
 ## `unknown or invalid runtime name: nvidia
 
 Try this:
@@ -15,7 +24,7 @@ apt-get install nvidia-container-runtime
 sudo systemctl restart docker
 ```
 
-if that still doesnt't work run this:
+if that still doesn't work run this:
 
 - If you're using conda, check conda is activated. Else;
 
@@ -60,9 +69,8 @@ sudo systemctl restart docker
 ```
 
 If it still fails, I would advise doing a full cuda installation as detailed here:
-[Full cuda installation](full_cuda_install.md)
 
-
+[Full CUDA installation](full_cuda_install.md)
 
 ## `Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), is another process using it?`
 That implies you still have some installation process running. Options:
