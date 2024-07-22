@@ -1,11 +1,8 @@
 # Prerequisities
 
 
-0. [Get a GPU machine (obv, lol)](../../../generic_docs/create-gpu-instance.md)
-1. [Install Docker](install_docker.md)
-2. [Install Conda](install_miniconda_create_venv.md)
-3. [Install CUDA Toolkit](install_cuda_toolkit.md)
-4. [Install PM2](install_pm2.md)
+1. [Get a GPU machine (obv)](./create-gpu-instance.md)
+2. [Run the bootstrap.sh script](./bootstrap.md)
 
 If any cuda problems persist, please check out:
 
