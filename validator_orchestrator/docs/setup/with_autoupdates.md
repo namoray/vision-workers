@@ -13,13 +13,20 @@ The server uses port 6919 to communicate with the LLM and image servers it spins
 
 **Note:** Ensure that port 6919 is not used by another application on this GPU!
 
-Port 6919 does not need to be exposed. Instead, port 6920 should be exposed (or any other port you choose if you run using a different one).
+Port 6919 does not need to be exposed. Instead, port 6920 should be exposed, if running with the autoupdater.
 
-Run the server using the following command (with autoupdates):
 
+## To manually start the autoupdater
+If you used the bootstrap script with autoupdates, you should be good to go. 
+
+If you need to start it manually at any time, try this:
 ```bash
-pm2 start --name run_autoupdates_validator --interpreter python3 run_autoupdates_validator.py
+sudo systemctl enable --now vision-autoupdater
 ```
+Refer to [here](../../../generic_docs/bootstrap.md) for more help on systemd stuff!
+
+NOTE:
+
 
 ## Troubleshooting
 
