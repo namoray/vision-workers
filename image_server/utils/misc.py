@@ -4,9 +4,16 @@ import base_model
 import imagehash
 import inference
 from utils import safety_checker as sc
+import constants as cst
+import os
 
 safety_checker = sc.Safety_Checker()
 
+def cleanup_temp():
+    for filename in os.listdir(cst.COMFY_TEMP_PATH):
+        file_path = os.path.join(cst.COMFY_TEMP_PATH, filename)
+        if os.path.isfile(file_path):
+            os.unlink(file_path)
 
 def image_hash_feature_extraction(image: Image.Image) -> base_model.ImageHashes:
     phash = str(imagehash.phash(image))
@@ -33,6 +40,8 @@ async def take_image_and_return_formatted_response_body(
     )
     # Since we only need the first element of the list
     clip_embeddings_of_image = clip_embeddings_of_images[0]
+    #Cleanup Comfy temp
+    cleanup_temp()
 
     if is_nsfw:
         return base_model.ImageResponseBody(
