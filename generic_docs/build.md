@@ -3,80 +3,8 @@
 
 ## THIS IS TO BUID TO RUN LOCALLY, YOU WONT NEED TO DO THIS TO RUN IT. JUST FOLLOW THE READ ME IN IMAGE_SERVER/LLM_SERVER/ORCHESTRATOR
 
-### Install cuda toolkit & drivers
-```bash
-# for cuda versions, choose between 12.2.0 or 11.8.0 only!
-PYTHON_VERSION="3.10.13"
-
-# Download and install Miniconda
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-chmod 700 Miniconda3-latest-Linux-x86_64.sh
-./Miniconda3-latest-Linux-x86_64.sh -b -u
-
-# Setup Conda environment
-echo 'source "$HOME/miniconda3/etc/profile.d/conda.sh"' >> ~/.bashrc && \
-echo 'if [ -f ~/.bashrc ]; then . ~/.bashrc; fi' >> ~/.bash_profile && \
-echo 'source "$HOME/miniconda3/etc/profile.d/conda.sh"' >> ~/.profile && \
-source ~/.bashrc && exec bash
-
-# Create a new Conda environment with the specified Python version
-conda create -n venv python=$PYTHON_VERSION -y
-echo "conda activate venv" >> ~/.bashrc
-source ~/.bashrc
-
-CUDA_VERSION="12.2.0"
-# Install CUDA toolkit with the specified version
-conda install nvidia/label/cuda-$CUDA_VERSION::cuda-toolkit -y
-
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-
-sudo apt-get update
-sudo apt-get install nvidia-docker2
-
-# This should not be empty
-which nvidia-container-runtime
-
-```
-
-### Install Docker
-```bash
-# Loop through and remove specific docker-related packages if they are installed
-for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do 
-    sudo apt-get remove $pkg -y; 
-done
-
-# Update the package lists for upgrades and new package installations
-sudo apt-get update -y
-
-# Install necessary packages for fetching files over HTTPS
-sudo apt-get install ca-certificates curl -y
-
-# Create a directory for apt keyrings and set permissions
-sudo install -m 0755 -d /etc/apt/keyrings
-
-# Download Docker's official GPG key and save it to the keyrings directory
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-
-# Set read permissions for the Docker GPG key for all users
-sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-# Add Docker's APT repository to the sources list of apt package manager
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Update the apt package list after adding new repository
-sudo apt-get update -y
-
-# Install Docker Engine, CLI, containerd, and Docker compose plugins
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-
-# Test Docker installation by running the hello-world container
-docker run hello-world
-```
+## Pre-requisties
+`WITH_AUTOUPDATES=0 sudo -E ./bootstrap.sh`
 
 ### Building docker container
 
@@ -111,8 +39,9 @@ docker run -p 6920:6920 -e PORT=6920 -e CUDA_VISIBLE_DEVICES=0 -e DEVICE=0 --gpu
 or
 NOTE: this will use prod image server & llm server images unless otherwise specified
 ```bash
-docker kill orchestrator || true; docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator; ./launch_orchestrator.sh corcelio/test:orch-test
+docker kill orchestrator || true; docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator; ./launch_orchestrator.sh --orchestrator-image corcelio/test:orch-test --dont-refresh-local-images
 ```
+
 
 ### Uploading to docker hub
 Get your credentials ready for docker hub
