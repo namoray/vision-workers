@@ -1,29 +1,44 @@
 #!/bin/bash
-
-DEFAULT_ORCHESTRATOR_IMAGE="corcelio/vision:orchestrator-latest"
-DEFAULT_LLM_IMAGE="corcelio/vision:llm_server-latest"
-DEFAULT_IMAGE_SERVER_IMAGE="corcelio/vision:image_server-latest"
-DEFAULT_ORCHESTRATOR_PORT=6920
+ORCHESTRATOR_IMAGE="corcelio/vision:orchestrator-latest"
+LLM_IMAGE="corcelio/vision:llm_server-latest"
+IMAGE_SERVER_IMAGE="corcelio/vision:image_server-latest"
+PORT=6920
+REFRESH_LOCAL_IMAGES=1
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --nvidia-runtime) NVIDIA_RUNTIME_FLAG=1 ;;
-        --device) DEVICE="$2"; shift ;;
-        --orchestrator-image) ORCHESTRATOR_IMAGE="$2"; shift ;;
-        --llm-image) LLM_IMAGE="$2"; shift ;;
-        --image-server-image) IMAGE_SERVER_IMAGE="$2"; shift ;;
-        --port) PORT="$2"; shift ;;
-        *) echo "Unknown parameter: $1"; exit 1 ;;
-    esac
+  case $1 in
+  --nvidia-runtime) NVIDIA_RUNTIME_FLAG=1 ;;
+  --device)
+    DEVICE="$2"
     shift
+    ;;
+  --orchestrator-image)
+    ORCHESTRATOR_IMAGE="$2"
+    shift
+    ;;
+  --llm-image)
+    LLM_IMAGE="$2"
+    shift
+    ;;
+  --image-server-image)
+    IMAGE_SERVER_IMAGE="$2"
+    shift
+    ;;
+  --port)
+    PORT="$2"
+    shift
+    ;;
+  --dont-refresh-local-images)
+    REFRESH_LOCAL_IMAGES=0
+    ;;
+  *)
+    echo "Unknown parameter: $1"
+    exit 1
+    ;;
+  esac
+  shift
 done
-
-# Set default values if not provided
-ORCHESTRATOR_IMAGE=${ORCHESTRATOR_IMAGE:-$DEFAULT_ORCHESTRATOR_IMAGE}
-LLM_IMAGE=${LLM_IMAGE:-$DEFAULT_LLM_IMAGE}
-IMAGE_SERVER_IMAGE=${IMAGE_SERVER_IMAGE:-$DEFAULT_IMAGE_SERVER_IMAGE}
-PORT=${PORT:-$DEFAULT_ORCHESTRATOR_PORT}
 
 
 NETWORK="comm"
@@ -38,23 +53,22 @@ DOCKER_RUN_FLAGS="--rm \
 # Add the --runtime=nvidia flag unless --no-runtime-flag is specified
 
 if [[ -n "$NVIDIA_RUNTIME_FLAG" ]]; then
-    DOCKER_RUN_FLAGS+=" --runtime=nvidia"
+  DOCKER_RUN_FLAGS+=" --runtime=nvidia"
 fi
 
 if [[ -n "$DEVICE" ]]; then
-    DOCKER_RUN_FLAGS+=" -e CUDA_VISIBLE_DEVICES=$DEVICE \
+  DOCKER_RUN_FLAGS+=" -e CUDA_VISIBLE_DEVICES=$DEVICE \
                         -e DEVICE=$DEVICE \
                         --gpus \"device=$DEVICE\""
 else
-    DOCKER_RUN_FLAGS+=" --gpus all"
+  DOCKER_RUN_FLAGS+=" --gpus all"
 fi
-
 
 check_and_pull_image() {
   IMAGE=$1
 
   get_local_image_digest() {
-    DIGEST=$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null | cut -d'@' -f2)
+    DIGEST=$(docker image inspect "$IMAGE" --format '{{if .RepoDigests}}{{index .RepoDigests 0}}{{else}}{{.Id}}{{end}}' 2>/dev/null | cut -d':' -f2)
     echo $DIGEST
   }
 
@@ -65,7 +79,9 @@ check_and_pull_image() {
     docker pull $IMAGE
   else
     echo "Image $IMAGE exists locally. Checking for updates..."
-    docker pull $IMAGE
+    if [ "$REFRESH_LOCAL_IMAGES" -eq 1 ]; then
+      docker pull $IMAGE
+    fi
     REMOTE_DIGEST=$(get_local_image_digest)
     if [ "$REMOTE_DIGEST" != "$LOCAL_DIGEST" ]; then
       echo "A new version of the image $IMAGE is available and has been pulled."
@@ -81,18 +97,20 @@ check_and_pull_image $IMAGE_SERVER_IMAGE
 
 echo "Got up to date images, Making volumes...."
 
-docker volume inspect HF > /dev/null 2>&1 || docker volume create HF
-docker volume inspect COMFY > /dev/null 2>&1 || docker volume create COMFY
+docker volume inspect HF >/dev/null 2>&1 || docker volume create HF
+docker volume inspect COMFY >/dev/null 2>&1 || docker volume create COMFY
 
-docker network inspect $NETWORK > /dev/null 2>&1 || docker network create $NETWORK
+docker network inspect $NETWORK >/dev/null 2>&1 || docker network create $NETWORK
 
 echo "Volumes & networks created. Launching orchestrator..."
 
 if [ -n "$(docker ps -q -f name=$ORCHESTRATOR_CONTAINER_NAME)" ]; then
   echo "Container $ORCHESTRATOR_CONTAINER_NAME found. Stopping and removing it..."
   docker stop $ORCHESTRATOR_CONTAINER_NAME 2>/dev/null || true
+  echo "Container stopped. Removing in 5..."
   sleep 5
   docker rm -f "$ORCHESTRATOR_CONTAINER_NAME" 2>/dev/null || true
+  echo "Container removed. Launching in 5..."
   sleep 5
 fi
 

@@ -9,12 +9,10 @@ import xgboost as xgb
 import math
 from loguru import logger
 from PIL import Image
-import os
 import io
 from PIL import UnidentifiedImageError
 from typing import Optional
 from app.constants import BASE_URL
-
 
 images_are_same_classifier = xgb.XGBClassifier()
 images_are_same_classifier.load_model("image_similarity_xgb_model.json")
@@ -155,9 +153,7 @@ async def check_clip_result(
 async def query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
-    async with httpx.AsyncClient(
-        timeout=60 * 2
-    ) as client:
+    async with httpx.AsyncClient(timeout=60 * 2) as client:
         logger.info(f"Querying : {endpoint}")
         response = await client.post(endpoint, json=data)
         logger.info(response.status_code)
@@ -218,6 +214,26 @@ async def check_image_result(
 
 ########### TEXT ###########
 
+
+def score_average_distance(
+    task_config: models.TaskConfig, average_distance: float
+) -> float:
+    if task_config.task == models.Tasks.chat_llama_3:
+        if average_distance <= 0.15:
+            return 1
+        elif average_distance <= 0.3:
+            return 1 - 0.5 * (average_distance - 0.15) / 0.15
+        else:
+            return 0
+    else:
+        if average_distance <= 0.1:
+            return 1
+        elif average_distance <= 0.2:
+            return 1 - 0.5 * (average_distance - 0.1) / 0.1
+        else:
+            return 0
+
+
 async def check_text_result(
     result: models.QueryResult, synapse: Dict[str, Any], task_config: models.TaskConfig
 ) -> Union[float, None]:
@@ -230,9 +246,21 @@ async def check_text_result(
         models.MinerChatResponse(**r) for r in formatted_response
     ]
 
-    # Sort miner_chat_responses by logprobs (largest first, which is smallest probability)
-    sorted_responses = sorted(enumerate(miner_chat_responses), key=lambda x: x[1].logprob, reverse=True)
-    selected_indices = [i[0] for i in sorted_responses[:10]]
+    # If no responses, then not a good response
+    if len(miner_chat_responses) == 0:
+        return 0
+
+    if len(miner_chat_responses) == 1:
+        indicies_to_check = [0]
+    else:
+        # Always check first & last
+        indicies_to_check = [0, len(miner_chat_responses) - 1]
+        number_of_additional_indicies_to_check = len(miner_chat_responses) - 2
+        additional_indicies_to_check = random.sample(
+            range(1, len(miner_chat_responses) - 1),
+            number_of_additional_indicies_to_check,
+        )
+        indicies_to_check.extend(additional_indicies_to_check)
 
     total_distance = 0
     checks = 0
@@ -244,13 +272,13 @@ async def check_text_result(
     llm_request = models.ChatRequestModel(**synapse)
     llm_request.max_tokens = 1
 
-    for index in range(0, len(miner_chat_responses)):
+    for index in indicies_to_check:
         if index == 0:
             llm_request.starting_assistant_message = True
         else:
             llm_request.starting_assistant_message = False
-            
-        if checks >= 10 or index not in selected_indices:
+
+        if checks >= 10:
             continue
 
         text_to_inject_into_assistant_message = "".join(
@@ -264,7 +292,7 @@ async def check_text_result(
                 }
             )
         )
-        
+
         distance = await calculate_distance_for_token(
             task_config, llm_request, miner_chat_responses, index
         )
@@ -274,20 +302,15 @@ async def check_text_result(
 
     try:
         average_distance = total_distance / checks
-    except:
-        logger.info('Error with average distance', total_distance, checks)
-        average_distance = 0.1
+    except Exception as e:
+        logger.error(
+            f"Error with average distance: {e}. Total distance: {total_distance}. Checks: {checks}"
+        )
+        return 0
 
-    def scoring_func(x):
-        if x <= 0.03:
-            return 1
-        elif x <= 0.07:
-            return 1 - 0.5 * (x - 0.03) / 0.04
-        else:
-            return 0
-
-    score = scoring_func(average_distance)
+    score = score_average_distance(task_config, average_distance)
     return score
+
 
 async def query_endpoint_for_iterator(
     endpoint: str, data: Dict[str, Any]
@@ -330,11 +353,11 @@ async def calculate_distance_for_token(
             math.exp(validator_log_probs_for_token[token])
             - math.exp(chat_responses[index].logprob)
         )
-    
-    #formatted_validator_logging = "\n".join(
-     #    [f"{i.decoded}: {i.logprob}" for i in validator_checking_response.logprobs]
-     #)
-    #logger.info(
-     #    f"\nMiner token: {chat_responses[index].text}: {chat_responses[index].logprob} \n Validator tokens: \n{formatted_validator_logging}\ndistance between exp of log probs: {distance}"
-     #)
+
+    # formatted_validator_logging = "\n".join(
+    #    [f"{i.decoded}: {i.logprob}" for i in validator_checking_response.logprobs]
+    # )
+    # logger.info(
+    #    f"\nMiner token: {chat_responses[index].text}: {chat_responses[index].logprob} \n Validator tokens: \n{formatted_validator_logging}\ndistance between exp of log probs: {distance}"
+    # )
     return distance

@@ -133,25 +133,7 @@ ln -s $(which python3.11) /usr/bin/python
 ################################################################################
 if [[ WITH_AUTOUPDATES -eq 1 ]]; then
   # write the systemd unit to run the vision autoupdater
-  echo "[Unit]" > /etc/systemd/system/vision-autoupdater.service
-  echo "Description=Corcel Vision Workers" >> /etc/systemd/system/vision-autoupdater.service
-  echo "After=network.target" >> /etc/systemd/system/vision-autoupdater.service
-  echo "StartLimitIntervalSec=30" >> /etc/systemd/system/vision-autoupdater.service
-  echo "StartLimitBurst=2" >> /etc/systemd/system/vision-autoupdater.service
-  echo "" >> /etc/systemd/system/vision-autoupdater.service
-  echo "[Service]" >> /etc/systemd/system/vision-autoupdater.service
-  echo "Type=simple" >> /etc/systemd/system/vision-autoupdater.service
-  echo "User=$SUDO_USER" >> /etc/systemd/system/vision-autoupdater.service
-  echo "WorkingDirectory=$HOME" >> /etc/systemd/system/vision-autoupdater.service
-  echo "ExecStart=/bin/bash --login -c 'source $HOME/.bashrc; cd vision-workers && python3.11 run_autoupdates_validator.py'" >> /etc/systemd/system/vision-autoupdater.service
-  echo "Restart=always" >> /etc/systemd/system/vision-autoupdater.service
-  echo "" >> /etc/systemd/system/vision-autoupdater.service
-  echo "[Install]" >> /etc/systemd/system/vision-autoupdater.service
-  echo "WantedBy=multi-user.target" >> /etc/systemd/system/vision-autoupdater.service
-
-  # load it and start
-  systemctl daemon-reload
-  systemctl enable --now vision-autoupdater
+  sudo -E bash run_autoupdater.sh
 else
   # just schedule `launch_orchestrator.sh` to run periodically
   if ! [[ $(crontab -u $SUDO_USER -l | grep -F 'launch_orchestrator.sh') ]]; then

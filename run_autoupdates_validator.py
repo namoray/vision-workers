@@ -6,12 +6,15 @@ import argparse
 def should_update_local(local_commit, remote_commit):
     return local_commit != remote_commit
 
-def run_auto_updater(orchestrator_image, llm_image, image_server_image):
-    launch_command = f"./launch_orchestrator.sh --orchestrator-image {orchestrator_image} --llm-image {llm_image} --image-server-image {image_server_image}"
+def run_auto_updater():
+    print("Starting auto-updater...")
+    print("First i'll launch the orchestrator...")
+    launch_command = "./launch_orchestrator.sh"
     os.system(launch_command)
     time.sleep(60)
 
     while True:
+        print("Checking for updates...")
         current_branch = subprocess.getoutput("git rev-parse --abbrev-ref HEAD")
         local_commit = subprocess.getoutput("git rev-parse HEAD")
         os.system("git fetch")
@@ -41,13 +44,7 @@ def run_auto_updater(orchestrator_image, llm_image, image_server_image):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run auto updates for a validator")
-    parser.add_argument('--orchestrator_image', type=str, default="corcelio/vision:orchestrator-latest",
-                        help='Docker image for the orchestrator')
-    parser.add_argument('--llm_image', type=str, default="corcelio/vision:llm_server-latest",
-                        help='Docker image for the LLM worker')
-    parser.add_argument('--image_server_image', type=str, default="corcelio/vision:image_server-latest",
-                        help='Docker image for the image worker')
 
     args = parser.parse_args()
 
-    run_auto_updater(args.orchestrator_image, args.llm_image, args.image_server_image)
+    run_auto_updater()
