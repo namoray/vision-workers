@@ -10,7 +10,7 @@ trap cleanup SIGINT SIGTERM
 
 ./setup.sh
 
-vram_mode=${VRAM_MODE:-'--highvram'}
+vram_mode=${VRAM_MODE:-'--lowvram'}
 warmup=$(echo ${WARMUP:-false} | tr '[:upper:]' '[:lower:]')
 device=${DEVICE:-0}
 port=${PORT:-6919}
