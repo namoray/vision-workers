@@ -9,6 +9,7 @@ class EngineEnum(str, Enum):
     PROTEUS = "proteus"
     PLAYGROUND = "playground"
     FLUX = "flux"
+    FLUX_SCHNELL = "flux_schnell"
 
 
 class Txt2ImgBase(BaseModel):

@@ -124,6 +124,11 @@ download_file "ComfyUI/models/vae/ae.sft" \
               "https://huggingface.co/black-forest-labs/FLUX.1-schnell/" \
               "ae.safetensors"
 
+download_file "ComfyUI/models/unet/flux1-schnell.sft" \
+              "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/flux1-schnell.safetensors" \
+              "https://huggingface.co/black-forest-labs/FLUX.1-schnell/" \
+              "flux1-schnell.safetensors"
+
 download_file "ComfyUI/models/unet/flux1-dev.sft" \
               "https://huggingface.co/Corcelio/flux-dev-unet/resolve/main/flux1-dev.sft" \
               "https://huggingface.co/Corcelio/flux-dev-unet/" \
