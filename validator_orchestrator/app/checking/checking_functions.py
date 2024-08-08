@@ -150,6 +150,33 @@ async def check_clip_result(
 
 
 ##### Image #######
+
+
+def get_image_similarity(
+    image_response_body: utility_models.ImageResponseBody,
+    expected_image_response: utility_models.ImageResponseBody,
+    images_are_same_classifier: xgb.XGBClassifier,
+):
+    clip_embedding_similiarity = checking_utils.get_clip_embedding_similarity(
+        image_response_body.clip_embeddings, expected_image_response.clip_embeddings
+    )
+    hash_distances = checking_utils.get_hash_distances(
+        image_response_body.image_hashes, expected_image_response.image_hashes
+    )
+
+    probability_same_image_xg = images_are_same_classifier.predict_proba(
+        [hash_distances]
+    )[0][1]
+
+    # MODEL has a very low threshold
+    if probability_same_image_xg > 0.01:
+        score = 1
+    else:
+        score = clip_embedding_similiarity**2
+
+    return score
+
+
 async def query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
@@ -178,38 +205,19 @@ async def check_image_result(
         task_config.endpoint, synapse
     )
 
-    if expected_image_response.is_nsfw and image_response_body.is_nsfw:
-        return 1
-
     if expected_image_response.clip_embeddings is None:
         logger.error(f"For some reason Everything is none! {expected_image_response}")
         return None
 
-    # Server got a result but you didn't!
-    elif (
-        image_response_body.image_b64 is None
-        and expected_image_response.image_b64 is not None
-    ):
+    if expected_image_response.is_nsfw != image_response_body.is_nsfw:
         return 0
 
-    clip_embedding_similiarity = checking_utils.get_clip_embedding_similarity(
-        image_response_body.clip_embeddings, expected_image_response.clip_embeddings
-    )
-    hash_distances = checking_utils.get_hash_distances(
-        image_response_body.image_hashes, expected_image_response.image_hashes
-    )
-
-    probability_same_image_xg = images_are_same_classifier.predict_proba(
-        [hash_distances]
-    )[0][1]
-
-    # MODEL has a very low threshold
-    if probability_same_image_xg > 0.01:
-        score = 1
     else:
-        score = clip_embedding_similiarity**2
-
-    return score
+        return get_image_similarity(
+            image_response_body,
+            expected_image_response,
+            images_are_same_classifier,
+        )
 
 
 ########### TEXT ###########
