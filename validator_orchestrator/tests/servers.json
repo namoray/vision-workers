@@ -2,26 +2,23 @@
     "miners": [
       {
         "id": "1",
-        "endpoint": "https://x6kk7kndvopv0w-6919.proxy.runpod.net",
-        "cuda_version": "12.0",
-        "gpu": "H100"
-      }, 
-      {
-        "id": "4",
-        "endpoint": "https://kwt3lojlule8ig-6919.proxy.runpod.net",
+
+        "endpoint": "http://38.80.122.87:6919",
         "cuda_version": "12.2",
-        "gpu": "A100"}
+        "gpu": "A100"
+      } 
+
     ],
     "validators": [
       {
         "id": "1",
 
-        "endpoint": "http://localhost:6900",
+        "endpoint": "http://38.80.123.233:6920",
+
         "cuda_version": "12.2",
         "gpu": "A100"
       }
     ]
   }
-  
   
   

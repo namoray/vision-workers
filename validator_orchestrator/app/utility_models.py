@@ -9,6 +9,8 @@ class ChatModels(str, enum.Enum):
 
     mixtral = "mixtral-8x7b"
     llama_3 = "llama-3"
+    llama_31_8b = "llama-3-1-8b"
+    llama_31_70b = "llama-3-1-70b"
 
 
 class Role(str, enum.Enum):

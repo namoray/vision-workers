@@ -1,19 +1,16 @@
 [
     {
-         "model": "anakin87/gemma-2b-orpo"
- 
-     },
-     {
-         "model": "TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
-         "revision": "gptq-8bit-128g-actorder_True", 
-         "half_precision": true
-     },
-      {
-         "model": "lgodwangl/new_01m"
-     },
-      {
-         "model": "TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
-         "revision": "gptq-4bit-128g-actorder_True", 
-         "half_precision": true
-     }
- ]
+
+        "model": "unsloth/Meta-Llama-3.1-8B-Instruct",
+        "half_precision": true,
+        "tokenizer": "tau-vision/llama-tokenizer-fix",
+        "max_model_len": 16000
+    },
+    {
+        "model": "hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4",
+        "tokenizer": "tau-vision/llama-tokenizer-fix",
+        "half_precision": true,
+        "max_model_len": 16000,
+        "gpu_memory_utilization": 0.85
+    }
+]

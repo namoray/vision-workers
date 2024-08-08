@@ -138,8 +138,7 @@ async def complete_vllm(
         conversation=messages_dict,
         tokenize=False,
         add_generation_prompt=starting_assistant_message)
-    if 'llama-3' in engine.model_name and not starting_assistant_message:
-        # we want to revmoe anything from the last instance of <|eot_id|> onwards
+    if 'llama-3' in engine.model_name.lower() and not starting_assistant_message:
         formatted_prompt = formatted_prompt[:formatted_prompt.rfind("<|eot_id|>")]
 
     end_of_string_token = engine.tokenizer.eos_token
@@ -149,6 +148,7 @@ async def complete_vllm(
         formatted_prompt = formatted_prompt.rstrip()[: -len(end_of_string_token)]
 
     set_random_seed(seed)
+
     sampling_params = SamplingParams(
         max_tokens=request_info.max_tokens,
         temperature=temperature,

@@ -10,6 +10,7 @@ from app import configuration, endpoints
 from app.inference import state
 import asyncio
 
+
 # Hide process termination error from logs (when swapping models)
 class CancelledErrorFilter:
     def __call__(self, record):
@@ -18,6 +19,8 @@ class CancelledErrorFilter:
             if exc_type is asyncio.exceptions.CancelledError:
                 return False
         return True
+
+
 logging.add(lambda msg: None, filter=CancelledErrorFilter())
 
 
@@ -50,19 +53,28 @@ if config.debug:
 async def lifespan(app: fastapi.FastAPI):
     initial_model = os.getenv("MODEL", None)
     tokenizer = os.getenv("TOKENIZER", None)
-    use_toxic_checker = os.getenv("TOXIC_CHECKER", None)
+
     half_precision = os.getenv("HALF_PRECISION", True)
     revision = os.getenv("REVISION", None)
+    gpu_memory_utilization = os.getenv("GPU_MEMORY_UTILIZATION", None)
+    max_model_len = os.getenv("MAX_MODEL_LEN", None)
+    gpu_memory_utilization = (
+        float(gpu_memory_utilization) if gpu_memory_utilization is not None else None
+    )
+    max_model_len = int(max_model_len) if max_model_len is not None else None
 
-    # TODO: NICER NAME, prob refactor further
     engine_state = state.EngineState()
     if initial_model is not None:
         await engine_state.load_model_and_tokenizer(
-            initial_model, revision, tokenizer, half_precision, force_reload=True
+            initial_model,
+            revision,
+            tokenizer,
+            half_precision,
+            True,
+            gpu_memory_utilization,
+            max_model_len,
         )
 
-    if use_toxic_checker:
-        engine_state.load_toxic_checker()
     app.state.engine_state = engine_state
     yield
 
