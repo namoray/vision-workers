@@ -72,8 +72,8 @@ download_file() {
 if [ ! -d ComfyUI ] || [ -z "$(ls -A ComfyUI)" ]; then 
   git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI
   cd ComfyUI
-  git fetch --depth 1 origin 57753c964affd18d2b87d2a47fe6b375bca39004
-  git checkout 57753c964affd18d2b87d2a47fe6b375bca39004
+  git fetch --depth 1 origin f7a5107784cded39f92a4bb7553507575e78edbe
+  git checkout f7a5107784cded39f92a4bb7553507575e78edbe
   cd ..
 fi
 
@@ -97,6 +97,28 @@ download_file "ComfyUI/models/checkpoints/playground.safetensors" \
               "https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic/resolve/main/playground-v2.5-1024px-aesthetic.fp16.safetensors?download=true" \
               "https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic" \
               "playground-v2.5-1024px-aesthetic.fp16.safetensors"
+
+# Download flux models
+
+download_file "ComfyUI/models/clip/t5xxl_fp8_e4m3fn.safetensors" \
+              "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors" \
+              "https://huggingface.co/comfyanonymous/flux_text_encoders/" \
+              "t5xxl_fp8_e4m3fn.safetensors"
+
+download_file "ComfyUI/models/clip/clip_l.safetensors" \
+              "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors" \
+              "https://huggingface.co/comfyanonymous/flux_text_encoders/" \
+              "clip_l.safetensors"
+
+download_file "ComfyUI/models/vae/ae.sft" \
+              "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors" \
+              "https://huggingface.co/black-forest-labs/FLUX.1-schnell/" \
+              "ae.safetensors"
+
+download_file "ComfyUI/models/unet/flux1-dev.sft" \
+              "https://huggingface.co/Corcelio/flux-dev-unet/resolve/main/flux1-dev.sft" \
+              "https://huggingface.co/Corcelio/flux-dev-unet/" \
+              "flux1-dev.sft"
 
 # Download embeddings
 download_file "ComfyUI/models/embeddings/negativeXL_A.safetensors" \
