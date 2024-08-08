@@ -28,21 +28,7 @@ settings = Settings()
 
 task_configs = models.TaskConfigMapping(
     tasks={
-        models.Tasks.chat_mixtral4b.value: models.TaskConfig(
-            server_needed=models.ServerType.LLM,
-            load_model_config=models.ModelConfigDetails(
-                model="TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ",
-                half_precision=True,
-                revision="gptq-4bit-128g-actorder_True",
-            ),
-            endpoint=BASE_URL + "/generate_text",
-            checking_function=checking_functions.check_text_result,
-            synthetic_generation_function=synthetic_generation.generate_chat_synthetic,
-            synthetic_generation_params={
-                "model": utility_models.ChatModels.mixtral.value
-            },
-            task=models.Tasks.chat_mixtral4b,
-        ),
+
         models.Tasks.chat_mixtral.value: models.TaskConfig(
             server_needed=models.ServerType.LLM,
             load_model_config=models.ModelConfigDetails(
@@ -117,6 +103,18 @@ task_configs = models.TaskConfigMapping(
                 "engine": utility_models.EngineEnum.PROTEUS.value
             },
             task=models.Tasks.proteus_text_to_image,
+        ),
+        models.Tasks.playground_text_to_image.value: models.TaskConfig(
+            server_needed=models.ServerType.IMAGE,
+            load_model_config=None,
+            # todo: change this
+            endpoint=BASE_URL + Endpoints.text_to_image.value,
+            checking_function=checking_functions.check_image_result,
+            synthetic_generation_function=synthetic_generation.generate_text_to_image_synthetic,
+            synthetic_generation_params={
+                "engine": utility_models.EngineEnum.PLAYGROUND.value
+            },
+            task=models.Tasks.playground_text_to_image,
         ),
         models.Tasks.playground_text_to_image.value: models.TaskConfig(
             server_needed=models.ServerType.IMAGE,
