@@ -74,6 +74,7 @@ class Img2ImgBase(BaseModel):
 
 class UpscaleBase(BaseModel):
     init_image: str
+    sampled: bool = Field(default=False)
 
 
 class AvatarBase(BaseModel):

@@ -98,6 +98,15 @@ download_file "ComfyUI/models/checkpoints/playground.safetensors" \
               "https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic" \
               "playground-v2.5-1024px-aesthetic.fp16.safetensors"
 
+download_file "ComfyUI/models/checkpoints/SUPIR-v0Q_fp16.safetensors" \
+              "https://huggingface.co/Kijai/SUPIR_pruned/resolve/main/SUPIR-v0Q_fp16.safetensors" \
+              "https://huggingface.co/Kijai/SUPIR_pruned/" \
+              "SUPIR-v0Q_fp16.safetensors"
+
+download_file "ComfyUI/models/checkpoints/RealVisXL_V4.0_Lightning.safetensors" \
+              "https://huggingface.co/SG161222/RealVisXL_V4.0_Lightning/resolve/main/RealVisXL_V4.0_Lightning.safetensors" \
+              "https://huggingface.co/SG161222/RealVisXL_V4.0_Lightning" \
+              "RealVisXL_V4.0_Lightning.safetensors"
 # Download flux models
 
 download_file "ComfyUI/models/clip/t5xxl_fp8_e4m3fn.safetensors" \
@@ -163,6 +172,13 @@ if [ ! -d ComfyUI_InstantID ] || [ -z "$(ls -A ComfyUI_InstantID)" ]; then
   git clone https://github.com/cubiq/ComfyUI_InstantID
   cd ComfyUI_InstantID
   git checkout 50445991e2bd1d5ec73a8633726fe0b33a825b5b
+  cd ..
+fi
+
+if [ ! -d ComfyUI-SUPIR ] || [ -z "$(ls -A ComfyUI_InstantID)" ]; then 
+  git clone https://github.com/kijai/ComfyUI-SUPIR
+  cd ComfyUI-SUPIR
+  git checkout 53fc4f82f139e0875e1f4f3716fbeafa073e4242
   cd ..
 fi
 

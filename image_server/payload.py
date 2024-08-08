@@ -141,7 +141,8 @@ class PayloadModifier:
         return payload
 
     def modify_upscale(self, input_data: UpscaleBase) -> Dict[str, Any]:
-        payload = copy.deepcopy(self._payloads["upscale"])
+        workflow_name = "upscale_sampled" if input_data.sampled else "upscale"
+        payload = copy.deepcopy(self._payloads[workflow_name])
         init_img = base64_to_image(input_data.init_image)
         init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
         return payload
