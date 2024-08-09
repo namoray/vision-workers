@@ -8,7 +8,8 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
-./setup.sh
+echo "Starting the image server. First i'll download all the models..."
+python setup.py
 
 vram_mode=${VRAM_MODE:-'--lowvram'}
 warmup=$(echo ${WARMUP:-false} | tr '[:upper:]' '[:lower:]')

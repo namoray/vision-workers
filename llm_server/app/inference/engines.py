@@ -49,7 +49,6 @@ async def _get_vllm_engine(
         tokenizer_name=tokenizer_name,
         model=model_instance,
         completion_method=completions.complete_vllm,
-        # TODO: REVIEW IF TOP K CHANGES
         maxlogprobs=10,
     )
 

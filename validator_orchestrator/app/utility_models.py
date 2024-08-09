@@ -1,6 +1,5 @@
 import enum
 from typing import List, Optional
-
 from pydantic import BaseModel
 
 
@@ -33,6 +32,8 @@ class EngineEnum(str, enum.Enum):
     DREAMSHAPER = "dreamshaper"
     PLAYGROUND = "playground"
     PROTEUS = "proteus"
+    FLUX_DEV =  "flux-dev"
+    FLUX_SCHNELL = "flux-schnell"
 
 
 class ImageHashes(BaseModel):

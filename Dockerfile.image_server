@@ -67,15 +67,15 @@ ENV VRAM_MODE=--lowvram
 ENV WARMUP=false
 
 RUN chmod +x /app/image_server/entrypoint.sh
-RUN chmod +x /app/image_server/setup.sh
 
-# Create new cache dir
 RUN mkdir /app/cache \
     && mkdir /app/cache/hub \
     && chmod -R 777 /app/cache \
     && chmod -R 777 /app/cache/hub
-# Change HF cache dir
+
 ENV HF_HOME=/app/cache
 ENV HF_HUB_CACHE=/app/cache/hub
+ENV PYTHONUNBUFFERED=1
 
-CMD ["sh", "-c", "cd /app/image_server && ./entrypoint.sh"]
+
+CMD ["sh", "-c", "cd /app/image_server && ./entrypoint.sh 2>&1"]

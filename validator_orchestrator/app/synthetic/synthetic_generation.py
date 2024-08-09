@@ -82,6 +82,11 @@ async def generate_text_to_image_synthetic(
         width = 1024
         cfg_scale = 3.5
         steps = 8
+    elif engine == utility_models.EngineEnum.FLUX_SCHNELL.value or engine == utility_models.EngineEnum.FLUX_DEV.value:
+        height = 1024
+        width = 1024
+        cfg_scale = 4.0
+        steps = 25
     else:
         raise ValueError(f"Engine {engine} not supported")
 

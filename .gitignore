@@ -11,6 +11,7 @@ charlie_test.py
 dev_testing.py
 temp/
 
+ComfyUI/*
 image_server/ComfyUI
 image_cache/*
 validator_orchestrator/image_cache/*

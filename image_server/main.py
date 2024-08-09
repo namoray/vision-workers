@@ -24,6 +24,7 @@ def handle_request_errors(func: Callable):
 async def home():
     return PlainTextResponse("Image!")
 
+
 @app.post("/txt2img")
 @handle_request_errors
 async def txt2img(request_data: base_model.Txt2ImgBase) -> base_model.ImageResponseBody:

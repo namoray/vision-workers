@@ -8,8 +8,8 @@ class EngineEnum(str, Enum):
     DREAMSHAPER = "dreamshaper"
     PROTEUS = "proteus"
     PLAYGROUND = "playground"
-    FLUX = "flux"
-    FLUX_SCHNELL = "flux_schnell"
+    FLUX_DEV = "flux-dev"
+    FLUX_SCHNELL = "flux-schnell"
 
 
 class Txt2ImgBase(BaseModel):
