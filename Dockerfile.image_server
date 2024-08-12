@@ -63,10 +63,11 @@ ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
 USER root
 ENV DEVICE=0
-ENV VRAM_MODE=--lowvram
+ENV VRAM_MODE=--normalvram
 ENV WARMUP=false
 
 RUN chmod +x /app/image_server/entrypoint.sh
+RUN chmod +x /app/image_server/setup.sh
 
 RUN mkdir /app/cache \
     && mkdir /app/cache/hub \
@@ -75,7 +76,6 @@ RUN mkdir /app/cache \
 
 ENV HF_HOME=/app/cache
 ENV HF_HUB_CACHE=/app/cache/hub
-ENV PYTHONUNBUFFERED=1
 
 
-CMD ["sh", "-c", "cd /app/image_server && ./entrypoint.sh 2>&1"]
+CMD ["sh", "-c", "cd /app/image_server && ./entrypoint.sh"]

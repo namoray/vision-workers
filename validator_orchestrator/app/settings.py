@@ -102,17 +102,7 @@ task_configs = models.TaskConfigMapping(
             },
             task=models.Tasks.proteus_text_to_image,
         ),
-        models.Tasks.flux_dev_text_to_image.value: models.TaskConfig(
-            server_needed=models.ServerType.IMAGE,
-            load_model_config=None,
-            endpoint=BASE_URL + Endpoints.text_to_image.value,
-            checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_text_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.FLUX_DEV.value
-            },
-            task=models.Tasks.flux_dev_text_to_image,
-        ),
+
         models.Tasks.flux_schnell_text_to_image.value: models.TaskConfig(
             server_needed=models.ServerType.IMAGE,
             load_model_config=None,
@@ -178,17 +168,6 @@ task_configs = models.TaskConfigMapping(
                 "engine": utility_models.EngineEnum.PLAYGROUND.value
             },
             task=models.Tasks.playground_image_to_image,
-        ),
-        models.Tasks.flux_dev_image_to_image.value: models.TaskConfig(
-            server_needed=models.ServerType.IMAGE,
-            load_model_config=None,
-            endpoint=BASE_URL + Endpoints.image_to_image.value,
-            checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_image_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.FLUX_DEV.value
-            },
-            task=models.Tasks.flux_dev_image_to_image,
         ),
         models.Tasks.flux_schnell_image_to_image.value: models.TaskConfig(
             server_needed=models.ServerType.IMAGE,

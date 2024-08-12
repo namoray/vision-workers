@@ -37,14 +37,12 @@ class Tasks(Enum):
     #
     proteus_text_to_image = "proteus-text-to-image"
     playground_text_to_image = "playground-text-to-image"
-    flux_dev_text_to_image = "flux-dev-text-to-image"
     flux_schnell_text_to_image = "flux-schnell-text-to-image"
     dreamshaper_text_to_image = "dreamshaper-text-to-image"
     #
     proteus_image_to_image = "proteus-image-to-image"
     playground_image_to_image = "playground-image-to-image"
-    flux_dev_image_to_image = "flux-dev-image-to-image"
-    flux_schnell_image_to_image = "flux-schnell-text-to-image"
+    flux_schnell_image_to_image = "flux-schnell-image-to-image"
     dreamshaper_image_to_image = "dreamshaper-image-to-image"
     #
     avatar = "avatar"

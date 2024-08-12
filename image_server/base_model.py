@@ -8,7 +8,6 @@ class EngineEnum(str, Enum):
     DREAMSHAPER = "dreamshaper"
     PROTEUS = "proteus"
     PLAYGROUND = "playground"
-    FLUX_DEV = "flux-dev"
     FLUX_SCHNELL = "flux-schnell"
 
 

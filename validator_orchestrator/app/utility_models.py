@@ -32,7 +32,6 @@ class EngineEnum(str, enum.Enum):
     DREAMSHAPER = "dreamshaper"
     PLAYGROUND = "playground"
     PROTEUS = "proteus"
-    FLUX_DEV =  "flux-dev"
     FLUX_SCHNELL = "flux-schnell"
 
 

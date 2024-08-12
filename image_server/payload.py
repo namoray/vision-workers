@@ -106,7 +106,7 @@ class PayloadModifier:
         seed = input_data.seed
         if seed == 0:
             seed = random.randint(1, 2**16)
-        if input_data.engine not in [EngineEnum.FLUX_DEV.value, EngineEnum.FLUX_SCHNELL.value]:
+        if input_data.engine not in [EngineEnum.FLUX_SCHNELL.value]:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
@@ -130,7 +130,7 @@ class PayloadModifier:
         seed = input_data.seed
         if seed == 0:
             seed = random.randint(1, 2**16)
-        if input_data.engine not in [EngineEnum.FLUX_DEV.value, EngineEnum.FLUX_SCHNELL.value]:
+        if input_data.engine not in [EngineEnum.FLUX_SCHNELL.value]:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
