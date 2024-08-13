@@ -5,17 +5,28 @@ import datasets
 import random
 from app import utils
 import diskcache
+from loguru import logger
+from requests.exceptions import ReadTimeout
+import time
 
-# def generate_params(engine: utility_models.EngineEnum, params_to_vary: List[str]):
-#     params = {}
+RETRY_INTERVAL = 300
 
-#     for param in request_models.ALLOWED_PARAMS_FOR_ENGINE[engine]:
-#         if param in params_to_vary:
-#             value = request_models.ALLOWED_PARAMS_FOR_ENGINE[engine][param]["generator"]()
-#             params[param] = value
-#     return params
 
-dataset = datasets.load_dataset("multi-train/coco_captions_1107")
+while True:
+    try:
+        logger.info("Attempting to load captioning dataset...")
+        dataset = datasets.load_dataset("multi-train/coco_captions_1107")
+        logger.success("Dataset loaded successfully!")
+        break  # Exit the loop if successful
+    except ReadTimeout as e:
+        logger.error(f"ReadTimeout error occurred: {e}")
+        logger.info(f"Retrying in {RETRY_INTERVAL} seconds...")
+        time.sleep(RETRY_INTERVAL)
+    except Exception as e:
+        logger.exception(f"An unexpected error occurred: {e}")
+        logger.info(f"Retrying in {RETRY_INTERVAL} seconds...")
+        time.sleep(RETRY_INTERVAL)
+
 text = [i["query"] for i in dataset["train"]]
 markov_text_generation_model = markovify.Text(" ".join(text))
 cache = diskcache.Cache("./image_cache")
