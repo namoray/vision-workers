@@ -60,8 +60,8 @@ docker run --rm -d -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6919:6
 ```
 or
 ```bash
-docker pull corcelio/vision:llm_server-latest
-docker run --rm -d -v HF:/app/cache -p 6919:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0  corcelio/vision:llm_server-latest
+docker pull corcelio/vision:image_server-latest
+docker run --rm -d -v HF:/app/cache -p 6919:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0  corcelio/vision:image_server-latest
 ```
 
 To start another machine on the same instance:
@@ -73,8 +73,8 @@ docker run --rm -d -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6918:6
 ```
 or
 ```bash
-docker pull corcelio/vision:llm_server-latest
-docker run --rm -d -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus=all -e PORT=6918 -e DEVICE=0 corcelio/vision:llm_server-latest
+docker pull corcelio/vision:image_server-latest
+docker run --rm -d -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus=all -e PORT=6918 -e DEVICE=0 corcelio/vision:image_server-latest
 ```
 
 ## [Troubleshooting](../../generic_docs/troubleshooting.md)

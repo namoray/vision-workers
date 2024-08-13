@@ -26,3 +26,7 @@ loguru==0.7.2
 git+https://github.com/openai/CLIP.git
 protobuf==5.27.0
 huggingface_hub[hf_transfer]==0.23.2
+open-clip-torch>=2.24.0
+pytorch-lightning>=2.2.1
+omegaconf==2.3.0
+loguru==0.7.2

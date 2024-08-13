@@ -11,7 +11,7 @@
       "temperature": 0.8,
       "max_tokens": 1024,
       "seed": 441670308,
-      "model": "mixtral-8x7b",
+      "model": "llama-3-1-8b",
       "name": "Chat",
       "timeout": 12.0,
       "total_size": 0,
@@ -45,14 +45,14 @@
     },
     "synthetic_query": true,
     "result": {
-      "formatted_response": {
-        "text": "logprob"
-      },
+      "formatted_response": [{
+        "text": "logprob", "logprob": 0
+      }],
       "axon_uid": 6,
       "response_time": 2.398472309112549,
       "error_message": null,
       "failed_axon_uids": []
     },
-    "task": "chat-mixtral"
+    "task": "chat-llama-3-1-8b"
   }
 ]

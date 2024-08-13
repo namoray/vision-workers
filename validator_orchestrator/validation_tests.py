@@ -10,7 +10,7 @@ import re
 from app.models import ServerDetails, ServerInstance, ValidationTest, \
     ChatRequestModel, Tasks, CheckResultsRequest, \
     Message, TestInstanceResults, ModelConfigDetails, QueryResult
-import requests
+
 from typing import List, Dict, Any, AsyncGenerator, Union
 
 from app.checking.checking_functions import check_text_result
@@ -23,8 +23,9 @@ SERVERS_JSON_LOC = "tests/servers.json"
 PROMPTS_LOC = "tests/test_prompts.txt"
 MODELS_TO_TEST_LOC = "tests/models_to_test.json"
 TEST_SAVE_LOC = "tests/test_results.csv"
-NUMBER_OF_TESTS = 3
-VALIDATOR_TASKS = [Tasks.chat_llama_3]
+
+NUMBER_OF_TESTS = 100
+VALIDATOR_TASKS = [Tasks.chat_llama_31_8b, Tasks.chat_llama_31_70b]
 
 print("Starting script...")
 
@@ -111,19 +112,25 @@ async def make_request(server: ServerInstance, payload: Union[ChatRequestModel, 
                 response = await client.post(server.server_details.endpoint + endpoint, json=payload.dict())
                 response.raise_for_status()
                 response_json = response.json()
-                task_id = response.json().get("task_id")
+
+                task_id = response_json.get("task_id")
+
                 print(f"Task ID: {task_id}")
                 if task_id is None:
                     if response_json.get("status") == "Busy":
                         print(
                             f"Attempt: {j}; There's already a task being checked, will sleep and try again..."
-                            f"\nresponse: {response.json()}"
+
+                            f"\nresponse: {response_json}"
+
                         )
                         await asyncio.sleep(20)
                         j += 1
                     else:
                         print(
-                            "Checking server seems broke, please check!" f"response: {response.json()}"
+
+                            "Checking server seems broke, please check!" f"response: {response_json}"
+
                         )
                         await sleeper.sleep()
                         break
@@ -169,12 +176,12 @@ async def make_request(server: ServerInstance, payload: Union[ChatRequestModel, 
 async def make_load_model_request(server: ServerInstance) -> httpx.Response:
     print(f"Making load model request to {server.server_details.endpoint}")
     model_config = server.model
-    payload = {
-        "model": model_config.model,
-        "tokenizer": model_config.tokenizer,
-        "revision": model_config.revision,
-        "half_precision": model_config.half_precision
-    }
+
+    payload = {}
+    for key, val in dict(model_config).items():
+        if val:
+            payload[key] = val
+
     async with httpx.AsyncClient(timeout=(10, 300)) as client:
         response = await client.post(server.server_details.endpoint + "/load_model", json=payload)
         print('Load model response', response, 'when loading with', payload)
@@ -214,72 +221,59 @@ async def process_validation_test(test: ValidationTest) -> None:
     test_results = []
     payload_results = {}
     for miner in test.miners_to_test:
-        print(f"Loading model for miner: {miner}")
+
         await make_load_model_request(miner)
         payload_results[miner.model.model] = []
         for prompt in test.prompts_to_check:
-            print(f"Streaming text for prompt: {prompt}")
+
             miner_stream = stream_text_from_server(prompt.dict(), miner.server_details.endpoint)
             response = await _stream_response_from_stream_miners_until_result(miner_stream, miner)
             payload = CheckResultsRequest(task=test.validator_task,
                                           synthetic_query=False,
                                           result=response,
                                           synapse=prompt.dict())
-            payload_results[miner.model.model].append(payload.dict())
-            print(f"Making check request with payload: {payload}")
+
             check = await make_request(test.validator_server, payload, "/check-result")
             try:
-                score = check.json()["result"]["axon_scores"][miner.server_details.id]
-                test_res = TestInstanceResults(score=score, miner_server=miner, validator_server=test.validator_server,
-                                               messages=prompt.messages, seed=prompt.seed, temperature=prompt.temperature, task=test.validator_task)
-                print(test_res.dict())
+                score = check["result"]["axon_scores"][miner.server_details.id]
+                test_res = TestInstanceResults(score=score, 
+                                               miner_server=miner, validator_server=test.validator_server,
+                                               messages=prompt.messages, seed=prompt.seed, temperature=prompt.temperature, task=test.validator_task, 
+                                               miner_request=payload.dict())
+
                 test_results.append(test_res)
             except Exception as e:
                 print(e)
     save_test_results_to_csv(test_results)
-    save_test_results_to_json(payload_results)
+
 
 def save_test_results_to_json(payload_results: Dict[str, List[Any]]) -> None:
-    print("Saving test results to JSON")
     results_to_save = [{"miner_model": model, "payloads": payloads} for model, payloads in payload_results.items()]
     with open(TEST_SAVE_LOC.replace('.csv', '.json'), 'w') as f:
         json.dump(results_to_save, f, indent=4)
-    print("Test results saved to JSON")
 
 def save_test_results_to_csv(test_results: List[TestInstanceResults]) -> None:
-    print("Saving test results to CSV")
     flattened_results = []
     for result in test_results:
         miner_details = flatten_server_instance_details(result.miner_server)
-        res = {'validator': result.validator_server.server_details.endpoint, 'task': result.task, 'score': result.score, 'prompt': result.messages[0].content, 'temp': result.temperature, 'seed': result.seed}
+        res = {'validator': result.validator_server.server_details.endpoint, 'task': result.task, 'score': result.score, 'prompt': result.messages[0].content, 'temp': result.temperature, 'seed': result.seed, 
+               'miner_request': result.miner_request}
+
         res.update({f"miner_{k}": v for k, v in miner_details.items()})
         flattened_results.append(res)
     df = pd.DataFrame(flattened_results)
     df.to_csv(TEST_SAVE_LOC, mode='a' if os.path.exists(TEST_SAVE_LOC) else 'w', header=not os.path.exists(TEST_SAVE_LOC), index=False)
-    print("Test results saved to CSV")
+
 
 def flatten_server_instance_details(server_instance: ServerInstance) -> Dict[str, Any]:
-    print(f"Flattening server instance details for {server_instance}")
+
     return {"id": server_instance.server_details.id, "gpu": server_instance.server_details.gpu,
             "endpoint": server_instance.server_details.endpoint, "model_name": server_instance.model.model,
             "model_revision": server_instance.model.revision}
 
-def _load_sse_jsons(chunk: str) -> List[Dict[str, Any]]:
-    print(f"Loading SSE JSONs from chunk: {chunk}")
-    jsons = []
-    received_event_chunks = chunk.split("\n\n")
-    for event in received_event_chunks:
-        if event == "":
-            continue
-        prefix, _, data = event.partition(":")
-        if data.strip() == "[DONE]":
-            break
-        loaded_chunk = json.loads(data)
-        jsons.append(loaded_chunk)
-    return jsons
 
 async def _stream_response_from_stream_miners_until_result(miner_stream: AsyncGenerator[str, None], miner_details: ServerInstance) -> QueryResult:
-    print(f"Streaming response from miners until result for {miner_details}")
+
     time1 = time.time()
     if miner_stream is not None:
         text_data = ""
@@ -300,11 +294,12 @@ async def _stream_response_from_stream_miners_until_result(miner_stream: AsyncGe
                                failed_axon_uids=[], response_time=time.time() - time1, error_message=None)
 
 async def main():
-    print("Running main function")
+
     servers = load_json(SERVERS_JSON_LOC)
     miners = get_server_details(servers, "miners")
     validators = get_server_details(servers, "validators")
-    models = [ModelConfigDetails(**model) for model in load_json(MODELS_TO_TEST_LOC)]
+    models = [model for model in load_json(MODELS_TO_TEST_LOC)]
+
     prompts = load_txt_lines(PROMPTS_LOC)
     miner_servers = create_server_instances(miners, models)
     for validator in validators:

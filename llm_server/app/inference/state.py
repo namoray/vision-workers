@@ -1,9 +1,7 @@
-
 import gc
 import os
 from time import sleep
 import signal
-import sys
 import multiprocessing
 
 import torch
@@ -23,6 +21,7 @@ import httpx
 import uvicorn
 import errno
 
+
 class CancelledErrorFilter:
     def __call__(self, record):
         if record["exception"]:
@@ -30,8 +29,11 @@ class CancelledErrorFilter:
             if exc_type is asyncio.exceptions.CancelledError:
                 return False
         return True
+
+
 logging.add(lambda msg: None, filter=CancelledErrorFilter())
-multiprocessing.set_start_method('spawn', force=True)
+multiprocessing.set_start_method("spawn", force=True)
+
 
 class EngineState:
     def __init__(self):
@@ -41,10 +43,6 @@ class EngineState:
         self.toxic_checker: Optional[models.ToxicEngine] = None
         self.model_process: Optional[multiprocessing.Process] = None
 
-    def load_toxic_checker(self) -> None:
-        if self.toxic_checker is None:
-            self.toxic_checker = toxic.get_toxic_chat_identifier()
-
     async def load_model_and_tokenizer(
         self,
         model_to_load: str,
@@ -52,18 +50,32 @@ class EngineState:
         tokenizer_name: str,
         half_precision: bool,
         force_reload: bool,
+        gpu_memory_utilization: float,
+        max_model_len: int,
     ) -> None:
-        if self.model_loaded and not force_reload and self.current_model == model_to_load:
+        if (
+            self.model_loaded
+            and not force_reload
+            and self.current_model == model_to_load
+        ):
             logging.info(f"Model {model_to_load} already loaded")
             return
 
         await self._unload_model()
 
         self.model_ready.clear()
-        ctx = multiprocessing.get_context('spawn')
+        ctx = multiprocessing.get_context("spawn")
         self.model_process = ctx.Process(
             target=self._model_server_process,
-            args=(model_to_load, revision, tokenizer_name, half_precision, self.model_ready)
+            args=(
+                model_to_load,
+                revision,
+                tokenizer_name,
+                half_precision,
+                self.model_ready,
+                gpu_memory_utilization,
+                max_model_len,
+            ),
         )
         self.model_process.start()
         self.model_ready.wait()
@@ -94,12 +106,16 @@ class EngineState:
 
         logging.info("Unloaded model")
 
-    def _model_server_process(self, model_name: str, revision: str, tokenizer_name: str, half_precision: bool, model_ready: multiprocessing.Event)-> None:
-        if os.getenv("DEBUG_MODE", 'false').lower() == 'true':
-            pass
-        else:
-            sys.stderr = open(os.devnull, 'w')
-
+    def _model_server_process(
+        self,
+        model_name: str,
+        revision: str,
+        tokenizer_name: str,
+        half_precision: bool,
+        model_ready: multiprocessing.Event,
+        gpu_memory_utilization: float,
+        max_model_len: int,
+    ) -> None:
         logging.add(lambda msg: None, filter=CancelledErrorFilter())
         app = FastAPI()
         engine_holder = {}
@@ -108,12 +124,15 @@ class EngineState:
         async def generate_text(request: RequestInfo):
             try:
                 logging.info(f"Received request: {request.json()}")
-                llm_engine = engine_holder['engine']
+                llm_engine = engine_holder["engine"]
+
                 async def stream_response():
                     async for chunk in completions.complete_vllm(llm_engine, request):
                         yield chunk
 
-                return StreamingResponse(stream_response(), media_type="application/json")
+                return StreamingResponse(
+                    stream_response(), media_type="application/json"
+                )
             except Exception as e:
                 logging.error(f"Error during text generation: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
@@ -123,34 +142,48 @@ class EngineState:
             torch.cuda.empty_cache()
             try:
                 llm_engine = await engines.get_llm_engine(
-                    model_name, revision, tokenizer_name, half_precision
+                    model_name,
+                    revision,
+                    tokenizer_name,
+                    half_precision,
+                    gpu_memory_utilization,
+                    max_model_len,
                 )
             except OSError as e:
                 if e.errno == errno.ENOSPC:
-                    logging.info("OSError was thrown, clearing disk before loading model...")
+                    logging.info(
+                        "OSError was thrown, clearing disk before loading model..."
+                    )
                     self.clean_cache_hf()
                     self.llm_engine = await engines.get_llm_engine(
-                        model_name, revision, tokenizer_name, half_precision
+                        model_name,
+                        revision,
+                        tokenizer_name,
+                        half_precision,
+                        gpu_memory_utilization,
+                        max_model_len,
                     )
                 else:
                     raise
 
-
-            engine_holder['engine'] = llm_engine
+            engine_holder["engine"] = llm_engine
             model_ready.set()
-        logging.info(f"-Child- loading model")
+
+        logging.info("-Child- loading model")
         asyncio.run(load_model())
-        logging.info(f"-Child- running api")
+        logging.info("-Child- running api")
         uvicorn.run(app, host="0.0.0.0", port=6910)
 
     async def forward_request(self, request_info: models.RequestInfo):
         async with httpx.AsyncClient() as client:
-            async with client.stream("POST", "http://localhost:6910/generate", json=request_info.dict()) as response:
+            async with client.stream(
+                "POST", "http://localhost:6910/generate", json=request_info.dict()
+            ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
                     if line:
                         yield line
-    
+
     def clean_cache_hf(self):
         logging.info("Clearing HuggingFace cache dir...")
         cache_info = scan_cache_dir()

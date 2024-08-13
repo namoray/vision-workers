@@ -1,6 +1,5 @@
 import enum
 from typing import List, Optional
-
 from pydantic import BaseModel
 
 
@@ -9,6 +8,8 @@ class ChatModels(str, enum.Enum):
 
     mixtral = "mixtral-8x7b"
     llama_3 = "llama-3"
+    llama_31_8b = "llama-3-1-8b"
+    llama_31_70b = "llama-3-1-70b"
 
 
 class Role(str, enum.Enum):
@@ -31,6 +32,7 @@ class EngineEnum(str, enum.Enum):
     DREAMSHAPER = "dreamshaper"
     PLAYGROUND = "playground"
     PROTEUS = "proteus"
+    FLUX_SCHNELL = "flux-schnell"
 
 
 class ImageHashes(BaseModel):

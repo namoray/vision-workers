@@ -75,12 +75,21 @@ check_and_pull_image() {
   LOCAL_DIGEST=$(get_local_image_digest)
 
   if [ -z "$LOCAL_DIGEST" ]; then
-    echo "Image $IMAGE does not exist locally. Pulling from Docker Hub..."
-    docker pull $IMAGE
+    echo "Image $IMAGE does not exist locally. Attempting to pull from Docker Hub..."
+    if docker pull $IMAGE; then
+      echo "Successfully pulled $IMAGE"
+    else
+      echo "Failed to pull $IMAGE. Please check the image name and your network connection."
+      return 1
+    fi
   else
     echo "Image $IMAGE exists locally. Checking for updates..."
     if [ "$REFRESH_LOCAL_IMAGES" -eq 1 ]; then
-      docker pull $IMAGE
+      if docker pull $IMAGE; then
+        echo "Successfully pulled latest version of $IMAGE"
+      else
+        echo "Failed to pull latest version of $IMAGE. Using existing local image."
+      fi
     fi
     REMOTE_DIGEST=$(get_local_image_digest)
     if [ "$REMOTE_DIGEST" != "$LOCAL_DIGEST" ]; then
@@ -90,7 +99,6 @@ check_and_pull_image() {
     fi
   fi
 }
-
 check_and_pull_image $ORCHESTRATOR_IMAGE
 check_and_pull_image $LLM_IMAGE
 check_and_pull_image $IMAGE_SERVER_IMAGE

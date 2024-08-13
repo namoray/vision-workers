@@ -14,9 +14,11 @@ async def load_model(
     tokenizer = request.tokenizer
     revision = request.revision
     force_reload = request.force_reload
+    gpu_memory_utilization = request.gpu_memory_utilization
+    max_model_len = request.max_model_len
 
     await EngineState.load_model_and_tokenizer(
-        model, revision, tokenizer, request.half_precision, force_reload
+        model, revision, tokenizer, request.half_precision, force_reload, gpu_memory_utilization, max_model_len
     )
     return schemas.LoadModelResponse(success=True)
 

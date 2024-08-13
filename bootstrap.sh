@@ -131,15 +131,19 @@ ln -s $(which python3.11) /usr/bin/python
 
 # configure servers to start on boot
 ################################################################################
-if [[ WITH_AUTOUPDATES -eq 1 ]]; then
-  # write the systemd unit to run the vision autoupdater
-  sudo -E bash run_autoupdater.sh
+if [[ NO_LAUNCH -eq 1 ]]; then
+  :
 else
-  # just schedule `launch_orchestrator.sh` to run periodically
-  if ! [[ $(crontab -u $SUDO_USER -l | grep -F 'launch_orchestrator.sh') ]]; then
-    (crontab -u $SUDO_USER -l; echo "* * * * * /bin/bash -c 'source $HOME/.bashrc; cd vision-workers && bash launch_orchestrator.sh >> vision_orchestrator.log 2>&1'") | crontab -u $SUDO_USER -
+  if [[ WITH_AUTOUPDATES -eq 1 ]]; then
+    sudo -E bash run_autoupdater.sh
+  else
+    # just schedule `launch_orchestrator.sh` to run periodically
+    if ! [[ $(crontab -u $SUDO_USER -l | grep -F 'launch_orchestrator.sh') ]]; then
+      (crontab -u $SUDO_USER -l; echo "* * * * * /bin/bash -c 'source $HOME/.bashrc; cd vision-workers && bash launch_orchestrator.sh >> vision_orchestrator.log 2>&1'") | crontab -u $SUDO_USER -
+    fi
   fi
 fi
+
 
 # finally, reboot if needed
 ################################################################################

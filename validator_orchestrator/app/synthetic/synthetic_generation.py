@@ -5,7 +5,6 @@ import datasets
 import random
 from app import utils
 import diskcache
-from app import constants
 
 # def generate_params(engine: utility_models.EngineEnum, params_to_vary: List[str]):
 #     params = {}
@@ -83,6 +82,11 @@ async def generate_text_to_image_synthetic(
         width = 1024
         cfg_scale = 3.5
         steps = 8
+    elif engine == utility_models.EngineEnum.FLUX_SCHNELL.value:
+        height = 1024
+        width = 1024
+        cfg_scale = 4.0
+        steps = 25
     else:
         raise ValueError(f"Engine {engine} not supported")
 
@@ -121,6 +125,12 @@ async def generate_image_to_image_synthetic(
         width = 1024
         cfg_scale = 3.5
         steps = 8
+        image_strength = 0.5
+    elif engine == utility_models.EngineEnum.FLUX_SCHNELL.value:
+        height = 1024
+        width = 1024
+        cfg_scale = 2.0
+        steps = 25
         image_strength = 0.5
     else:
         raise ValueError(f"Engine {engine} not supported")
@@ -198,20 +208,3 @@ async def generate_clip_synthetic() -> incoming_models.ClipEmbeddingsIncoming:
     return incoming_models.ClipEmbeddingsIncoming(
         image_b64s=[init_image],
     )
-
-
-async def generate_sota_synthetic() -> None:
-    nsfw_prompt = True
-    while nsfw_prompt:
-        positive_text = _get_markov_sentence(max_words=20)[:-1]
-        for bad_word in constants.MJ_BANNED_WORDS:
-            if bad_word in positive_text:
-                nsfw_prompt = True
-                break
-            else:
-                nsfw_prompt = False
-    seed = random.randint(1, MAX_SEED)
-
-    positive_text += f"  --seed {seed} --ar 1:1  --v 6"
-
-    return incoming_models.SotaIncoming(prompt=positive_text)

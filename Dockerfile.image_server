@@ -62,19 +62,20 @@ ENV APP_PORT=8080
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
 USER root
-ENV VLLM_PORT=6919
 ENV DEVICE=0
+ENV VRAM_MODE=--normalvram
+ENV WARMUP=false
 
 RUN chmod +x /app/image_server/entrypoint.sh
 RUN chmod +x /app/image_server/setup.sh
 
-# Create new cache dir
 RUN mkdir /app/cache \
     && mkdir /app/cache/hub \
     && chmod -R 777 /app/cache \
     && chmod -R 777 /app/cache/hub
-# Change HF cache dir
+
 ENV HF_HOME=/app/cache
 ENV HF_HUB_CACHE=/app/cache/hub
+
 
 CMD ["sh", "-c", "cd /app/image_server && ./entrypoint.sh"]

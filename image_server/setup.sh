@@ -4,20 +4,20 @@
 get_lfs_sha256() {
     local repo_url=$1
     local file_path=$2
-    
+
     # Clone only the LFS pointers without downloading the actual files
     tmp_dir=$(mktemp -d)
     git clone --no-checkout --filter=blob:none $repo_url $tmp_dir
-    
+
     cd $tmp_dir
     git checkout HEAD -- $file_path
-    
+
     # Extract the SHA256 from the LFS pointer file
     sha256=$(cat $file_path | grep -oP '(?<=sha256:)[a-f0-9]{64}')
-    
+
     cd - > /dev/null
     rm -rf $tmp_dir
-    
+
     echo $sha256
 }
 
@@ -72,8 +72,8 @@ download_file() {
 if [ ! -d ComfyUI ] || [ -z "$(ls -A ComfyUI)" ]; then 
   git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI
   cd ComfyUI
-  git fetch --depth 1 origin 57753c964affd18d2b87d2a47fe6b375bca39004
-  git checkout 57753c964affd18d2b87d2a47fe6b375bca39004
+  git fetch --depth 1 origin f7a5107784cded39f92a4bb7553507575e78edbe
+  git checkout f7a5107784cded39f92a4bb7553507575e78edbe
   cd ..
 fi
 
@@ -98,6 +98,30 @@ download_file "ComfyUI/models/checkpoints/playground.safetensors" \
               "https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic" \
               "playground-v2.5-1024px-aesthetic.fp16.safetensors"
 
+
+# Download flux models
+
+download_file "ComfyUI/models/clip/t5xxl_fp8_e4m3fn.safetensors" \
+              "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors" \
+              "https://huggingface.co/comfyanonymous/flux_text_encoders/" \
+              "t5xxl_fp8_e4m3fn.safetensors"
+
+download_file "ComfyUI/models/clip/clip_l.safetensors" \
+              "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors" \
+              "https://huggingface.co/comfyanonymous/flux_text_encoders/" \
+              "clip_l.safetensors"
+
+download_file "ComfyUI/models/vae/ae.sft" \
+              "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors" \
+              "https://huggingface.co/black-forest-labs/FLUX.1-schnell/" \
+              "ae.safetensors"
+
+download_file "ComfyUI/models/unet/flux1-schnell.sft" \
+              "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/flux1-schnell.safetensors" \
+              "https://huggingface.co/black-forest-labs/FLUX.1-schnell/" \
+              "flux1-schnell.safetensors"
+
+
 # Download embeddings
 download_file "ComfyUI/models/embeddings/negativeXL_A.safetensors" \
               "https://huggingface.co/gsdf/CounterfeitXL/resolve/main/embeddings/negativeXL_A.safetensors?download=true" \
@@ -110,11 +134,6 @@ download_file "ComfyUI/models/vae/sdxl_vae.safetensors" \
               "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix" \
               "sdxl.vae.safetensors"
 
-# Download upscale model
-download_file "ComfyUI/models/upscale_models/ultrasharp.pt" \
-              "https://huggingface.co/Corcelio/upscale/resolve/main/ultrasharp.pt?download=true" \
-              "https://huggingface.co/Corcelio/upscale" \
-              "ultrasharp.pt"
 
 # Set up input images
 [ -f ComfyUI/input/init.png ] || mv ComfyUI/input/example.png ComfyUI/input/init.png
@@ -144,9 +163,10 @@ if [ ! -d ComfyUI_InstantID ] || [ -z "$(ls -A ComfyUI_InstantID)" ]; then
   cd ..
 fi
 
+
+
 cd ../..
 
-# InsightFace models setup
 mkdir -p ComfyUI/models/insightface/models
 cd ComfyUI/models/insightface/models
 

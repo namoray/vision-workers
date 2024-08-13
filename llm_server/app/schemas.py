@@ -15,6 +15,8 @@ class LoadModelRequest(BaseModel):
     )
     revision: Optional[str] = Field(None, example="gptq-8bit-128g-actorder_True")
     force_reload: bool = Field(False)
+    gpu_memory_utilization: float = Field(0.8, example="0.85")
+    max_model_len: Optional[int] = Field(None, example="8000")
 
 
 class LoadModelResponse(BaseModel):

@@ -90,6 +90,7 @@ class ServerManager:
         Load a new model configuration
         """
         try:
+            logger.debug(f"Loading model with config: {load_model_config}")
             async with httpx.AsyncClient(timeout=1200) as client:
                 server_name = os.getenv("CURRENT_SERVER_NAME")
                 response = await client.post(

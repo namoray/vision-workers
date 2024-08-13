@@ -150,6 +150,33 @@ async def check_clip_result(
 
 
 ##### Image #######
+
+
+def get_image_similarity(
+    image_response_body: utility_models.ImageResponseBody,
+    expected_image_response: utility_models.ImageResponseBody,
+    images_are_same_classifier: xgb.XGBClassifier,
+):
+    clip_embedding_similiarity = checking_utils.get_clip_embedding_similarity(
+        image_response_body.clip_embeddings, expected_image_response.clip_embeddings
+    )
+    hash_distances = checking_utils.get_hash_distances(
+        image_response_body.image_hashes, expected_image_response.image_hashes
+    )
+
+    probability_same_image_xg = images_are_same_classifier.predict_proba(
+        [hash_distances]
+    )[0][1]
+
+    # MODEL has a very low threshold
+    if probability_same_image_xg > 0.01:
+        score = 1
+    else:
+        score = clip_embedding_similiarity**2
+
+    return score
+
+
 async def query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
@@ -178,60 +205,31 @@ async def check_image_result(
         task_config.endpoint, synapse
     )
 
-    if expected_image_response.is_nsfw and image_response_body.is_nsfw:
-        return 1
-
     if expected_image_response.clip_embeddings is None:
         logger.error(f"For some reason Everything is none! {expected_image_response}")
         return None
 
-    # Server got a result but you didn't!
-    elif (
-        image_response_body.image_b64 is None
-        and expected_image_response.image_b64 is not None
-    ):
+    if expected_image_response.is_nsfw != image_response_body.is_nsfw:
         return 0
 
-    clip_embedding_similiarity = checking_utils.get_clip_embedding_similarity(
-        image_response_body.clip_embeddings, expected_image_response.clip_embeddings
-    )
-    hash_distances = checking_utils.get_hash_distances(
-        image_response_body.image_hashes, expected_image_response.image_hashes
-    )
-
-    probability_same_image_xg = images_are_same_classifier.predict_proba(
-        [hash_distances]
-    )[0][1]
-
-    # MODEL has a very low threshold
-    if probability_same_image_xg > 0.01:
-        score = 1
     else:
-        score = clip_embedding_similiarity**2
-
-    return score
+        return get_image_similarity(
+            image_response_body,
+            expected_image_response,
+            images_are_same_classifier,
+        )
 
 
 ########### TEXT ###########
 
 
-def score_average_distance(
-    task_config: models.TaskConfig, average_distance: float
-) -> float:
-    if task_config.task == models.Tasks.chat_llama_3:
-        if average_distance <= 0.15:
-            return 1
-        elif average_distance <= 0.3:
-            return 1 - 0.5 * (average_distance - 0.15) / 0.15
-        else:
-            return 0
+def score_average_distance(average_distance: float) -> float:
+    if average_distance <= 0.06:
+        return 1
+    elif average_distance <= 0.12:
+        return 1 - 0.5 * (average_distance - 0.06) / 0.06
     else:
-        if average_distance <= 0.1:
-            return 1
-        elif average_distance <= 0.2:
-            return 1 - 0.5 * (average_distance - 0.1) / 0.1
-        else:
-            return 0
+        return 0.0
 
 
 async def check_text_result(
@@ -273,32 +271,33 @@ async def check_text_result(
     llm_request.max_tokens = 1
 
     for index in indicies_to_check:
+        if checks >= 5:
+            continue
+
         if index == 0:
             llm_request.starting_assistant_message = True
         else:
             llm_request.starting_assistant_message = False
 
-        if checks >= 10:
-            continue
-
-        text_to_inject_into_assistant_message = "".join(
-            [i.text for i in miner_chat_responses[:index]]
-        )
-        llm_request.messages.append(
-            models.Message(
-                **{
-                    "role": "assistant",
-                    "content": text_to_inject_into_assistant_message,
-                }
+            text_to_inject_into_assistant_message = "".join(
+                [i.text for i in miner_chat_responses[:index]]
             )
-        )
+            llm_request.messages.append(
+                models.Message(
+                    **{
+                        "role": "assistant",
+                        "content": text_to_inject_into_assistant_message,
+                    }
+                )
+            )
 
         distance = await calculate_distance_for_token(
             task_config, llm_request, miner_chat_responses, index
         )
         checks += 1
         total_distance += distance
-        llm_request.messages = llm_request.messages[:-1]
+        if index != 0:
+            llm_request.messages = llm_request.messages[:-1]
 
     try:
         average_distance = total_distance / checks
@@ -307,8 +306,7 @@ async def check_text_result(
             f"Error with average distance: {e}. Total distance: {total_distance}. Checks: {checks}"
         )
         return 0
-
-    score = score_average_distance(task_config, average_distance)
+    score = score_average_distance(average_distance)
     return score
 
 
@@ -318,6 +316,7 @@ async def query_endpoint_for_iterator(
     async with httpx.AsyncClient(timeout=5) as client:
         logger.info(f"Querying : {endpoint}")
         response = await client.post(endpoint, json=data)
+        logger.info(response)
         return response
 
 
@@ -354,10 +353,4 @@ async def calculate_distance_for_token(
             - math.exp(chat_responses[index].logprob)
         )
 
-    # formatted_validator_logging = "\n".join(
-    #    [f"{i.decoded}: {i.logprob}" for i in validator_checking_response.logprobs]
-    # )
-    # logger.info(
-    #    f"\nMiner token: {chat_responses[index].text}: {chat_responses[index].logprob} \n Validator tokens: \n{formatted_validator_logging}\ndistance between exp of log probs: {distance}"
-    # )
     return distance

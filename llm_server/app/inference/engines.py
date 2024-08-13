@@ -4,20 +4,21 @@ from app.logging import logging
 from app.utils import determine_needs_await
 from app import models
 from typing import Optional
-
-
 from app.inference import completions
 
 
 async def _get_vllm_engine(
-    model_name: str, revision: str, tokenizer_name: str, half_precision: bool
+    model_name: str,
+    revision: str,
+    tokenizer_name: str,
+    half_precision: bool,
+    gpu_memory_utilization: float = 0.8,
+    max_model_len: int = None,
 ) -> models.LLMEngine:
-    # This is needed as quantizing the small nous model's causes all sorts of trouble
     if half_precision:
         dtype = "float16"
     else:
         dtype = "float32"
-
     logging.info(f"Loading model {model_name} with dtype {dtype}")
     engine_args = AsyncEngineArgs(
         model=model_name,
@@ -27,8 +28,9 @@ async def _get_vllm_engine(
         revision=revision,
         max_num_seqs=256,
         max_logprobs=100,
-        gpu_memory_utilization=0.80,
-        trust_remote_code=True
+        gpu_memory_utilization=gpu_memory_utilization,
+        max_model_len=max_model_len,
+        trust_remote_code=True,
     )
     model_instance = AsyncLLMEngine.from_engine_args(engine_args)
 
@@ -47,16 +49,28 @@ async def _get_vllm_engine(
         tokenizer_name=tokenizer_name,
         model=model_instance,
         completion_method=completions.complete_vllm,
-        # TODO: REVIEW IF TOP K CHANGES
         maxlogprobs=10,
     )
 
 
 async def get_llm_engine(
-    model_name: str, revision: str, tokenizer_name: Optional[str] = None, half_precision: bool = True
+    model_name: str,
+    revision: str,
+    tokenizer_name: Optional[str] = None,
+    half_precision: bool = True,
+    gpu_memory_utilization: float = 0.8,
+    max_model_len: int = None,
 ) -> models.LLMEngine:
     # if "llava" not in model_name:
     # try:
     if tokenizer_name is None:
         tokenizer_name = model_name
-    return await _get_vllm_engine(model_name, revision, tokenizer_name, half_precision)
+
+    return await _get_vllm_engine(
+        model_name,
+        revision,
+        tokenizer_name,
+        half_precision,
+        gpu_memory_utilization,
+        max_model_len,
+    )

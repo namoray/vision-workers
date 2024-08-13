@@ -15,19 +15,19 @@ nohup docker build -t corcelio/vision:orchestrator-latest -f Dockerfile.orchestr
 
 To run:
 ```bash
-docker run --gpus all --runtime=nvidia -p 6919:6919 corcelio/vision:orchestrator-latest
+docker run --gpus all --runtime=nvidia -p 6920:6920 corcelio/vision:orchestrator-latest
 ```
 
 If that doesn't work:
 ```bash
-docker run --gpus all  -p 6919:6919 corcelio/vision:orchestrator-latest
+docker run --gpus all  -p 6920:6920 corcelio/vision:orchestrator-latest
 ```
 
 
 **Combined command**
 ```bash
 docker build -t corcelio/vision:orchestrator-latest .
-docker run --gpus all  -p 6919:6919 corcelio/vision:orchestrator-latest
+docker run --gpus all  -p 6920:6920 corcelio/vision:orchestrator-latest
 ```
 
 **Combined command for local dev/ testing**
@@ -40,6 +40,24 @@ or
 NOTE: this will use prod image server & llm server images unless otherwise specified
 ```bash
 docker kill orchestrator || true; docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator; ./launch_orchestrator.sh --orchestrator-image corcelio/test:orch-test --dont-refresh-local-images
+```
+
+**Build all**
+```bash
+docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator
+docker build -t corcelio/test:llm-test . -f Dockerfile.llm_server
+docker build -t corcelio/test:image-test . -f Dockerfile.image_server
+```
+
+**Run with orch**
+
+
+```bash
+./launch_orchestrator.sh --orchestrator-image corcelio/test:orch-test --llm-image corcelio/test:llm-test --image-server-image corcelio/test:image-test --dont-refresh-local-images
+```
+
+```bash
+docker run --name image-test --rm -v HF:/app/cache -v COMFY:/app/image_server/ComfyUI -p 6918:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0  corcelio/test:image-test
 ```
 
 

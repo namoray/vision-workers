@@ -8,9 +8,10 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
+echo "Starting the image server. First i'll download all the models..."
 ./setup.sh
 
-vram_mode=${VRAM_MODE:-'--highvram'}
+vram_mode=${VRAM_MODE:-'--lowvram'}
 warmup=$(echo ${WARMUP:-false} | tr '[:upper:]' '[:lower:]')
 device=${DEVICE:-0}
 port=${PORT:-6919}
