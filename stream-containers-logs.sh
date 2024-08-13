@@ -32,4 +32,4 @@ done
 
 tmux attach-session -t my_session
 
-detach_tmux
+detach_tmux 
