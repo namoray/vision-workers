@@ -68,11 +68,16 @@ tag_and_push() {
 
     return 0
 }
-
 process_image() {
     local IMAGE=$1
     local TYPE=$2
-    local DEST_TAG="$DEST_PREFIX:${TYPE,,}_server-$SUFFIX"
+    local DEST_TAG
+
+    if [ "$TYPE" = "Orchestrator" ]; then
+        DEST_TAG="$DEST_PREFIX:${TYPE,,}-$SUFFIX"
+    else
+        DEST_TAG="$DEST_PREFIX:${TYPE,,}_server-$SUFFIX"
+    fi
 
     if [ -n "$IMAGE" ]; then
         tag_and_push $IMAGE $DEST_TAG
@@ -102,7 +107,7 @@ IMAGE_SERVER_RESULT=$?
 echo "-------------------------------------"
 echo "Summary:"
 echo "-------------------------------------"
-[ -n "$ORCHESTRATOR_IMAGE" ] && [ $ORCHESTRATOR_RESULT -eq 0 ] && echo "Source: $ORCHESTRATOR_IMAGE -> Destination: $DEST_PREFIX:orchestrator_server-$SUFFIX"
+[ -n "$ORCHESTRATOR_IMAGE" ] && [ $ORCHESTRATOR_RESULT -eq 0 ] && echo "Source: $ORCHESTRATOR_IMAGE -> Destination: $DEST_PREFIX:orchestrator-$SUFFIX"
 [ -n "$LLM_IMAGE" ] && [ $LLM_RESULT -eq 0 ] && echo "Source: $LLM_IMAGE -> Destination: $DEST_PREFIX:llm_server-$SUFFIX"
 [ -n "$IMAGE_SERVER_IMAGE" ] && [ $IMAGE_SERVER_RESULT -eq 0 ] && echo "Source: $IMAGE_SERVER_IMAGE -> Destination: $DEST_PREFIX:image_server-$SUFFIX"
 echo "-------------------------------------"
