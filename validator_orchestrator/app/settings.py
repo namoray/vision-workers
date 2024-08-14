@@ -68,6 +68,7 @@ task_configs = models.TaskConfigMapping(
                 model="unsloth/Meta-Llama-3.1-8B-Instruct",
                 tokenizer="tau-vision/llama-tokenizer-fix",
                 half_precision=True,
+                gpu_memory_utilization=0.85,
                 max_model_len=16000,
             ),
             endpoint=BASE_URL + "/generate_text",
