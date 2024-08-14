@@ -14,6 +14,7 @@ set -euo pipefail
 ################################################################################
 WITH_AUTOUPDATES=${WITH_AUTOUPDATES:-1}
 NVIDIA_DRIVER_VERSION=${NVIDIA_DRIVER_VERSION:-535}
+NO_LAUNCH=${NO_LAUNCH:-0}
 
 # internal vars
 ################################################################################
