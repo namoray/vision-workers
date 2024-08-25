@@ -103,7 +103,7 @@ task_configs = models.TaskConfigMapping(
             checking_function=checking_functions.check_image_result,
             synthetic_generation_function=synthetic_generation.generate_text_to_image_synthetic,
             synthetic_generation_params={
-                "engine": utility_models.EngineEnum.PROTEUS.value
+                "model": utility_models.modelEnum.PROTEUS.value
             },
             task=models.Tasks.proteus_text_to_image,
         ),
@@ -113,10 +113,7 @@ task_configs = models.TaskConfigMapping(
             load_model_config=None,
             endpoint=BASE_URL + Endpoints.text_to_image.value,
             checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_text_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.FLUX_SCHNELL.value
-            },
+
             task=models.Tasks.flux_schnell_text_to_image,
         ),
         models.Tasks.playground_text_to_image.value: models.TaskConfig(
@@ -124,10 +121,7 @@ task_configs = models.TaskConfigMapping(
             load_model_config=None,
             endpoint=BASE_URL + Endpoints.text_to_image.value,
             checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_text_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.PLAYGROUND.value
-            },
+
             task=models.Tasks.playground_text_to_image,
         ),
         models.Tasks.playground_text_to_image.value: models.TaskConfig(
@@ -135,10 +129,7 @@ task_configs = models.TaskConfigMapping(
             load_model_config=None,
             endpoint=BASE_URL + Endpoints.text_to_image.value,
             checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_text_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.PLAYGROUND.value
-            },
+
             task=models.Tasks.playground_text_to_image,
         ),
         models.Tasks.dreamshaper_text_to_image.value: models.TaskConfig(
@@ -146,10 +137,7 @@ task_configs = models.TaskConfigMapping(
             load_model_config=None,
             endpoint=BASE_URL + Endpoints.text_to_image.value,
             checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_text_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.DREAMSHAPER.value
-            },
+
             task=models.Tasks.dreamshaper_text_to_image,
         ),
         models.Tasks.proteus_image_to_image.value: models.TaskConfig(
@@ -157,10 +145,7 @@ task_configs = models.TaskConfigMapping(
             load_model_config=None,
             endpoint=BASE_URL + Endpoints.image_to_image.value,
             checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_image_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.PROTEUS.value
-            },
+
             task=models.Tasks.proteus_image_to_image,
         ),
         models.Tasks.playground_image_to_image.value: models.TaskConfig(
@@ -168,10 +153,7 @@ task_configs = models.TaskConfigMapping(
             load_model_config=None,
             endpoint=BASE_URL + Endpoints.image_to_image.value,
             checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_image_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.PLAYGROUND.value
-            },
+
             task=models.Tasks.playground_image_to_image,
         ),
         models.Tasks.flux_schnell_image_to_image.value: models.TaskConfig(
@@ -179,10 +161,7 @@ task_configs = models.TaskConfigMapping(
             load_model_config=None,
             endpoint=BASE_URL + Endpoints.image_to_image.value,
             checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_image_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.FLUX_SCHNELL.value
-            },
+
             task=models.Tasks.flux_schnell_image_to_image,
         ),
         models.Tasks.dreamshaper_image_to_image.value: models.TaskConfig(
@@ -190,10 +169,7 @@ task_configs = models.TaskConfigMapping(
             load_model_config=None,
             endpoint=BASE_URL + Endpoints.image_to_image.value,
             checking_function=checking_functions.check_image_result,
-            synthetic_generation_function=synthetic_generation.generate_image_to_image_synthetic,
-            synthetic_generation_params={
-                "engine": utility_models.EngineEnum.DREAMSHAPER.value
-            },
+
             task=models.Tasks.dreamshaper_image_to_image,
         ),
         models.Tasks.avatar.value: models.TaskConfig(

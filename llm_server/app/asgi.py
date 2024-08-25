@@ -63,7 +63,7 @@ async def lifespan(app: fastapi.FastAPI):
     )
     max_model_len = int(max_model_len) if max_model_len is not None else None
 
-    engine_state = state.EngineState()
+    engine_state = state.modelState()
     if initial_model is not None:
         await engine_state.load_model_and_tokenizer(
             initial_model,
@@ -75,7 +75,7 @@ async def lifespan(app: fastapi.FastAPI):
             max_model_len,
         )
 
-    app.state.engine_state = engine_state
+    app.state.model_state = engine_state
     yield
 
 

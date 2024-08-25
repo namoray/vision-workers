@@ -20,8 +20,8 @@ class ImageGenerationBase(BaseModel):
         ...,
         description="Random seed for generating the image. NOTE: THIS CANNOT BE SET, YOU MUST PASS IN 0, SORRY!",
     )
-    engine: utility_models.EngineEnum = Field(
-        default=utility_models.EngineEnum.PROTEUS.value,
+    engine: utility_models.modelEnum = Field(
+        default=utility_models.modelEnum.PROTEUS.value,
         description="The engine to use for image generation",
     )
 

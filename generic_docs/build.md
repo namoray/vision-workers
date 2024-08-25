@@ -61,7 +61,7 @@ docker run --name image-test --rm -v HF:/app/cache -v COMFY:/app/image_server/Co
 ```
 or 
 ```bash
-docker kill image-test || true; docker build -t corcelio/test:image-test . -f Dockerfile.image_server; docker run --name image-test --rm -v HF:/app/cache -v COMFY:/app/image_server/ComfyUI -p 6918:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0  corcelio/test:image-test
+docker kill image-test || true; docker build -t corcelio/test:image-test . -f Dockerfile.image_server; docker run  --rm -d --name image-test -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 corcelio/test:image-test
 ```
 
 

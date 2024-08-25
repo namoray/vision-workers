@@ -78,22 +78,22 @@ async def generate_text_to_image_synthetic(
     text_prompts = [utility_models.TextPrompt(text=positive_text, weight=1.0)]
     seed = random.randint(1, MAX_SEED)
 
-    if engine == utility_models.EngineEnum.PLAYGROUND.value:
+    if engine == utility_models.modelEnum.PLAYGROUND.value:
         height = 1024
         width = 1024
         cfg_scale = 4.0
         steps = 30
-    elif engine == utility_models.EngineEnum.PROTEUS.value:
+    elif engine == utility_models.modelEnum.PROTEUS.value:
         height = 1280
         width = 1280
         cfg_scale = 2.0
         steps = 8
-    elif engine == utility_models.EngineEnum.DREAMSHAPER.value:
+    elif engine == utility_models.modelEnum.DREAMSHAPER.value:
         height = 1024
         width = 1024
         cfg_scale = 3.5
         steps = 8
-    elif engine == utility_models.EngineEnum.FLUX_SCHNELL.value:
+    elif engine == utility_models.modelEnum.FLUX_SCHNELL.value:
         height = 1024
         width = 1024
         cfg_scale = 4.0
@@ -119,25 +119,25 @@ async def generate_image_to_image_synthetic(
     text_prompts = [utility_models.TextPrompt(text=positive_text, weight=1.0)]
     seed = random.randint(1, MAX_SEED)
 
-    if engine == utility_models.EngineEnum.PLAYGROUND.value:
+    if engine == utility_models.modelEnum.PLAYGROUND.value:
         height = 1024
         width = 1024
         cfg_scale = 4.0
         steps = 30
         image_strength = 0.5
-    elif engine == utility_models.EngineEnum.PROTEUS.value:
+    elif engine == utility_models.modelEnum.PROTEUS.value:
         height = 1280
         width = 1280
         cfg_scale = 2.0
         steps = 8
         image_strength = 0.5
-    elif engine == utility_models.EngineEnum.DREAMSHAPER.value:
+    elif engine == utility_models.modelEnum.DREAMSHAPER.value:
         height = 1024
         width = 1024
         cfg_scale = 3.5
         steps = 8
         image_strength = 0.5
-    elif engine == utility_models.EngineEnum.FLUX_SCHNELL.value:
+    elif engine == utility_models.modelEnum.FLUX_SCHNELL.value:
         height = 1024
         width = 1024
         cfg_scale = 2.0

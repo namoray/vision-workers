@@ -1,7 +1,7 @@
 import json
 import constants as cst
 from base_model import (
-    EngineEnum,
+    ModelEnum,
     InpaintingBase,
     UpscaleBase,
     TextToImagebase,
@@ -75,7 +75,7 @@ class PayloadModifier:
         return payload
 
     def modify_text_to_image(self, input_data: TextToImagebase) -> Dict[str, Any]:
-        payload = copy.deepcopy(self._payloads[f"text_to_image_{input_data.engine}"])
+        payload = copy.deepcopy(self._payloads[f"text_to_image_{input_data.model}"])
 
         positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
         payload["Prompt"]["inputs"]["text"] = positive_prompt
@@ -85,7 +85,7 @@ class PayloadModifier:
         seed = input_data.seed
         if seed == 0:
             seed = random.randint(1, 2**16)
-        if input_data.engine not in [EngineEnum.FLUX_SCHNELL.value]:
+        if input_data.model not in [ModelEnum.FLUX_SCHNELL.value]:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
@@ -96,7 +96,7 @@ class PayloadModifier:
         return payload
 
     def modify_image_to_image(self, input_data: ImageToImageBase) -> Dict[str, Any]:
-        payload = copy.deepcopy(self._payloads[f"image_to_image_{input_data.engine}"])
+        payload = copy.deepcopy(self._payloads[f"image_to_image_{input_data.model}"])
         init_img = base64_to_image(input_data.init_image)
         init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
 
@@ -107,7 +107,7 @@ class PayloadModifier:
         seed = input_data.seed
         if seed == 0:
             seed = random.randint(1, 2**16)
-        if input_data.engine not in [EngineEnum.FLUX_SCHNELL.value]:
+        if input_data.model not in [ModelEnum.FLUX_SCHNELL.value]:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
