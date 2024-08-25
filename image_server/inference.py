@@ -15,18 +15,18 @@ payload_modifier = PayloadModifier()
 clip_emb_processor = ClipEmbeddingsProcessor()
 
 
-async def txt2img_infer(
-    infer_props: base_model.Txt2ImgBase,
+async def text_to_image_infer(
+    infer_props: base_model.TextToImagebase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_txt2img(infer_props)
+    payload = payload_modifier.modify_text_to_image(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
-async def img2img_infer(
-    infer_props: base_model.Img2ImgBase,
+async def image_to_image_infer(
+    infer_props: base_model.ImageToImageBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_img2img(infer_props)
+    payload = payload_modifier.modify_image_to_image(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 

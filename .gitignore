@@ -8,6 +8,7 @@ tmp*
 *.ipynb
 .gcloudignore
 charlie_test.py
+
 dev_testing.py
 temp/
 
@@ -229,3 +230,8 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+diagonalge_test.py
+chris_test.py
+namoray_test.py
+test.md

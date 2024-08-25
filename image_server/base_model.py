@@ -11,9 +11,10 @@ class EngineEnum(str, Enum):
     FLUX_SCHNELL = "flux-schnell"
 
 
-class Txt2ImgBase(BaseModel):
-    text_prompts: List[Dict[str, Any]] = Field(
-        ..., example=[{"text": "dolphin", "weight": 1.0}]
+class TextToImagebase(BaseModel):
+    prompt: str = Field(..., description="The prompt to generate the image")
+    negative_prompt: str = Field(
+        default="", description="The negative prompt to generate the image"
     )
     steps: int = Field(
         cst.DEFAULT_STEPS,
@@ -42,9 +43,10 @@ class Txt2ImgBase(BaseModel):
     seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
 
 
-class Img2ImgBase(BaseModel):
-    text_prompts: List[Dict[str, Any]] = Field(
-        ..., example=[{"text": "hello", "weight": 1.0}]
+class ImageToImageBase(BaseModel):
+    prompt: str = Field(..., description="The prompt to generate the image")
+    negative_prompt: str = Field(
+        default="", description="The negative prompt to generate the image"
     )
     init_image: str
     engine: EngineEnum = Field(
@@ -74,7 +76,10 @@ class UpscaleBase(BaseModel):
 
 
 class AvatarBase(BaseModel):
-    text_prompts: List[Dict[str, Any]]
+    prompt: str = Field(..., description="The prompt to generate the image")
+    negative_prompt: str = Field(
+        default="", description="The negative prompt to generate the image"
+    )
     init_image: str
     ipadapter_strength: float = Field(
         cst.DEFAULT_IP_STRENGTH,
@@ -110,7 +115,10 @@ class AvatarBase(BaseModel):
 
 
 class InpaintingBase(BaseModel):
-    text_prompts: List[Dict[str, Any]]
+    prompt: str = Field(..., description="The prompt to generate the image")
+    negative_prompt: str = Field(
+        default="", description="The negative prompt to generate the image"
+    )
     init_image: str
     mask_image: str
     steps: int = Field(
