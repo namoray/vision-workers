@@ -85,13 +85,13 @@ class PayloadModifier:
         seed = input_data.seed
         if seed == 0:
             seed = random.randint(1, 2**16)
-        if input_data.model not in [ModelEnum.FLUX_SCHNELL.value]:
+        if "flux" in input_data.model:
+            payload["Seed"]["inputs"]["noise_seed"] = seed
+            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
+        else:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
-        else:
-            payload["Seed"]["inputs"]["noise_seed"] = seed
-            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
 
         return payload
 
@@ -107,13 +107,13 @@ class PayloadModifier:
         seed = input_data.seed
         if seed == 0:
             seed = random.randint(1, 2**16)
-        if input_data.model not in [ModelEnum.FLUX_SCHNELL.value]:
+        if "flux" in input_data.model:
+            payload["Seed"]["inputs"]["noise_seed"] = seed
+            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
+        else:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
-        else:
-            payload["Seed"]["inputs"]["noise_seed"] = seed
-            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
 
         return payload
 
