@@ -31,8 +31,8 @@ async def text_to_image(request_data: base_model.TextToImagebase) -> base_model.
     return await inference.text_to_image_infer(request_data)
 
 
+# @handle_request_errors
 @app.post("/image-to-image")
-@handle_request_errors
 async def image_to_image(request_data: base_model.ImageToImageBase) -> base_model.ImageResponseBody:
     return await inference.image_to_image_infer(request_data)
 

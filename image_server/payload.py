@@ -75,7 +75,7 @@ class PayloadModifier:
         return payload
 
     def modify_text_to_image(self, input_data: TextToImagebase) -> Dict[str, Any]:
-        payload = copy.deepcopy(self._payloads[f"text_to_image_{input_data.model}"])
+        payload = copy.deepcopy(self._payloads[f"{input_data.model}"])
 
         positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
         payload["Prompt"]["inputs"]["text"] = positive_prompt
@@ -92,11 +92,11 @@ class PayloadModifier:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
-
+        
         return payload
 
     def modify_image_to_image(self, input_data: ImageToImageBase) -> Dict[str, Any]:
-        payload = copy.deepcopy(self._payloads[f"image_to_image_{input_data.model}"])
+        payload = copy.deepcopy(self._payloads[f"{input_data.model}"])
         init_img = base64_to_image(input_data.init_image)
         init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
 
@@ -115,6 +115,7 @@ class PayloadModifier:
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
 
+        logger.debug(f"payload: {payload}")
         return payload
 
     def modify_upscale(self, input_data: UpscaleBase) -> Dict[str, Any]:
