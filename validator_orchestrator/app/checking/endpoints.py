@@ -5,7 +5,6 @@ import os
 from app.core import models
 from app.checking import scoring
 from app import server_management
-from app.settings import task_configs
 from fastapi import Depends
 from app.core import dependencies
 from loguru import logger
@@ -59,7 +58,7 @@ async def process_check_result(
     async with global_async_lock:
         try:
             logger.info("Checking a result!... 🫡")
-            config = request.task
+            task_config = request.server_config
             server_needed = task_config.server_needed
             await server_manager.start_server(server_needed)
 
@@ -67,20 +66,18 @@ async def process_check_result(
 
             if load_model_config is not None:
                 load_model_config_dumped = task_config.load_model_config.model_dump()
-                if task_manager.last_task_type != request.task:
-                    load_model_config_dumped["force_reload"] = True
+                # TODO: Why is this needed? Slows down checking *alot*
+                # if task_manager.last_task_type != task_config.task:
+                #     load_model_config_dumped["force_reload"] = True
                 await server_manager.load_model(load_model_config_dumped)
 
-            task_manager.last_task_type = request.task
+            task_manager.last_task_type = task_config.task
 
-            task_config.endpoint = task_config.endpoint.replace(
-                "localhost", os.getenv("CURRENT_SERVER_NAME", None)
-            )
 
             result = await scoring.score_results(
                 result=request.result,
                 task_config=task_config,
-                synapse=request.synapse,
+                payload=request.payload,
             )
 
             task_manager.task_status[task_id] = models.TaskStatus.Success

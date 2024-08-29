@@ -9,7 +9,8 @@ from app import server_management
 async def lifespan(app: FastAPI):
     app.state.server_manager = server_management.ServerManager()
     yield
-    await app.state.server_manager.stop_server()
+    # NOTE: Is this needed?
+    # await app.state.server_manager.stop_server()
 
 
 app = FastAPI(title="Validator Checking server!", debug=settings.debug, lifespan=lifespan)

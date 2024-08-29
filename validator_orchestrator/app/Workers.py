@@ -19,7 +19,7 @@ shared_network = os.getenv("SHARED_NETWORK_NAME", DEFAULT_NETWORK_NAME)
 worker_config = Workers(
     workers=[
         WorkerConfig(
-            name=ServerType.LLM,
+            name=ServerType.LLM.value,
             docker_image=os.getenv("LLM_SERVER_DOCKER_IMAGE", ProdDockerImages.LLM), 
             port=6919, 
             volumes={
@@ -28,7 +28,7 @@ worker_config = Workers(
             network=shared_network
         ),
         WorkerConfig(
-            name=ServerType.IMAGE,
+            name=ServerType.IMAGE.value,
             docker_image=os.getenv("IMAGE_SERVER_DOCKER_IMAGE", ProdDockerImages.IMAGE), 
             port=6919, 
             volumes={

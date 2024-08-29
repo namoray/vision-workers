@@ -6,6 +6,8 @@ from app.checking import utils as checking_utils
 import xgboost as xgb
 from loguru import logger
 
+from app.core.constants import AI_SERVER_PORT
+
 images_are_same_classifier = xgb.XGBClassifier()
 images_are_same_classifier.load_model("image_similarity_xgb_model.json")
 
@@ -38,15 +40,16 @@ def _get_image_similarity(
 async def _query_endpoint_for_image_response(
     endpoint: str, data: Dict[str, Any]
 ) -> utility_models.ImageResponseBody:
+    url = f"http://localhost:" + AI_SERVER_PORT + '/' + endpoint.lstrip('/')
     async with httpx.AsyncClient(timeout=60 * 2) as client:
-        logger.info(f"Querying : {endpoint}")
-        response = await client.post(endpoint, json=data)
+        logger.info(f"Querying : {url}")
+        response = await client.post(url, json=data)
         logger.info(response.status_code)
         return utility_models.ImageResponseBody(**response.json())
 
 
 async def check_image_result(
-    result: models.QueryResult, payload: dict, task_config: models.TaskConfig
+    result: models.QueryResult, payload: dict, task_config: models.OrchestratorServerConfig
 ) -> Union[float, None]:
     image_response_body = utility_models.ImageResponseBody(**result.formatted_response)
 

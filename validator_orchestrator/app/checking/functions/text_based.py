@@ -5,6 +5,7 @@ import json
 import random
 import math
 from loguru import logger
+from app.core.constants import AI_SERVER_PORT
 
 
 ########### TEXT ###########
@@ -20,9 +21,10 @@ def _score_average_distance(average_distance: float) -> float:
 
 
 async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any]) -> httpx.Response:
+    url = f"http://localhost:" + AI_SERVER_PORT + '/' + endpoint.lstrip('/')
     async with httpx.AsyncClient(timeout=5) as client:
-        logger.info(f"Querying : {endpoint}")
-        response = await client.post(endpoint, json=data)
+        logger.info(f"Querying : {url}")
+        response = await client.post(url, json=data)
         logger.info(response)
         return response
 
@@ -37,7 +39,7 @@ async def _get_chat_data_validator_response(endpoint: str, data: Dict[str, Any])
 
 
 async def _calculate_distance_for_token(
-    task_config: models.TaskConfig,
+    task_config: models.OrchestratorServerConfig,
     llm_request: models.ChatRequestModel,
     chat_responses: List[models.MinerChatResponse],
     index: int,
@@ -54,7 +56,7 @@ async def _calculate_distance_for_token(
     return distance
 
 
-async def check_text_result(result: models.QueryResult, synapse: Dict[str, Any], task_config: models.TaskConfig) -> Union[float, None]:
+async def check_text_result(result: models.QueryResult, synapse: Dict[str, Any], task_config: models.OrchestratorServerConfig) -> Union[float, None]:
     formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
     miner_chat_responses: List[models.MinerChatResponse] = [models.MinerChatResponse(**r) for r in formatted_response]
 

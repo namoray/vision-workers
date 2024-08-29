@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Dict, List, Optional, Any, Union, Callable, Coroutine
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 AxonScores = Dict[int, float]
@@ -36,31 +36,18 @@ class ModelConfigDetails(BaseModel):
     max_model_len: Optional[int] = None
 
 
-class TaskConfig(BaseModel):
-    server_needed: Optional[ServerType]
-    load_model_config: Optional[ModelConfigDetails]
-    endpoint: Optional[str]
-    checking_function: Callable[
-        [QueryResult, Dict[str, Any], TaskConfig],
-        Coroutine[Any, Any, Union[float, None]],
-    ]
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
 class OrchestratorServerConfig(BaseModel):
-    server_needed: ServerType
-    load_model_config: dict
-    checking_function: str
-    task: str
-    endpoint: str
+    server_needed: ServerType = Field(examples=[ServerType.LLM, ServerType.IMAGE])
+    load_model_config: dict | None = Field(examples=[None])
+    checking_function: str = Field(examples=["check_text_result", "check_image_result"])
+    task: str = Field(examples=["chat-llama-3-1-8b"])
+    endpoint: str = Field(examples=["/generate_text"])
 
 
 class CheckResultsRequest(BaseModel):
     server_config: OrchestratorServerConfig
     result: QueryResult
-    payload: dict
+    payload: dict = Field(examples={})
 
 
 class Message(BaseModel):

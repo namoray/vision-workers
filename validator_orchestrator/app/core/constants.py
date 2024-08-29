@@ -9,3 +9,4 @@ SYNTHETIC_ENDPOINT_PREFIX = "synthetic"
 CHECKING_ENDPOINT_PREFIX = "checking"
 
 BASE_URL = "http://localhost:6919"
+AI_SERVER_PORT = 6919
