@@ -17,6 +17,7 @@ class ToxicEngine(BaseModel):
 
 class Role(str, enum.Enum):
     """Message is sent by which role?"""
+
     user = "user"
     assistant = "assistant"
     system = "system"
@@ -25,6 +26,12 @@ class Role(str, enum.Enum):
 class Message(BaseModel):
     role: Role = Role.user
     content: str = "Remind me that I have forgot to set the messages"
+
+
+class MessageResponse(BaseModel):
+    role: Role
+    content: str
+    logprob: float
 
 
 class ModelType(str, enum.Enum):
@@ -43,17 +50,13 @@ class RequestInfo(BaseModel):
         ],
         description="List of messages where each message has a 'role' and 'content' key.",
     )
-    seed: int = Field(
-        ..., title="Seed", description="Seed for text generation.", example=0
-    )
+    seed: int = Field(..., title="Seed", description="Seed for text generation.", example=0)
     temperature: float = Field(
         default=0.5,
         title="Temperature",
         description="Temperature for text generation.",
     )
-    max_tokens: int = Field(
-        4096, title="Max Tokens", description="Max tokens for text generation."
-    )
+    max_tokens: int = Field(4096, title="Max Tokens", description="Max tokens for text generation.")
     number_of_logprobs: int = Field(
         default=1,
         title="Logprobs",

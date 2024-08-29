@@ -64,6 +64,11 @@ or
 docker kill image-test || true; docker build -t corcelio/test:image-test . -f Dockerfile.image_server; docker run  --rm -d --name image-test -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 corcelio/test:image-test
 ```
 
+**Run LLM image**
+
+```bash
+docker kill llm-test || true; docker build -t corcelio/test:llm-test . -f Dockerfile.llm_server; docker run --name llm-test -d --rm  -v HF:/app/cache -p 6918:6919 --gpus '"device=1"' --runtime=nvidia -e PORT=6919 -e MODEL=unsloth/Meta-Llama-3.1-8B-Instruct -e HALF_PRECISION=true  -e TOKENIZER=tau-vision/llama-tokenizer-fix -e CUDA_VISIBLE_DEVICES=0 corcelio/test:llm-test
+```
 
 ### Uploading to docker hub
 Get your credentials ready for docker hub
@@ -95,28 +100,36 @@ sudo nano /etc/docker/daemon.json
 }
 ```
 
+### Install stuff to run orchestrator without docker
+
+[Intstall miniconda](./install_miniconda_create_venv.md)
+
 ```bash
-sudo systemctl restart docker
+sudo apt-get update && \
+sudo DEBIAN_FRONTEND=noninteractive TZ=Europe/London apt-get install -y \
+    wget \
+    git \
+    curl \
+    lsof \
+    python3-dev \
+    build-essential \
+    python3-pip \
+    apt-utils \
+    vim \
+    sudo \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    python3-tk \
+    python3-dev \
+    git-lfs \
+    unzip && \
+sudo ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && \
+echo "Europe/London" | sudo tee /etc/timezone && \
+sudo apt-get clean && \
+sudo rm -rf /var/lib/apt/lists/*
 ```
 
--> If you still can't run the image using gpu, it's surely a problem with Nvidia Drivers, follow steps on this link
 ```bash
-# make sure this generates a correct output (gpu is detected)
-lspci -vv | grep -i nvidia
-
-# install drivers
-apt-get install ubuntu-drivers-common \
-	&& sudo ubuntu-drivers autoinstall
-
-# reboot
-sudo reboot now
-
-curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \
-  sudo apt-key add -
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-container-runtime/$distribution/nvidia-container-runtime.list | \
-  sudo tee /etc/apt/sources.list.d/nvidia-container-runtime.list
-sudo apt-get update
-apt-get install nvidia-container-runtime
-sudo systemctl restart docker
+LLM_SERVER_DOCKER_IMAGE=corcelio/test:llm-test IMAGE_SERVER_DOCKER_IMAGE=corcelio/test:image-test  ./entrypoint.sh 
 ```

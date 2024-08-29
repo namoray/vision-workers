@@ -14,7 +14,9 @@ class ModelEnum(str, Enum):
 class TextToImagebase(BaseModel):
     prompt: str = Field(..., description="The prompt to generate the image")
     negative_prompt: str = Field(default="", description="The negative prompt to generate the image")
-    steps: int = Field(..., description="Number of inference steps, higher for more quality but increased generation time", gt=4, lt=50)
+    steps: int = Field(
+        ..., description="Number of inference steps, higher for more quality but increased generation time", gt=4, lt=50
+    )
     model: str = Field(..., description="The engine to use for image generation")
     cfg_scale: float = Field(..., description="Guidance scale", gt=1.5, lt=12)
     height: int = Field(..., description="Height of the output image in pixels", gt=512, lt=2048)
@@ -27,8 +29,12 @@ class ImageToImageBase(BaseModel):
     negative_prompt: str = Field(default="", description="The negative prompt to generate the image")
     init_image: str
     model: str = Field(..., description="The engine to use for image generation")
-    image_strength: float = Field(..., description="Image strength of the generated image with respect to the original image", gt=0.1, lt=1)
-    steps: int = Field(..., description="Number of inference steps, higher for more quality but increased generation time", gt=4, lt=50)
+    image_strength: float = Field(
+        ..., description="Image strength of the generated image with respect to the original image", gt=0.1, lt=1
+    )
+    steps: int = Field(
+        ..., description="Number of inference steps, higher for more quality but increased generation time", gt=4, lt=50
+    )
     cfg_scale: float = Field(..., description="Guidance scale", gt=1, lt=12)
     seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
 
@@ -42,9 +48,15 @@ class AvatarBase(BaseModel):
     prompt: str = Field(..., description="The prompt to generate the image")
     negative_prompt: str = Field(default="", description="The negative prompt to generate the image")
     init_image: str
-    ipadapter_strength: float = Field(..., description="IP Adapter strength, increase for more face coherence, works best on default", gt=0.1, le=1)
-    control_strength: float = Field(..., description="Control strength, increase for more face coherence, works best on default", gt=0.1, le=1.01)
-    steps: int = Field(..., description="Number of inference steps, higher for more quality but increased generation time", gt=4, lt=50)
+    ipadapter_strength: float = Field(
+        ..., description="IP Adapter strength, increase for more face coherence, works best on default", gt=0.1, le=1
+    )
+    control_strength: float = Field(
+        ..., description="Control strength, increase for more face coherence, works best on default", gt=0.1, le=1.01
+    )
+    steps: int = Field(
+        ..., description="Number of inference steps, higher for more quality but increased generation time", gt=4, lt=50
+    )
     height: int = Field(..., description="Height of the output image in pixels", gt=512, lt=2048)
     width: int = Field(..., description="Width of the output image in pixels", gt=512, lt=2048)
     seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
@@ -55,7 +67,12 @@ class InpaintingBase(BaseModel):
     negative_prompt: str = Field(default="", description="The negative prompt to generate the image")
     init_image: str
     mask_image: str
-    steps: int = Field(cst.DEFAULT_STEPS_INPAINT, description="Number of inference steps, higher for more quality but increased generation time", gt=4, lt=50)
+    steps: int = Field(
+        cst.DEFAULT_STEPS_INPAINT,
+        description="Number of inference steps, higher for more quality but increased generation time",
+        gt=4,
+        lt=50,
+    )
     cfg_scale: float = Field(cst.DEFAULT_CFG_INPAINT, description="Guidance scale", gt=1.5, lt=12)
     seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
 
@@ -63,12 +80,19 @@ class InpaintingBase(BaseModel):
 class OutpaintingBase(BaseModel):
     text_prompts: List[Dict[str, Any]]
     init_image: str
-    text_prompts: List[Dict[str, Any]] = Field(default=[{"text": "", "weight": 1}], description="Text prompts to guide the generation process")
+    text_prompts: List[Dict[str, Any]] = Field(
+        default=[{"text": "", "weight": 1}], description="Text prompts to guide the generation process"
+    )
     pad_values: dict = Field(
         default={"left": 104, "right": 104, "top": 104, "bottom": 104},
         description="Dictionary specifying padding in pixels for each side of the image for expansion. Format: {'left': int, 'right': int, 'top': int, 'bottom': int}",
     )
-    steps: int = Field(cst.DEFAULT_STEPS_INPAINT, description="Number of inference steps, higher for more quality but increased generation time", gt=4, lt=50)
+    steps: int = Field(
+        cst.DEFAULT_STEPS_INPAINT,
+        description="Number of inference steps, higher for more quality but increased generation time",
+        gt=4,
+        lt=50,
+    )
     cfg_scale: float = Field(cst.DEFAULT_CFG_INPAINT, description="Guidance scale", gt=1.5, lt=12)
     seed: int = Field(..., description="Seed value for deterministic outputs", ge=0)
 

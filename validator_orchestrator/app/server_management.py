@@ -7,7 +7,9 @@ import asyncio
 from loguru import logger
 from app.Workers import worker_config
 from app.core.models import ServerType
- 
+from app.core.constants import AI_SERVER_PORT
+
+
 class ServerManager:
     """
     This class manages starting, stopping, and handling of language and image servers.
@@ -42,9 +44,7 @@ class ServerManager:
             if container_id:
                 subprocess.run(["docker", "stop", container_id], check=True)
                 subprocess.run(["docker", "rm", container_id], check=True)
-                logger.info(
-                    f"Successfully stopped and removed the container running on port {port}."
-                )
+                logger.info(f"Successfully stopped and removed the container running on port {port}.")
             else:
                 logger.info(f"No container is running on port {port}.")
 
@@ -92,7 +92,7 @@ class ServerManager:
             async with httpx.AsyncClient(timeout=1200) as client:
                 server_name = os.getenv("CURRENT_SERVER_NAME")
                 response = await client.post(
-                    url=f"http://{server_name}:6919/load_model",
+                    url=f"http://localhost:{AI_SERVER_PORT}/load_model",
                     json=load_model_config,
                 )
             return response
@@ -108,6 +108,8 @@ class ServerManager:
             logger.error(f"Server {server_name} not found in {list(self.servers.keys())}")
             return
         server_config = self.servers[server_name]
+
+        logger.info(f"Starting server: {server_name}. First checking if anything is running on 6919...")
         server_is_up, response_content = await self.is_server_healthy(
             port=server_config.port,
             sleep_time=1,
@@ -117,7 +119,7 @@ class ServerManager:
             self.running_servers[ServerType.LLM.value] = True
         elif response_content is not None:
             self.running_servers[ServerType.IMAGE.value] = True
-        
+
         if self.running_servers.get(server_name, False) and server_is_up:
             logger.info(f"Server {server_name} is already running! No need to kill and restart it")
             return
@@ -130,12 +132,7 @@ class ServerManager:
 
         command = (
             f"docker run -d --rm --name {server_config.name} "
-            + " ".join(
-                [
-                    f"-v {volume}:{mount_path}"
-                    for volume, mount_path in server_config.volumes.items()
-                ]
-            )
+            + " ".join([f"-v {volume}:{mount_path}" for volume, mount_path in server_config.volumes.items()])
             + f" {self.docker_run_flags} "
             + f"-p {server_config.port}:{server_config.port} "
             + f"--network {server_config.network} "
@@ -143,11 +140,11 @@ class ServerManager:
         )
 
         logger.info(f"Starting server: {server_config.name} 🦄")
-        
+
         self.server_process = subprocess.Popen(command, shell=True)
 
         server_is_up = await self.is_server_healthy(
-            server_config.port, 
+            server_config.port,
         )
         if not server_is_up:
             raise Exception(f"Timeout when starting server {server_name}")
@@ -167,9 +164,7 @@ class ServerManager:
                 try:
                     subprocess.run(["docker", "stop", server_name], check=True)
                     subprocess.run(["docker", "rm", server_name], check=True)
-                    logger.info(
-                        f"Successfully stopped and removed the container: {server_name}"
-                    )
+                    logger.info(f"Successfully stopped and removed the container: {server_name}")
                 except subprocess.CalledProcessError as e:
                     logger.error(f"Failed to stop the container {server_name}: {e}")
 

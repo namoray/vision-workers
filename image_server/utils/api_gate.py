@@ -23,7 +23,9 @@ while True:
         ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
         break
     except ConnectionRefusedError:
-        logger.error("Could not connect to ComfyUI because it is not up yet. Sleeping for 2 seconds before trying again.")
+        logger.error(
+            "Could not connect to ComfyUI because it is not up yet. Sleeping for 2 seconds before trying again."
+        )
         time.sleep(2)
 
 
@@ -37,16 +39,12 @@ def queue_prompt(prompt):
 def get_image(filename, subfolder, folder_type):
     data = {"filename": filename, "subfolder": subfolder, "type": folder_type}
     url_values = urllib.parse.urlencode(data)
-    with urllib.request.urlopen(
-        "http://{}/view?{}".format(server_address, url_values)
-    ) as response:
+    with urllib.request.urlopen("http://{}/view?{}".format(server_address, url_values)) as response:
         return response.read()
 
 
 def get_history(prompt_id):
-    with urllib.request.urlopen(
-        "http://{}/history/{}".format(server_address, prompt_id)
-    ) as response:
+    with urllib.request.urlopen("http://{}/history/{}".format(server_address, prompt_id)) as response:
         return json.loads(response.read())
 
 
@@ -71,9 +69,7 @@ def get_images(ws, prompt):
             if "images" in node_output:
                 images_output = []
                 for image in node_output["images"]:
-                    image_data = get_image(
-                        image["filename"], image["subfolder"], image["type"]
-                    )
+                    image_data = get_image(image["filename"], image["subfolder"], image["type"])
                     images_output.append(image_data)
             output_images[node_id] = images_output
 

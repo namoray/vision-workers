@@ -12,9 +12,7 @@ DEFAULT_STEPS = 8
 DEFAULT_STEPS_AVATAR = 10
 DEFAULT_CFG = 2
 DEFAULT_STYLE = "Base"
-DEFAULT_NEG_PROMPT = (
-    "(lowres, low quality, worst quality:1.2), (text:1.2), (watermark:1.2)"
-)
+DEFAULT_NEG_PROMPT = "(lowres, low quality, worst quality:1.2), (text:1.2), (watermark:1.2)"
 DEFAULT_SEED = 0
 DEFAULT_WIDTH = 1280
 DEFAULT_HEIGHT = 1280

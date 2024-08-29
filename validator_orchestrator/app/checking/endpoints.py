@@ -31,9 +31,7 @@ async def root() -> Dict[str, str]:
 async def check_result(
     request: models.CheckResultsRequest,
     background_tasks: BackgroundTasks,
-    server_manager: server_management.ServerManager = Depends(
-        dependencies.get_server_manager
-    ),
+    server_manager: server_management.ServerManager = Depends(dependencies.get_server_manager),
 ) -> models.CheckResultResponse:
     if task_manager.current_task_id is not None:
         return models.CheckResultResponse(
@@ -45,9 +43,7 @@ async def check_result(
     task_manager.current_task_id = task_id
     task_manager.task_status[task_id] = models.TaskStatus.Processing
     background_tasks.add_task(process_check_result, task_id, request, server_manager)
-    return models.CheckResultResponse(
-        task_id=task_id, status=models.TaskStatus.Processing
-    )
+    return models.CheckResultResponse(task_id=task_id, status=models.TaskStatus.Processing)
 
 
 async def process_check_result(
@@ -65,14 +61,12 @@ async def process_check_result(
             load_model_config = task_config.load_model_config
 
             if load_model_config is not None:
-                load_model_config_dumped = task_config.load_model_config.model_dump()
                 # TODO: Why is this needed? Slows down checking *alot*
                 # if task_manager.last_task_type != task_config.task:
                 #     load_model_config_dumped["force_reload"] = True
-                await server_manager.load_model(load_model_config_dumped)
+                await server_manager.load_model(load_model_config)
 
             task_manager.last_task_type = task_config.task
-
 
             result = await scoring.score_results(
                 result=request.result,
@@ -99,26 +93,18 @@ async def process_check_result(
 
 @router.get("/check-task/{task_id}", response_model=models.CheckTaskResponse)
 async def check_task(task_id: str) -> models.CheckTaskResponse:
-    if (
-        task_id not in task_manager.task_status
-        and task_id not in task_manager.task_results
-    ):
-        raise HTTPException(
-            status_code=404, detail="Task not found (or Task result got expired)"
-        )
+    if task_id not in task_manager.task_status and task_id not in task_manager.task_results:
+        raise HTTPException(status_code=404, detail="Task not found (or Task result got expired)")
 
     if task_manager.task_is_processing(task_id):
-        return models.CheckTaskResponse(
-            task_id=task_id, status=task_manager.task_status[task_id], result=None
-        )
+        return models.CheckTaskResponse(task_id=task_id, status=task_manager.task_status[task_id], result=None)
     else:
         status, result = task_manager.clear_and_return_task_status_and_result(task_id)
         if result:
-            return models.CheckTaskResponse(
-                task_id=task_id, result=result, status=status
-            )
+            return models.CheckTaskResponse(task_id=task_id, result=result, status=status)
 
     raise HTTPException(status_code=500, detail="Task retrieval failed... how?")
+
 
 @router.get("/all-task-status")
 async def task_statuses() -> models.AllTaskStatusResponse:

@@ -5,9 +5,7 @@ from app import models
 
 class LoadModelRequest(BaseModel):
     model: str = Field(..., example="TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ")
-    tokenizer: Optional[str] = Field(
-        None, example="TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ"
-    )
+    tokenizer: Optional[str] = Field(None, example="TheBloke/Nous-Hermes-2-Mixtral-8x7B-DPO-GPTQ")
     half_precision: Optional[bool] = Field(
         True,
         example=True,

@@ -8,8 +8,8 @@ AxonScores = Dict[int, float]
 
 
 class QueryResult(BaseModel):
-    formatted_response: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]
-    axon_uid: Optional[int]
+    formatted_response: dict[str, Any] |  list[dict[str, Any]] | None
+    node_id: Optional[int]
     response_time: Optional[float]
 
 
@@ -38,7 +38,18 @@ class ModelConfigDetails(BaseModel):
 
 class OrchestratorServerConfig(BaseModel):
     server_needed: ServerType = Field(examples=[ServerType.LLM, ServerType.IMAGE])
-    load_model_config: dict | None = Field(examples=[None])
+    load_model_config: dict | None = Field(
+        examples=[
+            {
+                "model": "unsloth/Meta-Llama-3.1-8B-Instruct",
+                "half_precision": True,
+                "tokenizer": "tau-vision/llama-tokenizer-fix",
+                "max_model_len": 16000,
+                "gpu_utilization": 0.6,
+            },
+            None
+        ]
+    )
     checking_function: str = Field(examples=["check_text_result", "check_image_result"])
     task: str = Field(examples=["chat-llama-3-1-8b"])
     endpoint: str = Field(examples=["/generate_text"])
@@ -47,12 +58,18 @@ class OrchestratorServerConfig(BaseModel):
 class CheckResultsRequest(BaseModel):
     server_config: OrchestratorServerConfig
     result: QueryResult
-    payload: dict = Field(examples={})
+    payload: dict
 
 
 class Message(BaseModel):
     role: str
     content: str
+
+
+class MessageResponse(BaseModel):
+    role: str
+    content: str
+    logprob: float
 
 
 class ChatRequestModel(BaseModel):
@@ -73,15 +90,15 @@ class MinerChatResponse(BaseModel):
 # TODO: These prob need refactoring - also test models should not be here
 
 
-class ValidationTest(BaseModel):
-    validator_server: ServerInstance
-    validator_task: str
-    miners_to_test: List[ServerInstance]
-    prompts_to_check: List[ChatRequestModel]
-    checking_function: Callable[
-        [QueryResult, Dict[str, Any], TaskConfig],
-        Coroutine[Any, Any, Union[float, None]],
-    ]
+# class ValidationTest(BaseModel):
+#     validator_server: ServerInstance
+#     validator_task: str
+#     miners_to_test: List[ServerInstance]
+#     prompts_to_check: List[ChatRequestModel]
+#     checking_function: Callable[
+#         [QueryResult, Dict[str, Any], TaskConfig],
+#         Coroutine[Any, Any, Union[float, None]],
+#     ]
 
 
 class TestInstanceResults(BaseModel):

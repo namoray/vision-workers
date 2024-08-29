@@ -28,11 +28,11 @@ class Message(BaseModel):
         extra = "allow"
 
 
-
 class TextPrompt(BaseModel):
     text: str
     weight: Optional[float]
-    
+
+
 class ImageHashes(BaseModel):
     average_hash: str = ""
     perceptual_hash: str = ""
@@ -40,10 +40,8 @@ class ImageHashes(BaseModel):
     color_hash: str = ""
 
 
-
 class ImageResponseBody(BaseModel):
     image_b64: Optional[str] = None
     is_nsfw: Optional[bool] = None
     clip_embeddings: Optional[List[float]] = None
     image_hashes: Optional[ImageHashes] = None
-

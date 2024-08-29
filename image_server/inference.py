@@ -10,7 +10,6 @@ import clip
 from loguru import logger
 
 
-
 payload_modifier = PayloadModifier()
 clip_emb_processor = ClipEmbeddingsProcessor()
 
@@ -70,9 +69,7 @@ async def get_clip_embeddings(
 ) -> List[List[float]]:
     clip_model, clip_processor = clip_emb_processor.get_clip_resources()
     clip_device = clip_emb_processor.clip_device
-    images = [
-        base64_utils.base64_to_image(img_b64) for img_b64 in infer_props.image_b64s
-    ]
+    images = [base64_utils.base64_to_image(img_b64) for img_b64 in infer_props.image_b64s]
     images = [clip_processor(image) for image in images]
     images_tensor = torch.stack(images).to(clip_device)
 

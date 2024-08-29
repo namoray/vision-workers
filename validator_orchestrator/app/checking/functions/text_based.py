@@ -21,11 +21,10 @@ def _score_average_distance(average_distance: float) -> float:
 
 
 async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any]) -> httpx.Response:
-    url = f"http://localhost:" + AI_SERVER_PORT + '/' + endpoint.lstrip('/')
+    url = f"http://localhost:{AI_SERVER_PORT}" + "/" + endpoint.lstrip("/")
     async with httpx.AsyncClient(timeout=5) as client:
         logger.info(f"Querying : {url}")
         response = await client.post(url, json=data)
-        logger.info(response)
         return response
 
 
@@ -41,11 +40,11 @@ async def _get_chat_data_validator_response(endpoint: str, data: Dict[str, Any])
 async def _calculate_distance_for_token(
     task_config: models.OrchestratorServerConfig,
     llm_request: models.ChatRequestModel,
-    chat_responses: List[models.MinerChatResponse],
+    chat_responses: List[models.Message],
     index: int,
 ) -> float:
     validator_checking_response = await _get_chat_data_validator_response(task_config.endpoint, llm_request.model_dump())
-    token = chat_responses[index].text
+    token = chat_responses[index].content
     validator_log_probs_for_token = {i.decoded: i.logprob for i in validator_checking_response.logprobs}
 
     if token not in validator_log_probs_for_token:
@@ -56,22 +55,27 @@ async def _calculate_distance_for_token(
     return distance
 
 
-async def check_text_result(result: models.QueryResult, synapse: Dict[str, Any], task_config: models.OrchestratorServerConfig) -> Union[float, None]:
+async def check_text_result(result: models.QueryResult, payload: dict, task_config: models.OrchestratorServerConfig) -> Union[float, None]:
     formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
-    miner_chat_responses: List[models.MinerChatResponse] = [models.MinerChatResponse(**r) for r in formatted_response]
+    messages: list[models.MessageResponse] = []
+    for response in formatted_response:
+        print(response)
+        content = response["choices"][0]["logprobs"]["content"][0]["token"]
+        logprob = response["choices"][0]["logprobs"]["content"][0]["logprob"]
+        messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
 
     # If no responses, then not a good response
-    if len(miner_chat_responses) == 0:
+    if len(messages) == 0:
         return 0
 
-    if len(miner_chat_responses) == 1:
+    if len(messages) == 1:
         indicies_to_check = [0]
     else:
         # Always check first & last
-        indicies_to_check = [0, len(miner_chat_responses) - 1]
-        number_of_additional_indicies_to_check = len(miner_chat_responses) - 2
+        indicies_to_check = [0, len(messages) - 1]
+        number_of_additional_indicies_to_check = len(messages) - 2
         additional_indicies_to_check = random.sample(
-            range(1, len(miner_chat_responses) - 1),
+            range(1, len(messages) - 1),
             number_of_additional_indicies_to_check,
         )
         indicies_to_check.extend(additional_indicies_to_check)
@@ -79,11 +83,11 @@ async def check_text_result(result: models.QueryResult, synapse: Dict[str, Any],
     total_distance = 0
     checks = 0
 
-    synapse["starting_assistant_message"] = True
-    synapse["number_of_logprobs"] = 5
-    synapse["top_k"] = 5
+    payload["starting_assistant_message"] = True
+    payload["number_of_logprobs"] = 5
+    payload["top_k"] = 5
 
-    llm_request = models.ChatRequestModel(**synapse)
+    llm_request = models.ChatRequestModel(**payload)
     llm_request.max_tokens = 1
 
     for index in indicies_to_check:
@@ -95,7 +99,7 @@ async def check_text_result(result: models.QueryResult, synapse: Dict[str, Any],
         else:
             llm_request.starting_assistant_message = False
 
-            text_to_inject_into_assistant_message = "".join([i.text for i in miner_chat_responses[:index]])
+            text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
             llm_request.messages.append(
                 models.Message(
                     **{
@@ -105,7 +109,7 @@ async def check_text_result(result: models.QueryResult, synapse: Dict[str, Any],
                 )
             )
 
-        distance = await _calculate_distance_for_token(task_config, llm_request, miner_chat_responses, index)
+        distance = await _calculate_distance_for_token(task_config, llm_request, messages, index)
         checks += 1
         total_distance += distance
         if index != 0:

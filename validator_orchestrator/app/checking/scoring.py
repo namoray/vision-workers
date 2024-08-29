@@ -18,6 +18,8 @@ def _import_function(function_name: str) -> Callable | None:
     except (ImportError, AttributeError) as e:
         print(f"Error importing function {function_name}: {e}")
         return None
+
+
 async def score_results(
     result: models.QueryResult,
     payload: dict[str, Any],
@@ -35,15 +37,13 @@ async def score_results(
     if func is None:
         logger.error(f"Could not import function {task_config.checking_function}")
         return models.TaskResult(axon_scores=axon_scores, timestamp=datetime.now())
-    base_score: float = await func(
-        result, payload, task_config
-    )
+    base_score: float = await func(result, payload, task_config)
 
     if base_score is None:
         logger.info(f"Got no base score. Axon scores: {axon_scores}")
         return models.TaskResult(axon_scores=axon_scores, timestamp=datetime.now())
 
-    axon_scores[result.axon_uid] = base_score
+    axon_scores[result.node_id] = base_score
 
     logger.info(f"Got Axon scores: {axon_scores}")
 

@@ -19,8 +19,6 @@ def get_toxic_chat_identifier() -> models.ToxicEngine:
 def prompt_is_toxic(toxic_engine: Optional[models.ToxicEngine], prompt: str) -> bool:
     if toxic_engine is None:
         return False
-    inputs = toxic_engine.tokenizer.encode(
-        "ToxicChat: " + prompt, return_tensors="pt"
-    ).to("cuda")
+    inputs = toxic_engine.tokenizer.encode("ToxicChat: " + prompt, return_tensors="pt").to("cuda")
     outputs = toxic_engine.tokenizer.decode(toxic_engine.model.generate(inputs)[0])
     return cst.POSITIVE in outputs

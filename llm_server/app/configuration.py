@@ -7,4 +7,3 @@ class Config(BaseSettings):
     environment: str = "prod"
     debug: bool = "False"
     cors_origins: List[str] = ["*"]
-    

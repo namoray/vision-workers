@@ -17,7 +17,6 @@ import copy
 import random
 
 
-
 class PayloadModifier:
     def __init__(self):
         self._payloads = {}
@@ -64,9 +63,7 @@ class PayloadModifier:
         payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
 
         for position in input_data.pad_values:
-            payload["Outpaint_pad"]["inputs"][position] = input_data.pad_values[
-                position
-            ]
+            payload["Outpaint_pad"]["inputs"][position] = input_data.pad_values[position]
 
         seed = input_data.seed
         if seed == 0:
@@ -92,7 +89,7 @@ class PayloadModifier:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
-        
+
         return payload
 
     def modify_image_to_image(self, input_data: ImageToImageBase) -> Dict[str, Any]:

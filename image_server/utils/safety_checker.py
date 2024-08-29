@@ -20,9 +20,7 @@ def forward_inspect(self, clip_input, images):
     pooled_output = self.vision_model(clip_input)[1]
     image_embeds = self.visual_projection(pooled_output)
 
-    special_cos_dist = (
-        cosine_distance(image_embeds, self.special_care_embeds).cpu().numpy()
-    )
+    special_cos_dist = cosine_distance(image_embeds, self.special_care_embeds).cpu().numpy()
     cos_dist = cosine_distance(image_embeds, self.concept_embeds).cpu().numpy()
 
     matches = {"nsfw": [], "special": []}
@@ -40,21 +38,15 @@ def forward_inspect(self, clip_input, images):
         for concet_idx in range(len(special_cos_dist[0])):
             concept_cos = special_cos_dist[i][concet_idx]
             concept_threshold = self.special_care_embeds_weights[concet_idx].item()
-            result_img["special_scores"][concet_idx] = round(
-                concept_cos - concept_threshold + adjustment, 3
-            )
+            result_img["special_scores"][concet_idx] = round(concept_cos - concept_threshold + adjustment, 3)
             if result_img["special_scores"][concet_idx] > 0:
-                result_img["special_care"].append(
-                    {concet_idx, result_img["special_scores"][concet_idx]}
-                )
+                result_img["special_care"].append({concet_idx, result_img["special_scores"][concet_idx]})
                 matches["special"].append(cst.SPECIAL_CONCEPTS[concet_idx])
 
         for concet_idx in range(len(cos_dist[0])):
             concept_cos = cos_dist[i][concet_idx]
             concept_threshold = self.concept_embeds_weights[concet_idx].item()
-            result_img["concept_scores"][concet_idx] = round(
-                concept_cos - concept_threshold + adjustment, 3
-            )
+            result_img["concept_scores"][concet_idx] = round(concept_cos - concept_threshold + adjustment, 3)
 
             if result_img["concept_scores"][concet_idx] > 0:
                 result_img["bad_concepts"].append(concet_idx)
@@ -70,12 +62,8 @@ class Safety_Checker:
         _device = os.getenv("DEVICE", cst.DEFAULT_DEVICE)
         self.device = _device if "cuda" in _device else f"cuda:{_device}"
         path = cst.SAFETY_CHECKER_REPO_PATH
-        safety_pipe = StableDiffusionPipeline.from_pretrained(
-            path, torch_dtype=torch.bfloat16
-        ).to(self.device)
-        safety_pipe.safety_checker.forward = partial(
-            forward_inspect, self=safety_pipe.safety_checker
-        )
+        safety_pipe = StableDiffusionPipeline.from_pretrained(path, torch_dtype=torch.bfloat16).to(self.device)
+        safety_pipe.safety_checker.forward = partial(forward_inspect, self=safety_pipe.safety_checker)
         self.safety_feature_extractor = safety_pipe.feature_extractor
         self.safety_checker = safety_pipe.safety_checker
         self.black_image = Image.open(cst.NSFW_IMAGE_PATH)
@@ -85,9 +73,7 @@ class Safety_Checker:
         if np.all(image_np == 0):
             return True
         with torch.cuda.amp.autocast():
-            safety_checker_input = self.safety_feature_extractor(
-                images=image, return_tensors="pt"
-            ).to(self.device)
+            safety_checker_input = self.safety_feature_extractor(images=image, return_tensors="pt").to(self.device)
             result, has_nsfw_concepts = self.safety_checker.forward(
                 clip_input=safety_checker_input.pixel_values, images=image
             )

@@ -19,4 +19,3 @@ class Endpoints(Enum):
 
 
 settings = Settings()
-

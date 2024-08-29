@@ -21,15 +21,11 @@ class TaskManager:
             await asyncio.sleep(RESULT_EXPIRY_TIME.seconds / 4)
             now = datetime.now()
             expired_tasks = [
-                task_id
-                for task_id, result in self.task_results.items()
-                if now - result.timestamp > RESULT_EXPIRY_TIME
+                task_id for task_id, result in self.task_results.items() if now - result.timestamp > RESULT_EXPIRY_TIME
             ]
             for task_id in expired_tasks:
                 self.task_results.pop(task_id, None)
-            logger.info(
-                f"Cleaned up expired tasks; Removed {len(expired_tasks)} expired tasks"
-            )
+            logger.info(f"Cleaned up expired tasks; Removed {len(expired_tasks)} expired tasks")
 
     def task_is_processing(self, task_id: str) -> bool:
         status = self.task_status.get(task_id, None)
