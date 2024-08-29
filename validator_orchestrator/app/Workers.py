@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Dict
 import os
-from app.models import ServerType, ProdDockerImages
+from app.core.models import ServerType, ProdDockerImages
 
 DEFAULT_NETWORK_NAME = "comm"
 class WorkerConfig(BaseModel):

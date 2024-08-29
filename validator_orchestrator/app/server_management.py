@@ -1,5 +1,4 @@
 import os
-import signal
 import subprocess
 from time import sleep
 import httpx
@@ -7,7 +6,7 @@ from typing import Dict, Any
 import asyncio
 from loguru import logger
 from app.Workers import worker_config
-from app.models import ServerType
+from app.core.models import ServerType
 
 
 class ServerManager:

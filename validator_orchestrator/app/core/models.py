@@ -11,8 +11,6 @@ class QueryResult(BaseModel):
     formatted_response: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]
     axon_uid: Optional[int]
     response_time: Optional[float]
-    error_message: Optional[str]
-    failed_axon_uids: List[int] = []
 
 
 class ChatTokens(BaseModel):
@@ -27,30 +25,6 @@ class ServerType(Enum):
 class ProdDockerImages(Enum):
     LLM = "corcelio/vision:llm_server-latest"
     IMAGE = "corcelio/vision:image_server-latest"
-
-
-class Tasks(Enum):
-    chat_mixtral = "chat-mixtral"
-    chat_llama_3 = "chat-llama-3"
-    chat_llama_31_8b = "chat-llama-3-1-8b"
-    chat_llama_31_70b = "chat-llama-3-1-70b"
-    #
-    proteus_text_to_image = "proteus-text-to-image"
-    playground_text_to_image = "playground-text-to-image"
-    flux_schnell_text_to_image = "flux-schnell-text-to-image"
-    dreamshaper_text_to_image = "dreamshaper-text-to-image"
-    #
-    proteus_image_to_image = "proteus-image-to-image"
-    playground_image_to_image = "playground-image-to-image"
-    flux_schnell_image_to_image = "flux-schnell-image-to-image"
-    dreamshaper_image_to_image = "dreamshaper-image-to-image"
-    #
-    avatar = "avatar"
-    upscale = "upscale"
-    jugger_inpainting = "inpaint"
-    jugger_outpainting = "outpaint"
-    clip_image_embeddings = "clip-image-embeddings"
-    sota = "sota"
 
 
 class ModelConfigDetails(BaseModel):
@@ -70,40 +44,23 @@ class TaskConfig(BaseModel):
         [QueryResult, Dict[str, Any], TaskConfig],
         Coroutine[Any, Any, Union[float, None]],
     ]
-    synthetic_generation_function: Optional[Callable] = None
-    synthetic_generation_params: Optional[Dict[str, Any]] = None
-    task: Tasks
 
     class Config:
         arbitrary_types_allowed = True
 
 
-class TaskConfigMapping(BaseModel):
-    tasks: Dict[Tasks, TaskConfig]
-
-
-class TestInstanceResults(BaseModel):
-    task: Tasks
-    score: float
-    miner_server: ServerInstance
-    validator_server: ServerInstance
-    messages: List[Message]
-    temperature: float
-    seed: int
-    miner_request: Any
+class OrchestratorServerConfig(BaseModel):
+    server_needed: ServerType
+    load_model_config: dict
+    checking_function: str
+    task: str
+    endpoint: str
 
 
 class CheckResultsRequest(BaseModel):
-    task: Tasks
-    synthetic_query: bool
+    server_config: OrchestratorServerConfig
     result: QueryResult
-    synapse: Dict[str, Any]
-
-    def dict(self, *args, **kwargs):
-        obj_dict = super().dict(*args, **kwargs)
-        # Converting Enum instance to its value
-        obj_dict["task"] = obj_dict["task"].value
-        return obj_dict
+    payload: dict
 
 
 class Message(BaseModel):
@@ -126,15 +83,29 @@ class MinerChatResponse(BaseModel):
     logprob: float
 
 
+# TODO: These prob need refactoring - also test models should not be here
+
+
 class ValidationTest(BaseModel):
     validator_server: ServerInstance
-    validator_task: Tasks
+    validator_task: str
     miners_to_test: List[ServerInstance]
     prompts_to_check: List[ChatRequestModel]
     checking_function: Callable[
         [QueryResult, Dict[str, Any], TaskConfig],
         Coroutine[Any, Any, Union[float, None]],
     ]
+
+
+class TestInstanceResults(BaseModel):
+    task: str
+    score: float
+    miner_server: ServerInstance
+    validator_server: ServerInstance
+    messages: List[Message]
+    temperature: float
+    seed: int
+    miner_request: Any
 
 
 class ServerDetails(BaseModel):
@@ -158,10 +129,6 @@ class Logprob(BaseModel):
 class ValidatorCheckingResponse(BaseModel):
     text: str
     logprobs: List[Logprob]
-
-
-class SyntheticGenerationRequest(BaseModel):
-    task: Tasks
 
 
 class CheckResultResponse(BaseModel):

@@ -1,0 +1,2 @@
+from image_based import check_image_result
+from text_based import check_text_result

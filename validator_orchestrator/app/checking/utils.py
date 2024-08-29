@@ -5,7 +5,7 @@ from PIL import Image
 import httpx
 import re
 from loguru import logger
-from app import utility_models
+from app.core import utility_models
 import io
 import base64
 

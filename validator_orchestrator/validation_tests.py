@@ -7,8 +7,8 @@ import time
 import os
 import httpx
 import re
-from app.models import ServerDetails, ServerInstance, ValidationTest, \
-    ChatRequestModel, Tasks, CheckResultsRequest, \
+from app.core.models import ServerDetails, ServerInstance, ValidationTest, \
+    ChatRequestModel, Task, CheckResultsRequest, \
     Message, TestInstanceResults, ModelConfigDetails, QueryResult
 
 from typing import List, Dict, Any, AsyncGenerator, Union
@@ -25,7 +25,7 @@ MODELS_TO_TEST_LOC = "tests/models_to_test.json"
 TEST_SAVE_LOC = "tests/test_results.csv"
 
 NUMBER_OF_TESTS = 100
-VALIDATOR_TASKS = [Tasks.chat_llama_31_8b, Tasks.chat_llama_31_70b]
+VALIDATOR_TASKS = [Task.chat_llama_31_8b, Task.chat_llama_31_70b]
 
 print("Starting script...")
 
@@ -91,7 +91,7 @@ def create_server_instances(servers: List[ServerDetails], models: List[ModelConf
     instances = [ServerInstance(server_details=server, model=model) for server in servers for model in models]
     return instances
 
-def create_validation_tests(validator_server: ServerInstance ,validator_tasks: List[Tasks], miners: List[ServerInstance], prompts: List[str],
+def create_validation_tests(validator_server: ServerInstance ,validator_tasks: List[Task], miners: List[ServerInstance], prompts: List[str],
                             num_tests: int) -> List[ValidationTest]:
     print(f"Creating validation tests with {num_tests} tests")
     tests = [ValidationTest(validator_server=validator_server, validator_task=validator_task, miners_to_test=miners,

@@ -2,12 +2,12 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from typing import Dict
 from uuid import uuid4
 import os
-from app import models
+from app.core import models
 from app.checking import scoring
 from app import server_management
 from app.settings import task_configs
 from fastapi import Depends
-from app import dependencies
+from app.core import dependencies
 from loguru import logger
 import traceback
 from datetime import datetime
@@ -28,7 +28,7 @@ async def root() -> Dict[str, str]:
     return {"message": "Hello World"}
 
 
-@router.post("/check-result", response_model=models.CheckResultResponse)
+@router.post("/check-result")
 async def check_result(
     request: models.CheckResultsRequest,
     background_tasks: BackgroundTasks,
@@ -59,7 +59,7 @@ async def process_check_result(
     async with global_async_lock:
         try:
             logger.info("Checking a result!... 🫡")
-            task_config = task_configs.tasks[request.task]
+            config = request.task
             server_needed = task_config.server_needed
             await server_manager.start_server(server_needed)
 

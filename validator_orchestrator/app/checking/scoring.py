@@ -3,8 +3,8 @@
 from datetime import datetime
 from typing import Dict
 from typing import Any
-from app import constants as cst
-from app import models
+from app.core import constants as cst
+from app.core import models
 from loguru import logger
 
 

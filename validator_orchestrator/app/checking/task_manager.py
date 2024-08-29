@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
 from loguru import logger
-from app import models
+from app.core import models
 
 RESULT_EXPIRY_TIME = timedelta(hours=1)
 
@@ -12,7 +12,7 @@ class TaskManager:
         self.task_status: Dict[str, models.TaskStatus] = {}
         self.task_results: Dict[str, models.TaskResult] = {}
         self.current_task_id = None
-        self.last_task_type: Optional[models.Tasks] = None
+        self.last_task_type: Optional[models.Task] = None
 
         asyncio.create_task(self._cleanup_expired_tasks())
 
