@@ -26,25 +26,25 @@ async def score_results(
     task_config: models.OrchestratorServerConfig,
 ) -> models.TaskResult:
 
-    axon_scores: Dict[int, float] = {}
+    node_scores: Dict[int, float] = {}
 
     if result.formatted_response is None:
-        logger.info(f"Got no formatted response. Axon scores: {axon_scores}")
-        return models.TaskResult(axon_scores=axon_scores, timestamp=datetime.now())
+        logger.info(f"Got no formatted response. Axon scores: {node_scores}")
+        return models.TaskResult(node_scores=node_scores, timestamp=datetime.now())
 
     logger.info("Checking scores with server...")
     func = _import_function(task_config.checking_function)
     if func is None:
         logger.error(f"Could not import function {task_config.checking_function}")
-        return models.TaskResult(axon_scores=axon_scores, timestamp=datetime.now())
+        return models.TaskResult(node_scores=node_scores, timestamp=datetime.now())
     base_score: float = await func(result, payload, task_config)
 
     if base_score is None:
-        logger.info(f"Got no base score. Axon scores: {axon_scores}")
-        return models.TaskResult(axon_scores=axon_scores, timestamp=datetime.now())
+        logger.info(f"Got no base score. Axon scores: {node_scores}")
+        return models.TaskResult(node_scores=node_scores, timestamp=datetime.now())
 
-    axon_scores[result.node_id] = base_score
+    node_scores[result.node_id] = base_score
 
-    logger.info(f"Got Axon scores: {axon_scores}")
+    logger.info(f"Got Axon scores: {node_scores}")
 
-    return models.TaskResult(axon_scores=axon_scores, timestamp=datetime.now())
+    return models.TaskResult(node_scores=node_scores, timestamp=datetime.now())

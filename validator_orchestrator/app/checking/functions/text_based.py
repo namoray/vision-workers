@@ -59,7 +59,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
     messages: list[models.MessageResponse] = []
     for response in formatted_response:
-        print(response)
         content = response["choices"][0]["logprobs"]["content"][0]["token"]
         logprob = response["choices"][0]["logprobs"]["content"][0]["logprob"]
         messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))

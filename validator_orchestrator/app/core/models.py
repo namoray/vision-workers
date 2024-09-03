@@ -152,7 +152,7 @@ class CheckTaskResponse(BaseModel):
 
 
 class TaskResult(BaseModel):
-    axon_scores: Optional[AxonScores] = None
+    node_scores: Optional[AxonScores] = None
     timestamp: datetime
     error_message: Optional[str] = None
     traceback: Optional[str] = None

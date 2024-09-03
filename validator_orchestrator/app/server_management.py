@@ -121,8 +121,12 @@ class ServerManager:
             self.running_servers[ServerType.IMAGE.value] = True
 
         if self.running_servers.get(server_name, False) and server_is_up:
-            logger.info(f"Server {server_name} is already running! No need to kill and restart it")
-            return
+            # Check no other server is running on the same port
+            for server, is_running in self.running_servers.items():
+                if is_running and server != server_name:
+                    logger.info(f"The server {server} is running on the same port as {server_name}. Stopping it...")
+                    return
+            logger.info(f"Running servers: {self.running_servers}. Killing and restarting {server_name}")
         else:
             logger.info(f"Running servers: {self.running_servers}. Killing and restarting {server_name}")
 

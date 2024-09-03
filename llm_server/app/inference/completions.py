@@ -132,19 +132,26 @@ async def complete_vllm(engine: models.LLMEngine, request_info: models.RequestIn
     stream = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
 
     logprobs_cursor = 0
+    cursor = 0
     async for request_output in stream:
-
         text = request_output.outputs[0].text
-        logprobs = request_output.outputs[0].logprobs
+        latest_chunk = text[cursor:]
 
-        # Find the token ID that corresponds to the generated text
-        for logprob_item in logprobs[logprobs_cursor:]:
-            for token, logprob in logprob_item.items():
-                text = logprob.decoded_token
-                logprob = logprob.logprob
-                data = {"choices": [{"index": 0, "delta": {"content": text}, "logprobs": {"content": [{"token": text, "logprob": logprob}]}}]}
-                yield f"data: {data}\n\n"
-        logprobs_cursor = len(logprobs)
+        log_probs = request_output.outputs[0].logprobs
+        log_probs_dict = [
+            {
+                "index": idx,
+                "logprob": token_detail.logprob,
+                "decoded": token_detail.decoded_token,
+            }
+            for token_details in log_probs[logprobs_cursor:]
+            for idx, token_detail in token_details.items()
+        ]
+        data = json.dumps(
+            {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs]}
+        )
+        yield f"data: {data}\n\n"
 
-
+        cursor = len(text)
+        logprobs_cursor = len(log_probs)
     yield "data: [DONE]\n\n"

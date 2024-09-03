@@ -26,6 +26,22 @@ from app.checking.checking_functions import check_text_result
 
 from tenacity import retry, stop_after_attempt, wait_fixed
 
+[
+    CompletionOutput(
+        index=0,
+        text="This conversation",
+        token_ids=(2028, 10652),
+        cumulative_logprob=-0.2687545418739319,
+        logprobs=[
+            {2028: Logprob(logprob=-0.06734101474285126, rank=1, decoded_token="This")},
+            {10652: Logprob(logprob=-0.20141352713108063, rank=1, decoded_token=" conversation")},
+        ],
+        finish_reason=None,
+        stop_reason=None,
+    )
+]
+
+[{2028: Logprob(logprob=-0.06734101474285126, rank=1, decoded_token="This")}, {10652: Logprob(logprob=-0.20141352713108063, rank=1, decoded_token=" conversation")}]
 
 POST_ENDPOINT = "/generate_text"
 SERVERS_JSON_LOC = "tests/servers.json"
@@ -139,9 +155,7 @@ def create_validation_tests(
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(300))
-async def make_request(
-    server: ServerInstance, payload: Union[ChatRequestModel, CheckResultsRequest], endpoint: str
-) -> httpx.Response:
+async def make_request(server: ServerInstance, payload: Union[ChatRequestModel, CheckResultsRequest], endpoint: str) -> httpx.Response:
     print(f"Making request to {server.server_details.endpoint + endpoint}")
 
     async with httpx.AsyncClient(timeout=180) as client:
@@ -158,10 +172,7 @@ async def make_request(
                 print(f"Task ID: {task_id}")
                 if task_id is None:
                     if response_json.get("status") == "Busy":
-                        print(
-                            f"Attempt: {j}; There's already a task being checked, will sleep and try again..."
-                            f"\nresponse: {response_json}"
-                        )
+                        print(f"Attempt: {j}; There's already a task being checked, will sleep and try again..." f"\nresponse: {response_json}")
                         await asyncio.sleep(20)
                         j += 1
                     else:
@@ -182,10 +193,7 @@ async def make_request(
                 if task_response_json.get("status") != "Processing":
                     task_status = task_response_json.get("status")
                     if task_status == "Failed":
-                        print(
-                            f"Task {task_id} failed: {task_response_json.get('error')}"
-                            f"\nTraceback: {task_response_json.get('traceback')}"
-                        )
+                        print(f"Task {task_id} failed: {task_response_json.get('error')}" f"\nTraceback: {task_response_json.get('traceback')}")
                         await sleeper.sleep()
                     break
         except httpx.HTTPStatusError as stat_err:
@@ -257,20 +265,16 @@ async def process_validation_test(test: ValidationTest) -> None:
     test_results = []
     payload_results = {}
     for miner in test.miners_to_test:
-
         await make_load_model_request(miner)
         payload_results[miner.model.model] = []
         for prompt in test.prompts_to_check:
-
             miner_stream = stream_text_from_server(prompt.dict(), miner.server_details.endpoint)
             response = await _stream_response_from_stream_miners_until_result(miner_stream, miner)
-            payload = CheckResultsRequest(
-                task=test.validator_task, synthetic_query=False, result=response, synapse=prompt.dict()
-            )
+            payload = CheckResultsRequest(task=test.validator_task, synthetic_query=False, result=response, synapse=prompt.dict())
 
             check = await make_request(test.validator_server, payload, "/check-result")
             try:
-                score = check["result"]["axon_scores"][miner.server_details.id]
+                score = check["result"]["node_scores"][miner.server_details.id]
                 test_res = TestInstanceResults(
                     score=score,
                     miner_server=miner,
@@ -320,7 +324,6 @@ def save_test_results_to_csv(test_results: List[TestInstanceResults]) -> None:
 
 
 def flatten_server_instance_details(server_instance: ServerInstance) -> Dict[str, Any]:
-
     return {
         "id": server_instance.server_details.id,
         "gpu": server_instance.server_details.gpu,
@@ -330,10 +333,7 @@ def flatten_server_instance_details(server_instance: ServerInstance) -> Dict[str
     }
 
 
-async def _stream_response_from_stream_miners_until_result(
-    miner_stream: AsyncGenerator[str, None], miner_details: ServerInstance
-) -> QueryResult:
-
+async def _stream_response_from_stream_miners_until_result(miner_stream: AsyncGenerator[str, None], miner_details: ServerInstance) -> QueryResult:
     time1 = time.time()
     if miner_stream is not None:
         text_data = ""
@@ -360,7 +360,6 @@ async def _stream_response_from_stream_miners_until_result(
 
 
 async def main():
-
     servers = load_json(SERVERS_JSON_LOC)
     miners = get_server_details(servers, "miners")
     validators = get_server_details(servers, "validators")
@@ -370,9 +369,7 @@ async def main():
     miner_servers = create_server_instances(miners, models)
     for validator in validators:
         validation_server = ServerInstance(server_details=validator, model=None)
-        test_suite = create_validation_tests(
-            validation_server, VALIDATOR_TASKS, miner_servers, prompts, NUMBER_OF_TESTS
-        )
+        test_suite = create_validation_tests(validation_server, VALIDATOR_TASKS, miner_servers, prompts, NUMBER_OF_TESTS)
         for test in test_suite:
             await process_validation_test(test)
 
