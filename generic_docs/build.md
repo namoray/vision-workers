@@ -33,41 +33,41 @@ docker run --gpus all  -p 6920:6920 corcelio/vision:orchestrator-latest
 **Combined command for local dev/ testing**
 NOTE: this will use prod image server & llm server images unless otherwise specified
 ```bash
-docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator
-docker run -p 6920:6920 -e PORT=6920 -e CUDA_VISIBLE_DEVICES=0 -e DEVICE=0 --gpus '"device=0"' --runtime=nvidia corcelio/test:orch-test
+docker build -t corcelio/dev:orch-test . -f Dockerfile.orchestrator
+docker run -p 6920:6920 -e PORT=6920 -e CUDA_VISIBLE_DEVICES=0 -e DEVICE=0 --gpus '"device=0"' --runtime=nvidia corcelio/dev:orch-test
 ```
 or
 NOTE: this will use prod image server & llm server images unless otherwise specified
 ```bash
-docker kill orchestrator || true; docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator; ./launch_orchestrator.sh --orchestrator-image corcelio/test:orch-test --dont-refresh-local-images
+docker kill orchestrator || true; docker build -t corcelio/dev:orch-test . -f Dockerfile.orchestrator; ./launch_orchestrator.sh --orchestrator-image corcelio/dev:orch-test --dont-refresh-local-images
 ```
 
 **Build all**
 ```bash
-docker build -t corcelio/test:orch-test . -f Dockerfile.orchestrator
-docker build -t corcelio/test:llm-test . -f Dockerfile.llm_server
-docker build -t corcelio/test:image-test . -f Dockerfile.image_server
+docker build -t corcelio/dev:orch-test . -f Dockerfile.orchestrator
+docker build -t corcelio/dev:llm-test . -f Dockerfile.llm_server
+docker build -t corcelio/dev:image-test . -f Dockerfile.image_server
 ```
 
 **Run with orch**
 
 
 ```bash
-./launch_orchestrator.sh --orchestrator-image corcelio/test:orch-test --llm-image corcelio/test:llm-test --image-server-image corcelio/test:image-test --dont-refresh-local-images
+./launch_orchestrator.sh --orchestrator-image corcelio/dev:orch-test --llm-image corcelio/dev:llm-test --image-server-image corcelio/dev:image-test --dont-refresh-local-images
 ```
 
 ```bash
-docker run --name image-test --rm -v HF:/app/cache -v COMFY:/app/image_server/ComfyUI -p 6918:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0  corcelio/test:image-test
+docker run --name image-test --rm -v HF:/app/cache -v COMFY:/app/image_server/ComfyUI -p 6918:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0  corcelio/dev:image-test
 ```
 or 
 ```bash
-docker kill image-test || true; docker build -t corcelio/test:image-test . -f Dockerfile.image_server; docker run  --rm --name image-test -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 corcelio/test:image-test
+docker kill image-test || true; docker build -t corcelio/dev:image-test . -f Dockerfile.image_server; docker run  --rm --name image-test -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 corcelio/dev:image-test
 ```
 
 **Run LLM image**
 
 ```bash
-docker kill llm-test || true; docker build -t corcelio/test:llm-test . -f Dockerfile.llm_server; docker run --name llm-test -d --rm  -v HF:/app/cache -p 6918:6919 --gpus '"device=1"' --runtime=nvidia -e PORT=6919 -e MODEL=unsloth/Meta-Llama-3.1-8B-Instruct -e HALF_PRECISION=true  -e TOKENIZER=tau-vision/llama-tokenizer-fix -e CUDA_VISIBLE_DEVICES=0 corcelio/test:llm-test
+docker kill llm-test || true; docker build -t corcelio/dev:llm-test . -f Dockerfile.llm_server; docker run --name llm-test -d --rm  -v HF:/app/cache -p 6918:6919 --gpus '"device=1"' --runtime=nvidia -e PORT=6919 -e MODEL=unsloth/Meta-Llama-3.1-8B-Instruct -e HALF_PRECISION=true  -e TOKENIZER=tau-vision/llama-tokenizer-fix -e CUDA_VISIBLE_DEVICES=0 corcelio/dev:llm-test
 ```
 
 ### Uploading to docker hub
@@ -131,5 +131,5 @@ sudo rm -rf /var/lib/apt/lists/*
 ```
 
 ```bash
-LLM_SERVER_DOCKER_IMAGE=corcelio/test:llm-test IMAGE_SERVER_DOCKER_IMAGE=corcelio/test:image-test  ./entrypoint.sh 
+LLM_SERVER_DOCKER_IMAGE=corcelio/dev:llm-test IMAGE_SERVER_DOCKER_IMAGE=corcelio/dev:image-test  ./entrypoint.sh 
 ```
