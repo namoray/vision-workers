@@ -20,17 +20,17 @@ def _score_average_distance(average_distance: float) -> float:
         return 0.0
 
 
-async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any]) -> httpx.Response:
-    url = f"http://localhost:{AI_SERVER_PORT}" + "/" + endpoint.lstrip("/")
+async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any], server_name: str = "llm_server") -> httpx.Response:
+    url = f"http://{server_name}:{AI_SERVER_PORT}" + "/" + endpoint.lstrip("/")
     async with httpx.AsyncClient(timeout=5) as client:
         logger.info(f"Querying : {url}")
         response = await client.post(url, json=data)
         return response
 
 
-async def _get_chat_data_validator_response(endpoint: str, data: Dict[str, Any]) -> models.ValidatorCheckingResponse:
+async def _get_chat_data_validator_response(endpoint: str, data: Dict[str, Any], server_name: str = "llm_server") -> models.ValidatorCheckingResponse:
     """This method is fine as we always have max token is 1"""
-    response = await _query_endpoint_for_iterator(endpoint, data)
+    response = await _query_endpoint_for_iterator(endpoint, data, server_name)
     async for line in response.aiter_lines():
         line_formatted = line.split("data: ")[1].split("\n\n")[0]
         response_json = json.loads(line_formatted)
@@ -43,7 +43,7 @@ async def _calculate_distance_for_token(
     chat_responses: List[models.Message],
     index: int,
 ) -> float:
-    validator_checking_response = await _get_chat_data_validator_response(task_config.endpoint, llm_request.model_dump())
+    validator_checking_response = await _get_chat_data_validator_response(task_config.endpoint, llm_request.model_dump(), server_name=task_config.server_needed.value)
     token = chat_responses[index].content
     validator_log_probs_for_token = {i.decoded: i.logprob for i in validator_checking_response.logprobs}
 

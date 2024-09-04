@@ -56,6 +56,7 @@ class ServerManager:
         port: int,
         sleep_time: int = 5,
         total_attempts: int = 12 * 10 * 2,  # 20 minutes worth
+        server_name: str = "localhost",
     ) -> tuple[bool, str | None]:
         """
         Check if server is healthy.
@@ -66,8 +67,8 @@ class ServerManager:
         async with httpx.AsyncClient(timeout=5) as client:
             while not server_is_healthy:
                 try:
-                    logger.info("Pinging " + f"http://localhost:{port}")
-                    response = await client.get(f"http://localhost:{port}")
+                    logger.info("Pinging " + f"http://{server_name}:{port}")
+                    response = await client.get(f"http://{server_name}:{port}")
                     server_is_healthy = response.status_code == 200
                     if not server_is_healthy:
                         await asyncio.sleep(sleep_time)
@@ -83,16 +84,15 @@ class ServerManager:
                     break
         return server_is_healthy, None
 
-    async def load_model(self, load_model_config: Dict[str, Any]) -> None:
+    async def load_model(self, load_model_config: Dict[str, Any], server_name) -> None:
         """
         Load a new model configuration
         """
         try:
             logger.debug(f"Loading model with config: {load_model_config}")
             async with httpx.AsyncClient(timeout=1200) as client:
-                server_name = os.getenv("CURRENT_SERVER_NAME")
                 response = await client.post(
-                    url=f"http://localhost:{AI_SERVER_PORT}/load_model",
+                    url=f"http://{server_name}:{AI_SERVER_PORT}/load_model",
                     json=load_model_config,
                 )
             return response
@@ -114,6 +114,7 @@ class ServerManager:
             port=server_config.port,
             sleep_time=1,
             total_attempts=3,
+            server_name=server_name,
         )
         if response_content == "LLM":
             self.running_servers[ServerType.LLM.value] = True
@@ -149,6 +150,7 @@ class ServerManager:
 
         server_is_up = await self.is_server_healthy(
             server_config.port,
+            server_name=server_name,
         )
         if not server_is_up:
             raise Exception(f"Timeout when starting server {server_name}")

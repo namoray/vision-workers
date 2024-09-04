@@ -54,7 +54,7 @@ async def process_check_result(
     async with global_async_lock:
         try:
             logger.info("Checking a result!... 🫡")
-            task_config = request.server_config
+            task_config: models.OrchestratorServerConfig = request.server_config
             server_needed = task_config.server_needed
             await server_manager.start_server(server_needed)
 
@@ -64,7 +64,7 @@ async def process_check_result(
                 # TODO: Why is this needed? Slows down checking *alot*
                 # if task_manager.last_task_type != task_config.task:
                 #     load_model_config_dumped["force_reload"] = True
-                await server_manager.load_model(load_model_config)
+                await server_manager.load_model(load_model_config, server_name=server_needed.value)
 
             task_manager.last_task_type = task_config.task
 

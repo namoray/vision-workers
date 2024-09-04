@@ -31,8 +31,8 @@ def _get_image_similarity(
     return score
 
 
-async def _query_endpoint_for_image_response(endpoint: str, data: Dict[str, Any]) -> utility_models.ImageResponseBody:
-    url = f"http://localhost:{AI_SERVER_PORT}" + "/" + endpoint.lstrip("/")
+async def _query_endpoint_for_image_response(endpoint: str, data: Dict[str, Any], server_name: str) -> utility_models.ImageResponseBody:
+    url = f"http://{server_name}:{AI_SERVER_PORT}" + "/" + endpoint.lstrip("/")
     async with httpx.AsyncClient(timeout=60 * 2) as client:
         logger.info(f"Querying : {url}")
         response = await client.post(url, json=data)
@@ -47,7 +47,7 @@ async def check_image_result(result: models.QueryResult, payload: dict, task_con
         logger.error(f"For some reason Everything is none! {image_response_body}")
         return 0
 
-    expected_image_response = await _query_endpoint_for_image_response(task_config.endpoint, payload)
+    expected_image_response = await _query_endpoint_for_image_response(task_config.endpoint, payload, task_config.server_needed.value)
 
     if expected_image_response.clip_embeddings is None:
         logger.error(f"For some reason Everything is none! {expected_image_response}")
