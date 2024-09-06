@@ -61,13 +61,13 @@ docker run --name image-test --rm -v HF:/app/cache -v COMFY:/app/image_server/Co
 ```
 or 
 ```bash
-docker kill image-test || true; docker build -t corcelio/dev:image-test . -f Dockerfile.image_server; docker run  --rm --name image-test -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 corcelio/dev:image-test
+docker kill image-test || true; docker build -t corcelio/dev:image-test . -f Dockerfile.image_server; docker run  -d --rm --name image-test -v COMFY:/app/image_server/ComfyUI -v HF:/app/cache -p 6918:6918 --runtime=nvidia --gpus '"device=1"' -e PORT=6918 -e DEVICE=0 corcelio/dev:image-test; docker logs -f --tail 50 image-test
 ```
 
 **Run LLM image**
 
 ```bash
-docker kill llm-test || true; docker build -t corcelio/dev:llm-test . -f Dockerfile.llm_server; docker run --name llm-test -d --rm  -v HF:/app/cache -p 6918:6919 --gpus '"device=1"' --runtime=nvidia -e PORT=6919 -e MODEL=unsloth/Meta-Llama-3.1-8B-Instruct -e HALF_PRECISION=true  -e TOKENIZER=tau-vision/llama-tokenizer-fix -e CUDA_VISIBLE_DEVICES=0 corcelio/dev:llm-test
+docker kill llm-test || true; docker build -t corcelio/dev:llm-test . -f Dockerfile.llm_server; docker run --name llm-test -d --rm  -v HF:/app/cache -p 6918:6919 --gpus '"device=1"' --runtime=nvidia -e PORT=6919 -e MODEL=leafspark/Reflection-Llama-3.1-70B-GGUF   -e CUDA_VISIBLE_DEVICES=0 corcelio/dev:llm-test; docker logs -f --tail 50 llm-test
 ```
 
 ### Uploading to docker hub
