@@ -3,13 +3,13 @@
 usage() {
     echo "Usage: $0 [-o ORCHESTRATOR_IMAGE] [-l LLM_IMAGE] [-i IMAGE_SERVER_IMAGE]"
     echo "At least one of -o, -l, or -i must be specified."
-    echo "Optional: -d DESTINATION_PREFIX (default: corcelio/vision)"
+    echo "Optional: -d DESTINATION_PREFIX (default: nineteenai/sn19)"
     echo "Optional: -s SUFFIX (default: latest)"
     exit 1
 }
 
 # Default values
-DEST_PREFIX="corcelio/vision"
+DEST_PREFIX="nineteenai/sn19"
 SUFFIX="latest"
 
 while getopts "o:l:i:d:s:" opt; do
@@ -118,3 +118,5 @@ if [ $ORCHESTRATOR_RESULT -ne 0 ] || [ $LLM_RESULT -ne 0 ] || [ $IMAGE_SERVER_RE
 fi
 
 echo "All specified images processed successfully."
+
+

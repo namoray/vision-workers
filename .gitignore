@@ -8,7 +8,6 @@ tmp*
 *.ipynb
 .gcloudignore
 charlie_test.py
-
 dev_testing.py
 temp/
 
@@ -25,6 +24,7 @@ cache.db
 vllm-local/*
 vllm-local
 
+temp.md
 ### OSX ###
 # General
 .DS_Store
