@@ -60,8 +60,12 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
     messages: list[models.MessageResponse] = []
     for response in formatted_response:
-        content = response["choices"][0]["logprobs"]["content"][0]["token"]
-        logprob = response["choices"][0]["logprobs"]["content"][0]["logprob"]
+        try:
+            content = response["choices"][0]["delta"]["content"]
+            logprob = response["choices"][0]["logprobs"]["content"][0]["logprob"]
+        except Exception as e:
+            logger.error(f"Error with logprob: {e}. Response: {response}")
+            return 0
         messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
 
     # If no responses, then not a good response
