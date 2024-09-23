@@ -28,7 +28,7 @@ async def home():
 
 @app.post("/text-to-image")
 @handle_request_errors
-async def text_to_image(request_data: base_model.TextToImagebase) -> base_model.ImageResponseBody:
+async def text_to_image(request_data: base_model.TextToImageBase) -> base_model.ImageResponseBody:
     return await inference.text_to_image_infer(request_data)
 
 

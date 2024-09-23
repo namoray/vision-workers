@@ -4,7 +4,7 @@ from base_model import (
     ModelEnum,
     InpaintingBase,
     UpscaleBase,
-    TextToImagebase,
+    TextToImageBase,
     ImageToImageBase,
     AvatarBase,
     OutpaintingBase,
@@ -71,7 +71,7 @@ class PayloadModifier:
         payload["Sampler"]["inputs"]["noise_seed"] = seed
         return payload
 
-    def modify_text_to_image(self, input_data: TextToImagebase) -> Dict[str, Any]:
+    def modify_text_to_image(self, input_data: TextToImageBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads[f"{input_data.model}"])
 
         positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt

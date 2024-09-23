@@ -2,11 +2,15 @@
 set -e
 
 # Default image prefix
-IMAGE_PREFIX="corcel"
+IMAGE_PREFIX="nineteenai"
+
+REPOSITORY="cicd"
+
 
 # Check for --nineteen flag
 if [[ "$*" == *"--nineteen"* ]]; then
     IMAGE_PREFIX="nineteenai"
+
 fi
 
 disk_usage=$(df -h --output=pcent / | tail -n 1 | tr -d ' %')

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Example
+# ./update-docker-images.sh -o nineteenai/cicd:orchestrator-5.0.0 -i nineteenai/cicd:orchestrator-5.0.0  -l nineteenai/cicd:orchestrator-5.0.0
+
 usage() {
     echo "Usage: $0 [-o ORCHESTRATOR_IMAGE] [-l LLM_IMAGE] [-i IMAGE_SERVER_IMAGE]"
     echo "At least one of -o, -l, or -i must be specified."

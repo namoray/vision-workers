@@ -11,7 +11,7 @@ class ModelEnum(str, Enum):
     FLUX_SCHNELL = "flux-schnell"
 
 
-class TextToImagebase(BaseModel):
+class TextToImageBase(BaseModel):
     prompt: str = Field(..., description="The prompt to generate the image")
     negative_prompt: str = Field(default="", description="The negative prompt to generate the image")
     steps: int = Field(
