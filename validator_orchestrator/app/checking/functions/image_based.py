@@ -23,7 +23,7 @@ def _get_image_similarity(
     probability_same_image_xg = images_are_same_classifier.predict_proba([hash_distances])[0][1]
 
     # MODEL has a very low threshold
-    score = probability_same_image_xg * 0.4 + (clip_embedding_similiarity**2) * 0.6
+    score = float(probability_same_image_xg) * 0.4 + (clip_embedding_similiarity**2) * 0.6
     if score > 0.97:
         return 1
 
