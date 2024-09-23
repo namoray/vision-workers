@@ -1,32 +1,33 @@
 from typing import List
 import base_model
-import constants as cst
 import utils.api_gate as api_gate
 from utils import base64_utils
 from payload import PayloadModifier
 from clip_embeddings.clip_manager import ClipEmbeddingsProcessor
 import torch
 from utils import misc
-import os
 import clip
+from loguru import logger
 
 
 payload_modifier = PayloadModifier()
 clip_emb_processor = ClipEmbeddingsProcessor()
 
 
-async def txt2img_infer(
-    infer_props: base_model.Txt2ImgBase,
+async def text_to_image_infer(
+    infer_props: base_model.TextToImageBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_txt2img(infer_props)
+    logger.info(f"Text to image for model: {infer_props.model}")
+    payload = payload_modifier.modify_text_to_image(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 
 
-async def img2img_infer(
-    infer_props: base_model.Img2ImgBase,
+async def image_to_image_infer(
+    infer_props: base_model.ImageToImageBase,
 ) -> base_model.ImageResponseBody:
-    payload = payload_modifier.modify_img2img(infer_props)
+    logger.info(f"Image to image for model: {infer_props.model}")
+    payload = payload_modifier.modify_image_to_image(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 
@@ -68,9 +69,7 @@ async def get_clip_embeddings(
 ) -> List[List[float]]:
     clip_model, clip_processor = clip_emb_processor.get_clip_resources()
     clip_device = clip_emb_processor.clip_device
-    images = [
-        base64_utils.base64_to_image(img_b64) for img_b64 in infer_props.image_b64s
-    ]
+    images = [base64_utils.base64_to_image(img_b64) for img_b64 in infer_props.image_b64s]
     images = [clip_processor(image) for image in images]
     images_tensor = torch.stack(images).to(clip_device)
 

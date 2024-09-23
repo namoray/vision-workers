@@ -48,10 +48,10 @@
       "formatted_response": [{
         "text": "logprob", "logprob": 0
       }],
-      "axon_uid": 6,
+      "node_id": 6,
       "response_time": 2.398472309112549,
       "error_message": null,
-      "failed_axon_uids": []
+      "failed_node_ids": []
     },
     "task": "chat-llama-3-1-8b"
   }

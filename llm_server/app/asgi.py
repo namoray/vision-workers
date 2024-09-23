@@ -56,12 +56,8 @@ async def lifespan(app: fastapi.FastAPI):
 
     half_precision = os.getenv("HALF_PRECISION", True)
     revision = os.getenv("REVISION", None)
-    gpu_memory_utilization = os.getenv("GPU_MEMORY_UTILIZATION", None)
-    max_model_len = os.getenv("MAX_MODEL_LEN", None)
-    gpu_memory_utilization = (
-        float(gpu_memory_utilization) if gpu_memory_utilization is not None else None
-    )
-    max_model_len = int(max_model_len) if max_model_len is not None else None
+    gpu_memory_utilization = float(os.getenv("GPU_MEMORY_UTILIZATION", 0.75))
+    max_model_len = int(os.getenv("MAX_MODEL_LEN", 16_000))
 
     engine_state = state.EngineState()
     if initial_model is not None:
@@ -75,7 +71,7 @@ async def lifespan(app: fastapi.FastAPI):
             max_model_len,
         )
 
-    app.state.engine_state = engine_state
+    app.state.model_state = engine_state
     yield
 
 

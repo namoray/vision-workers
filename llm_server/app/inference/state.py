@@ -53,11 +53,7 @@ class EngineState:
         gpu_memory_utilization: float,
         max_model_len: int,
     ) -> None:
-        if (
-            self.model_loaded
-            and not force_reload
-            and self.current_model == model_to_load
-        ):
+        if self.model_loaded and not force_reload and self.current_model == model_to_load:
             logging.info(f"Model {model_to_load} already loaded")
             return
 
@@ -130,9 +126,7 @@ class EngineState:
                     async for chunk in completions.complete_vllm(llm_engine, request):
                         yield chunk
 
-                return StreamingResponse(
-                    stream_response(), media_type="application/json"
-                )
+                return StreamingResponse(stream_response(), media_type="application/json")
             except Exception as e:
                 logging.error(f"Error during text generation: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
@@ -151,9 +145,7 @@ class EngineState:
                 )
             except OSError as e:
                 if e.errno == errno.ENOSPC:
-                    logging.info(
-                        "OSError was thrown, clearing disk before loading model..."
-                    )
+                    logging.info("OSError was thrown, clearing disk before loading model...")
                     self.clean_cache_hf()
                     self.llm_engine = await engines.get_llm_engine(
                         model_name,
@@ -176,9 +168,7 @@ class EngineState:
 
     async def forward_request(self, request_info: models.RequestInfo):
         async with httpx.AsyncClient() as client:
-            async with client.stream(
-                "POST", "http://localhost:6910/generate", json=request_info.dict()
-            ) as response:
+            async with client.stream("POST", "http://localhost:6910/generate", json=request_info.dict()) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
                     if line:

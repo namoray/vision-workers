@@ -1,11 +1,11 @@
 import json
 import constants as cst
 from base_model import (
-    EngineEnum,
+    ModelEnum,
     InpaintingBase,
     UpscaleBase,
-    Txt2ImgBase,
-    Img2ImgBase,
+    TextToImageBase,
+    ImageToImageBase,
     AvatarBase,
     OutpaintingBase,
 )
@@ -15,22 +15,6 @@ import os
 from loguru import logger
 import copy
 import random
-
-
-def _extract_positive_and_negative_prompts(
-    text_prompts: List[Dict[str, Any]],
-) -> Tuple[str, str]:
-    positive_prompt = ""
-    negative_prompt = ""
-
-    for prompt in text_prompts:
-        weight = prompt.get("weight", None)
-        if weight is None or weight >= 0:
-            positive_prompt += " " + prompt["text"]
-        else:
-            negative_prompt += " " + prompt["text"]
-
-    return positive_prompt.strip(), negative_prompt.strip()
 
 
 class PayloadModifier:
@@ -59,9 +43,7 @@ class PayloadModifier:
         payload["Sampler"]["inputs"]["steps"] = input_data.steps
         payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
 
-        positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
-            input_data.text_prompts
-        )
+        positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
 
         payload["Prompt"]["inputs"]["text"] = positive_prompt
         payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
@@ -76,16 +58,12 @@ class PayloadModifier:
         init_img = base64_to_image(input_data.init_image)
         init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
 
-        positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
-            input_data.text_prompts
-        )
+        positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
         payload["Prompt"]["inputs"]["text"] = positive_prompt
         payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
 
         for position in input_data.pad_values:
-            payload["Outpaint_pad"]["inputs"][position] = input_data.pad_values[
-                position
-            ]
+            payload["Outpaint_pad"]["inputs"][position] = input_data.pad_values[position]
 
         seed = input_data.seed
         if seed == 0:
@@ -93,12 +71,10 @@ class PayloadModifier:
         payload["Sampler"]["inputs"]["noise_seed"] = seed
         return payload
 
-    def modify_txt2img(self, input_data: Txt2ImgBase) -> Dict[str, Any]:
-        payload = copy.deepcopy(self._payloads[f"txt2img_{input_data.engine}"])
+    def modify_text_to_image(self, input_data: TextToImageBase) -> Dict[str, Any]:
+        payload = copy.deepcopy(self._payloads[f"{input_data.model}"])
 
-        positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
-            input_data.text_prompts
-        )
+        positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
         payload["Prompt"]["inputs"]["text"] = positive_prompt
         payload["Sampler"]["inputs"]["steps"] = input_data.steps
         payload["Latent"]["inputs"]["width"] = input_data.width
@@ -106,38 +82,37 @@ class PayloadModifier:
         seed = input_data.seed
         if seed == 0:
             seed = random.randint(1, 2**16)
-        if input_data.engine not in [EngineEnum.FLUX_SCHNELL.value]:
+        if "flux" in input_data.model:
+            payload["Seed"]["inputs"]["noise_seed"] = seed
+            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
+        else:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
-        else:
-            payload["Seed"]["inputs"]["noise_seed"] = seed
-            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
 
         return payload
 
-    def modify_img2img(self, input_data: Img2ImgBase) -> Dict[str, Any]:
-        payload = copy.deepcopy(self._payloads[f"img2img_{input_data.engine}"])
+    def modify_image_to_image(self, input_data: ImageToImageBase) -> Dict[str, Any]:
+        payload = copy.deepcopy(self._payloads[f"{input_data.model}"])
         init_img = base64_to_image(input_data.init_image)
         init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
 
-        positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
-            input_data.text_prompts
-        )
+        positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
         payload["Prompt"]["inputs"]["text"] = positive_prompt
         payload["Sampler"]["inputs"]["steps"] = input_data.steps
         payload["Sampler"]["inputs"]["denoise"] = 1 - input_data.image_strength
         seed = input_data.seed
         if seed == 0:
             seed = random.randint(1, 2**16)
-        if input_data.engine not in [EngineEnum.FLUX_SCHNELL.value]:
+        if "flux" in input_data.model:
+            payload["Seed"]["inputs"]["noise_seed"] = seed
+            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
+        else:
             payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
             payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
             payload["Sampler"]["inputs"]["seed"] = seed
-        else:
-            payload["Seed"]["inputs"]["noise_seed"] = seed
-            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
 
+        logger.debug(f"payload: {payload}")
         return payload
 
     def modify_upscale(self, input_data: UpscaleBase) -> Dict[str, Any]:
@@ -152,9 +127,7 @@ class PayloadModifier:
         init_img = base64_to_image(input_data.init_image)
         init_img.save(f"{cst.COMFY_INPUT_PATH}init.png")
 
-        positive_prompt, negative_prompt = _extract_positive_and_negative_prompts(
-            input_data.text_prompts
-        )
+        positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
         payload["Prompt"]["inputs"]["text"] += positive_prompt
         payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
 

@@ -24,6 +24,7 @@ cache.db
 vllm-local/*
 vllm-local
 
+temp.md
 ### OSX ###
 # General
 .DS_Store
@@ -229,3 +230,8 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+diagonalge_test.py
+chris_test.py
+namoray_test.py
+test.md

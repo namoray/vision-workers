@@ -20,21 +20,22 @@ def handle_request_errors(func: Callable):
 
     return wrapper
 
+
 @app.get("/")
 async def home():
     return PlainTextResponse("Image!")
 
 
-@app.post("/txt2img")
+@app.post("/text-to-image")
 @handle_request_errors
-async def txt2img(request_data: base_model.Txt2ImgBase) -> base_model.ImageResponseBody:
-    return await inference.txt2img_infer(request_data)
+async def text_to_image(request_data: base_model.TextToImageBase) -> base_model.ImageResponseBody:
+    return await inference.text_to_image_infer(request_data)
 
 
-@app.post("/img2img")
-@handle_request_errors
-async def img2img(request_data: base_model.Img2ImgBase) -> base_model.ImageResponseBody:
-    return await inference.img2img_infer(request_data)
+# @handle_request_errors
+@app.post("/image-to-image")
+async def image_to_image(request_data: base_model.ImageToImageBase) -> base_model.ImageResponseBody:
+    return await inference.image_to_image_infer(request_data)
 
 
 @app.post("/upscale")

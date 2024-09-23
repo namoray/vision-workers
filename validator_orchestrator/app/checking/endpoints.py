@@ -2,12 +2,11 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from typing import Dict
 from uuid import uuid4
 import os
-from app import models
+from app.core import models
 from app.checking import scoring
 from app import server_management
-from app.settings import task_configs
 from fastapi import Depends
-from app import dependencies
+from app.core import dependencies
 from loguru import logger
 import traceback
 from datetime import datetime
@@ -28,13 +27,11 @@ async def root() -> Dict[str, str]:
     return {"message": "Hello World"}
 
 
-@router.post("/check-result", response_model=models.CheckResultResponse)
+@router.post("/check-result")
 async def check_result(
     request: models.CheckResultsRequest,
     background_tasks: BackgroundTasks,
-    server_manager: server_management.ServerManager = Depends(
-        dependencies.get_server_manager
-    ),
+    server_manager: server_management.ServerManager = Depends(dependencies.get_server_manager),
 ) -> models.CheckResultResponse:
     if task_manager.current_task_id is not None:
         return models.CheckResultResponse(
@@ -46,9 +43,7 @@ async def check_result(
     task_manager.current_task_id = task_id
     task_manager.task_status[task_id] = models.TaskStatus.Processing
     background_tasks.add_task(process_check_result, task_id, request, server_manager)
-    return models.CheckResultResponse(
-        task_id=task_id, status=models.TaskStatus.Processing
-    )
+    return models.CheckResultResponse(task_id=task_id, status=models.TaskStatus.Processing)
 
 
 async def process_check_result(
@@ -59,28 +54,24 @@ async def process_check_result(
     async with global_async_lock:
         try:
             logger.info("Checking a result!... 🫡")
-            task_config = task_configs.tasks[request.task]
+            task_config: models.OrchestratorServerConfig = request.server_config
             server_needed = task_config.server_needed
             await server_manager.start_server(server_needed)
 
             load_model_config = task_config.load_model_config
 
             if load_model_config is not None:
-                load_model_config_dumped = task_config.load_model_config.model_dump()
-                if task_manager.last_task_type != request.task:
-                    load_model_config_dumped["force_reload"] = True
-                await server_manager.load_model(load_model_config_dumped)
+                # TODO: Why is this needed? Slows down checking *alot*
+                # if task_manager.last_task_type != task_config.task:
+                #     load_model_config_dumped["force_reload"] = True
+                await server_manager.load_model(load_model_config, server_name=server_needed.value)
 
-            task_manager.last_task_type = request.task
-
-            task_config.endpoint = task_config.endpoint.replace(
-                "localhost", os.getenv("CURRENT_SERVER_NAME", None)
-            )
+            task_manager.last_task_type = task_config.task
 
             result = await scoring.score_results(
                 result=request.result,
                 task_config=task_config,
-                synapse=request.synapse,
+                payload=request.payload,
             )
 
             task_manager.task_status[task_id] = models.TaskStatus.Success
@@ -102,26 +93,18 @@ async def process_check_result(
 
 @router.get("/check-task/{task_id}", response_model=models.CheckTaskResponse)
 async def check_task(task_id: str) -> models.CheckTaskResponse:
-    if (
-        task_id not in task_manager.task_status
-        and task_id not in task_manager.task_results
-    ):
-        raise HTTPException(
-            status_code=404, detail="Task not found (or Task result got expired)"
-        )
+    if task_id not in task_manager.task_status and task_id not in task_manager.task_results:
+        raise HTTPException(status_code=404, detail="Task not found (or Task result got expired)")
 
     if task_manager.task_is_processing(task_id):
-        return models.CheckTaskResponse(
-            task_id=task_id, status=task_manager.task_status[task_id], result=None
-        )
+        return models.CheckTaskResponse(task_id=task_id, status=task_manager.task_status[task_id], result=None)
     else:
         status, result = task_manager.clear_and_return_task_status_and_result(task_id)
         if result:
-            return models.CheckTaskResponse(
-                task_id=task_id, result=result, status=status
-            )
+            return models.CheckTaskResponse(task_id=task_id, result=result, status=status)
 
     raise HTTPException(status_code=500, detail="Task retrieval failed... how?")
+
 
 @router.get("/all-task-status")
 async def task_statuses() -> models.AllTaskStatusResponse:

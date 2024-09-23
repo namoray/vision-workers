@@ -1,7 +1,7 @@
 #!/bin/bash
-ORCHESTRATOR_IMAGE="corcelio/vision:orchestrator-latest"
-LLM_IMAGE="corcelio/vision:llm_server-latest"
-IMAGE_SERVER_IMAGE="corcelio/vision:image_server-latest"
+ORCHESTRATOR_IMAGE="nineteenai/sn19:orchestrator-latest"
+LLM_IMAGE="nineteenai/sn19:llm_server-latest"
+IMAGE_SERVER_IMAGE="nineteenai/sn19:image_server-latest"
 PORT=6920
 REFRESH_LOCAL_IMAGES=1
 
