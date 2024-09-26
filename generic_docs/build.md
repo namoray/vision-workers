@@ -56,6 +56,12 @@ docker build -t corcelio/dev:image-test . -f Dockerfile.image_server
 ./launch_orchestrator.sh --orchestrator-image corcelio/dev:orch-test --llm-image corcelio/dev:llm-test --image-server-image corcelio/dev:image-test --dont-refresh-local-images
 ```
 
+** Full command **
+```bash
+docker build -t corcelio/dev:orch-test . -f Dockerfile.orchestrator && docker build -t corcelio/dev:llm-test . -f Dockerfile.llm_server && docker build -t corcelio/dev:image-test . -f Dockerfile.image_server && ./launch_orchestrator.sh --orchestrator-image corcelio/dev:orch-test --llm-image corcelio/dev:llm-test --image-server-image corcelio/dev:image-test --dont-refresh-local-images && docker logs --tail 50 -f orchestrator
+```
+
+
 ```bash
 docker run --name image-test --rm -v HF:/app/cache -v COMFY:/app/image_server/ComfyUI -p 6918:6919 --runtime=nvidia --gpus=all -e PORT=6919 -e DEVICE=0  corcelio/dev:image-test
 ```

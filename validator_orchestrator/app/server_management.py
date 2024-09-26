@@ -5,7 +5,7 @@ import httpx
 from typing import Dict, Any
 import asyncio
 from loguru import logger
-from app.Workers import worker_config
+from app.config import checking_server_configs, get_checking_server_config
 from app.core.models import ServerType
 from app.core.constants import AI_SERVER_PORT
 
@@ -25,8 +25,7 @@ class ServerManager:
 
     def __init__(self):
         self.server_process = None
-        self.servers = {worker_config.name: worker_config for worker_config in worker_config.workers}
-        self.running_servers = {worker_config.name: False for worker_config in worker_config.workers}
+        self.running_servers = {checking_server_config.name: False for checking_server_config in checking_server_configs}
 
     def _kill_process_on_port(self, port):
         """
@@ -103,36 +102,36 @@ class ServerManager:
         """
         Start a server with the given name.
         """
-        server_name = server_type.value
-        if server_name not in self.servers:
-            logger.error(f"Server {server_name} not found in {list(self.servers.keys())}")
-            return
-        server_config = self.servers[server_name]
+        server_config = get_checking_server_config(server_type)
 
-        logger.info(f"Starting server: {server_name}. First checking if anything is running on 6919...")
-        server_is_up, response_content = await self.is_server_healthy(
+
+        if server_config is None:
+            logger.error(f"Server {server_type.value} not found in the server config")
+            return
+
+        logger.info(f"Starting server: {server_config.name}. First checking if anything is running on {server_config.port}...")
+        some_server_is_online, response_content = await self.is_server_healthy(
             port=server_config.port,
             sleep_time=1,
             total_attempts=3,
-            server_name=server_name,
+            server_name=server_config.name,
         )
-        if response_content == "LLM":
-            self.running_servers[ServerType.LLM.value] = True
-        elif response_content is not None:
-            self.running_servers[ServerType.IMAGE.value] = True
+        # LLM server returns "LLM" in the response, Image returns an empty string but still a 200...
+        self.running_servers[server_config.name] = some_server_is_online
 
-        if self.running_servers.get(server_name, False) and server_is_up:
+
+        desired_server_is_running = self.running_servers.get(server_config.name, False)
+        if some_server_is_online and not desired_server_is_running:
             # Check no other server is running on the same port
-            for server, is_running in self.running_servers.items():
-                if is_running and server != server_name:
-                    logger.info(f"The server {server} is running on the same port as {server_name}. Stopping it...")
-                    return
-            logger.info(f"Running servers: {self.running_servers}. Killing and restarting {server_name}")
-        else:
-            logger.info(f"Running servers: {self.running_servers}. Killing and restarting {server_name}")
-
-        self._kill_process_on_port(server_config.port)
-        subprocess.Popen(f"docker rm -f {server_config.name}", shell=True).wait()
+            logger.info(f"Running servers: {self.running_servers}. Killing and restarting {server_config.name}")
+            self._kill_process_on_port(server_config.port)
+            subprocess.Popen(f"docker rm -f {server_config.name}", shell=True).wait()
+            for server in self.running_servers:
+                self.running_servers[server] = False
+        elif some_server_is_online and desired_server_is_running:
+            logger.info(f"Running servers: {self.running_servers}. This is correct, so doing nothing...")
+            return
+        
         sleep(2)
 
         command = (
@@ -150,13 +149,12 @@ class ServerManager:
 
         server_is_up = await self.is_server_healthy(
             server_config.port,
-            server_name=server_name,
+            server_name=server_config.name,
         )
         if not server_is_up:
-            raise Exception(f"Timeout when starting server {server_name}")
+            raise Exception(f"Timeout when starting server {server_config.name}")
 
-        os.environ["CURRENT_SERVER_NAME"] = server_config.name
-        self.running_servers[server_name] = True
+        self.running_servers[server_config.name] = True
 
     async def stop_server(self):
         """
