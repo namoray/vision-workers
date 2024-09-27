@@ -6,10 +6,10 @@ from pydantic import BaseModel
 class ChatModels(str, enum.Enum):
     """Model is used for the chat"""
 
-    mixtral = "mixtral-8x7b"
-    llama_3 = "llama-3"
-    llama_31_8b = "llama-3-1-8b"
-    llama_31_70b = "llama-3-1-70b"
+    llama_31_8b = "chat-llama-3-1-8b"
+    llama_31_70b = "chat-llama-3-1-70b"
+    chat_llama_32_3b = "chat-llama-3-2-3b"
+    chat_llama_32_1b = "chat-llama-3-2-1b"
 
 
 class Role(str, enum.Enum):
