@@ -110,26 +110,26 @@ class ServerManager:
             return
 
         logger.info(f"Starting server: {server_config.name}. First checking if anything is running on {server_config.port}...")
-        some_server_is_online, response_content = await self.is_server_healthy(
+        desired_server_is_online, response_content = await self.is_server_healthy(
             port=server_config.port,
             sleep_time=1,
             total_attempts=3,
             server_name=server_config.name,
         )
-        # LLM server returns "LLM" in the response, Image returns an empty string but still a 200...
-        self.running_servers[server_config.name] = some_server_is_online
+        # is_server_healthy uses the server name. So if we get a 200, it was from the server we want to start, else the server
+        # we want is not running
+        self.running_servers[server_config.name] = desired_server_is_online
 
+        logger.debug(f"Desired server: {server_config.name}. Is running: {desired_server_is_online}.")
 
-        desired_server_is_running = self.running_servers.get(server_config.name, False)
-        if some_server_is_online and not desired_server_is_running:
+        if not desired_server_is_online:
             # Check no other server is running on the same port
-            logger.debug(f"Desired server: {server_config.name}. Is running: {desired_server_is_running}.")
-            logger.info(f"Running servers: {self.running_servers}. Killing and restarting {server_config.name}")
+            logger.info(f"Running servers: {self.running_servers}. Killing anything on port {server_config.port}...")
             self._kill_process_on_port(server_config.port)
             subprocess.Popen(f"docker rm -f {server_config.name}", shell=True).wait()
             for server in self.running_servers:
                 self.running_servers[server] = False
-        elif some_server_is_online and desired_server_is_running:
+        else:
             logger.info(f"Running servers: {self.running_servers}. This is correct, so doing nothing...")
             return
         
