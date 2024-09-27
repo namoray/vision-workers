@@ -53,9 +53,11 @@ async def process_check_result(
 ):
     async with global_async_lock:
         try:
-            logger.info("Checking a result!... 🫡")
+            logger.info("Checking a result for server: !... 🫡")
             task_config: models.OrchestratorServerConfig = request.server_config
+            logger.debug(f"Config: {task_config}")
             server_needed = task_config.server_needed
+            logger.info(f"Server needed: {server_needed}")
             await server_manager.start_server(server_needed)
 
             load_model_config = task_config.load_model_config
