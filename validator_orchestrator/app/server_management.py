@@ -123,6 +123,7 @@ class ServerManager:
         desired_server_is_running = self.running_servers.get(server_config.name, False)
         if some_server_is_online and not desired_server_is_running:
             # Check no other server is running on the same port
+            logger.debug(f"Desired server: {server_config.name}. Is running: {desired_server_is_running}.")
             logger.info(f"Running servers: {self.running_servers}. Killing and restarting {server_config.name}")
             self._kill_process_on_port(server_config.port)
             subprocess.Popen(f"docker rm -f {server_config.name}", shell=True).wait()
