@@ -14,6 +14,7 @@ async def _get_vllm_engine(
     half_precision: bool,
     gpu_memory_utilization: float = 0.8,
     max_model_len: int = None,
+    tensor_parallel_size: int = 1
 ) -> models.LLMEngine:
     if half_precision:
         dtype = "float16"
@@ -31,6 +32,7 @@ async def _get_vllm_engine(
         gpu_memory_utilization=gpu_memory_utilization,
         max_model_len=max_model_len,
         trust_remote_code=True,
+        tensor_parallel_size=tensor_parallel_size
     )
     model_instance = AsyncLLMEngine.from_engine_args(engine_args)
 
@@ -60,6 +62,7 @@ async def get_llm_engine(
     half_precision: bool = True,
     gpu_memory_utilization: float = 0.8,
     max_model_len: int = None,
+    tensor_parallel_size: int = 1
 ) -> models.LLMEngine:
     # if "llava" not in model_name:
     # try:
@@ -73,4 +76,5 @@ async def get_llm_engine(
         half_precision,
         gpu_memory_utilization,
         max_model_len,
+        tensor_parallel_size,
     )

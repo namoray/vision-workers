@@ -58,6 +58,7 @@ async def lifespan(app: fastapi.FastAPI):
     revision = os.getenv("REVISION", None)
     gpu_memory_utilization = float(os.getenv("GPU_MEMORY_UTILIZATION", 0.75))
     max_model_len = int(os.getenv("MAX_MODEL_LEN", 16_000))
+    tensor_parallel_size = int(os.getenv("TENSOR_PARALLEL_SIZE", 1))
 
     engine_state = state.EngineState()
     if initial_model is not None:
@@ -69,6 +70,7 @@ async def lifespan(app: fastapi.FastAPI):
             True,
             gpu_memory_utilization,
             max_model_len,
+            tensor_parallel_size
         )
 
     app.state.model_state = engine_state
