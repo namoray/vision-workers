@@ -18,10 +18,12 @@ async def load_model(
     gpu_memory_utilization = request.gpu_memory_utilization
     max_model_len = request.max_model_len
     tensor_parallel_size = request.tensor_parallel_size
+    num_scheduler_steps = request.num_scheduler_steps
 
     await EngineState.load_model_and_tokenizer(
         model, revision, tokenizer, request.half_precision, 
-        force_reload, gpu_memory_utilization, max_model_len, tensor_parallel_size
+        force_reload, gpu_memory_utilization, max_model_len, 
+        tensor_parallel_size, num_scheduler_steps
     )
     return schemas.LoadModelResponse(success=True)
 
