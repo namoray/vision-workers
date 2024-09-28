@@ -2,7 +2,7 @@
 set -e
 
 # Default image prefix
-IMAGE_PREFIX="nineteenai"
+IMAGE_PREFIX="corcelio"
 
 REPOSITORY="cicd"
 
