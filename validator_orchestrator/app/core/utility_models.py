@@ -3,15 +3,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class ChatModels(str, enum.Enum):
-    """Model is used for the chat"""
-
-    llama_31_8b = "chat-llama-3-1-8b"
-    llama_31_70b = "chat-llama-3-1-70b"
-    chat_llama_32_3b = "chat-llama-3-2-3b"
-    chat_llama_32_1b = "chat-llama-3-2-1b"
-
-
 class Role(str, enum.Enum):
     """Message is sent by which role?"""
 
