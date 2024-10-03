@@ -10,12 +10,15 @@ from app.core.constants import AI_SERVER_PORT
 
 ########### TEXT ###########
 
+BOTTOM_TEXT_THRESHOLD = 0.125
+TOP_TEXT_THRESHOLD = 0.25
+
 
 def _score_average_distance(average_distance: float) -> float:
-    if average_distance <= 0.06:
+    if average_distance <= BOTTOM_TEXT_THRESHOLD:
         return 1
-    elif average_distance <= 0.12:
-        return 1 - 0.5 * (average_distance - 0.06) / 0.06
+    elif average_distance <= TOP_TEXT_THRESHOLD:
+        return 1 - 0.5 * (average_distance - BOTTOM_TEXT_THRESHOLD) / (TOP_TEXT_THRESHOLD - BOTTOM_TEXT_THRESHOLD)
     else:
         return 0.0
 

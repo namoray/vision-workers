@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Example
-# ./update-docker-images.sh -o nineteenai/cicd:orchestrator-5.1.0 -i nineteenai/cicd:image_server-5.1.0  -l nineteenai/cicd:llm_server-5.1.0
+# ./update-docker-images.sh -o nineteenai/cicd:orchestrator-5.2.1 -i nineteenai/cicd:image_server-5.2.1  -l nineteenai/cicd:llm_server-5.2.1 -s 5.2.1
 
 usage() {
     echo "Usage: $0 [-o ORCHESTRATOR_IMAGE] [-l LLM_IMAGE] [-i IMAGE_SERVER_IMAGE]"
