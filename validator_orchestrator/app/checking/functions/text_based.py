@@ -67,9 +67,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             content = response["choices"][0]["delta"]["content"]
             logprobs = response["choices"][0]["logprobs"]
             # Below is a fix for the first message not having logprobs
-            if content == "":
+            if content == "" and logprobs is None:
                 role = response["choices"][0]["delta"]["role"]
-                if role == "assistant" and logprobs is None:
+                if role == "assistant":
                     continue
             logprob = logprobs["content"][0]["logprob"]
             messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
