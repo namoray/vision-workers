@@ -75,7 +75,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
         except Exception as e:
             logger.error(f"Error with logprob: {e}. Response: {response}")
-            continue
+            return 0 # Important to return 0 as this is a critical error
 
     # If no responses, then not a good response
     if len(messages) == 0:
