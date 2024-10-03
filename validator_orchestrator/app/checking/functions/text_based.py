@@ -65,11 +65,17 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     for response in formatted_response:
         try:
             content = response["choices"][0]["delta"]["content"]
-            logprob = response["choices"][0]["logprobs"]["content"][0]["logprob"]
+            logprobs = response["choices"][0]["logprobs"]
+            # Below is a fix for the first message not having logprobs
+            if content == "" and logprobs is None:
+                role = response["choices"][0]["delta"]["role"]
+                if role == "assistant":
+                    continue
+            logprob = logprobs["content"][0]["logprob"]
+            messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
         except Exception as e:
             logger.error(f"Error with logprob: {e}. Response: {response}")
-            return 0
-        messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
+            return 0 # Important to return 0 as this is a critical error
 
     # If no responses, then not a good response
     if len(messages) == 0:
