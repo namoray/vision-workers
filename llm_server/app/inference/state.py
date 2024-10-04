@@ -52,6 +52,8 @@ class EngineState:
         force_reload: bool,
         gpu_memory_utilization: float,
         max_model_len: int,
+        tensor_parallel_size: int,
+        num_scheduler_steps: int
     ) -> None:
         if self.model_loaded and not force_reload and self.current_model == model_to_load:
             logging.info(f"Model {model_to_load} already loaded")
@@ -71,6 +73,8 @@ class EngineState:
                 self.model_ready,
                 gpu_memory_utilization,
                 max_model_len,
+                tensor_parallel_size,
+                num_scheduler_steps
             ),
         )
         self.model_process.start()
@@ -111,6 +115,8 @@ class EngineState:
         model_ready: multiprocessing.Event,
         gpu_memory_utilization: float,
         max_model_len: int,
+        tensor_parallel_size: int,
+        num_scheduler_steps: int
     ) -> None:
         logging.add(lambda msg: None, filter=CancelledErrorFilter())
         app = FastAPI()
@@ -142,6 +148,8 @@ class EngineState:
                     half_precision,
                     gpu_memory_utilization,
                     max_model_len,
+                    tensor_parallel_size,
+                    num_scheduler_steps
                 )
             except OSError as e:
                 if e.errno == errno.ENOSPC:
@@ -154,6 +162,8 @@ class EngineState:
                         half_precision,
                         gpu_memory_utilization,
                         max_model_len,
+                        tensor_parallel_size,
+                        num_scheduler_steps
                     )
                 else:
                     raise

@@ -15,6 +15,8 @@ class LoadModelRequest(BaseModel):
     force_reload: bool = Field(False)
     gpu_memory_utilization: float = Field(0.8, example="0.85")
     max_model_len: Optional[int] = Field(None, example="8000")
+    tensor_parallel_size: Optional[int] = Field(1, example="1")
+    num_scheduler_steps: Optional[int] = Field(1, example="1")
 
 
 class LoadModelResponse(BaseModel):
