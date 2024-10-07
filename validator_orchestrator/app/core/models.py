@@ -1,14 +1,20 @@
 from __future__ import annotations
-from typing import Dict, List, Optional, Any, Union, Callable, Coroutine
+from typing import Dict, List, Optional, Any, Union, Callable, Coroutine, Literal, Union
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import (
+    BaseModel,
+    Field,
+    field_validator,
+    RootModel,
+    ValidationError,
+)
 from datetime import datetime
 
 AxonScores = Dict[int, float]
 
 
 class QueryResult(BaseModel):
-    formatted_response: dict[str, Any] |  list[dict[str, Any]] | None
+    formatted_response: dict[str, Any] | list[dict[str, Any]] | None
     node_id: Optional[int]
     response_time: Optional[float]
 
@@ -47,7 +53,7 @@ class OrchestratorServerConfig(BaseModel):
                 "max_model_len": 16000,
                 "gpu_utilization": 0.6,
             },
-            None
+            None,
         ]
     )
     checking_function: str = Field(examples=["check_text_result", "check_image_result"])
@@ -61,9 +67,66 @@ class CheckResultsRequest(BaseModel):
     payload: dict
 
 
+class TextContent(BaseModel):
+    c_type: Literal["text"] = Field("text", alias="type")
+    text: str = Field(...)
+
+
+class ImageContent(BaseModel):
+    c_type: Literal["image_url"] = Field("image_url", alias="type")
+    url: str = Field(...)
+
+
+class Content(RootModel[Union[TextContent, ImageContent]]):
+    pass
+
+
 class Message(BaseModel):
     role: str
-    content: str
+    content: Union[str, List[Content]] = Field(...)
+
+    @field_validator("content")
+    def check_content_length(cls, value):
+        if isinstance(value, list) and len(value) > 2:
+            raise ValidationError("The content list cannot contain more than 2 items.")
+        return value
+
+    class Config:
+        use_enum_values = True
+
+
+# Vllm support communication following this rules (OpenAI compatible)
+# Using openai chat completion
+#
+# response = client.chat.completions.create(
+#     messages=[{
+#         "role":
+#         "user",
+#         "content": [
+#             {
+#                 "type": "text",
+#                 "text": "What's in this image?"
+#             },
+#             {
+#                 "type": "image_url",
+#                 "image_url": {
+#                     # Can be any of base64 image or http(s) url
+#                     # "url": f"data:image/jpeg;base64,{image_base64}" base64 image
+#                     "url": f"https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+#                 },
+#             },
+#         ],
+#     }],
+#     model=model,
+#     max_tokens=64,
+# )
+#
+# # The simplest way with no images
+# response = client.chat.completions.create(
+#     messages=[{
+#         "role": "user",
+#         "content": "Simple text message"
+#     }],
 
 
 class MessageResponse(BaseModel):

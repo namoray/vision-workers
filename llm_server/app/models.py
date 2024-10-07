@@ -1,10 +1,16 @@
 from __future__ import annotations
-from typing import Any, Optional, Callable, List
+from typing import Any, Optional, Callable, List, Union, Literal
 import enum
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, TextIteratorStreamer
 from vllm import AsyncLLMEngine
-from pydantic import BaseModel, Field
+from pydantic import (
+    BaseModel,
+    Field,
+    field_validator,
+    RootModel,
+    ValidationError,
+)
 
 
 class ToxicEngine(BaseModel):
@@ -23,9 +29,66 @@ class Role(str, enum.Enum):
     system = "system"
 
 
+class TextContent(BaseModel):
+    c_type: Literal["text"] = Field("text", alias="type")
+    text: str = Field(...)
+
+
+class ImageContent(BaseModel):
+    c_type: Literal["image_url"] = Field("image_url", alias="type")
+    url: str = Field(...)
+
+
+class Content(RootModel[Union[TextContent, ImageContent]]):
+    pass
+
+
 class Message(BaseModel):
-    role: Role = Role.user
-    content: str = "Remind me that I have forgot to set the messages"
+    role: Role
+    content: Union[str, List[Content]] = Field(...)
+
+    @field_validator("content")
+    def check_content_length(cls, value):
+        if isinstance(value, list) and len(value) > 2:
+            raise ValidationError("The content list cannot contain more than 2 items.")
+        return value
+
+    class Config:
+        use_enum_values = True
+
+
+# Vllm support communication following this rules (OpenAI compatible)
+# Using openai chat completion
+#
+# response = client.chat.completions.create(
+#     messages=[{
+#         "role":
+#         "user",
+#         "content": [
+#             {
+#                 "type": "text",
+#                 "text": "What's in this image?"
+#             },
+#             {
+#                 "type": "image_url",
+#                 "image_url": {
+#                     # Can be any of base64 image or http(s) url
+#                     # "url": f"data:image/jpeg;base64,{image_base64}" base64 image
+#                     "url": f"https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+#                 },
+#             },
+#         ],
+#     }],
+#     model=model,
+#     max_tokens=64,
+# )
+#
+# # The simplest way with no images
+# response = client.chat.completions.create(
+#     messages=[{
+#         "role": "user",
+#         "content": "Simple text message"
+#     }],
 
 
 class MessageResponse(BaseModel):
@@ -50,13 +113,17 @@ class RequestInfo(BaseModel):
         ],
         description="List of messages where each message has a 'role' and 'content' key.",
     )
-    seed: int = Field(..., title="Seed", description="Seed for text generation.", example=0)
+    seed: int = Field(
+        ..., title="Seed", description="Seed for text generation.", example=0
+    )
     temperature: float = Field(
         default=0.5,
         title="Temperature",
         description="Temperature for text generation.",
     )
-    max_tokens: int = Field(4096, title="Max Tokens", description="Max tokens for text generation.")
+    max_tokens: int = Field(
+        4096, title="Max Tokens", description="Max tokens for text generation."
+    )
     number_of_logprobs: int = Field(
         default=1,
         title="Logprobs",
