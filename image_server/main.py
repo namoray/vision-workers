@@ -4,6 +4,7 @@ import inference
 import traceback
 from typing import Callable
 from functools import wraps
+from model_manager import model_manager
 from starlette.responses import PlainTextResponse
 
 app = FastAPI()
@@ -26,11 +27,16 @@ async def home():
     return PlainTextResponse("Image!")
 
 
+@app.post("/load_model")
+@handle_request_errors
+async def load_model(request_data: base_model.LoadModelRequest) -> base_model.LoadModelResponse:
+    return await model_manager.download_model(request_data)
+
+
 @app.post("/text-to-image")
 @handle_request_errors
 async def text_to_image(request_data: base_model.TextToImageBase) -> base_model.ImageResponseBody:
     return await inference.text_to_image_infer(request_data)
-
 
 # @handle_request_errors
 @app.post("/image-to-image")

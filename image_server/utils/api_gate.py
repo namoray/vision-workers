@@ -23,9 +23,7 @@ while True:
         ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
         break
     except ConnectionRefusedError:
-        logger.error(
-            "Could not connect to ComfyUI because it is not up yet. Sleeping for 2 seconds before trying again."
-        )
+        logger.error("Could not connect to ComfyUI because it is not up yet. Sleeping for 2 seconds before trying again.")
         time.sleep(2)
 
 

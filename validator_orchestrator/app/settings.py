@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
 class Endpoints(Enum):
     text_to_image = "/text-to-image"
+    text_to_image_dynamic = "/text-to-image-dynamic"
     image_to_image = "/image-to-image"
     avatar = "/avatar"
     inpaint = "/inpaint"

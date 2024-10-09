@@ -74,7 +74,5 @@ class Safety_Checker:
             return True
         with torch.cuda.amp.autocast():
             safety_checker_input = self.safety_feature_extractor(images=image, return_tensors="pt").to(self.device)
-            result, has_nsfw_concepts = self.safety_checker.forward(
-                clip_input=safety_checker_input.pixel_values, images=image
-            )
+            result, has_nsfw_concepts = self.safety_checker.forward(clip_input=safety_checker_input.pixel_values, images=image)
         return bool(has_nsfw_concepts)

@@ -18,7 +18,7 @@ async def text_to_image_infer(
     infer_props: base_model.TextToImageBase,
 ) -> base_model.ImageResponseBody:
     logger.info(f"Text to image for model: {infer_props.model}")
-    payload = payload_modifier.modify_text_to_image(infer_props)
+    payload = await payload_modifier.modify_text_to_image(infer_props)
     image = api_gate.generate(payload)[0]
     return await misc.take_image_and_return_formatted_response_body(image)
 
