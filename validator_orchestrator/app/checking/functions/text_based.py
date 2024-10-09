@@ -14,13 +14,15 @@ BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
 
 
-def _score_average_distance(average_distance: float) -> float:
+def _score_average_distance(average_distance: float, alpha: int = 5) -> float:
+    """Calculate quality score from logprobs average distances.
+    alpha decides how severe we penalize for big distances"""
     if average_distance <= BOTTOM_TEXT_THRESHOLD:
         return 1
     elif average_distance <= TOP_TEXT_THRESHOLD:
         return 1 - 0.5 * (average_distance - BOTTOM_TEXT_THRESHOLD) / (TOP_TEXT_THRESHOLD - BOTTOM_TEXT_THRESHOLD)
     else:
-        return 0.0
+        return 0
 
 
 async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any], server_name: str = "llm_server") -> httpx.Response:
@@ -75,7 +77,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
         except Exception as e:
             logger.error(f"Error with logprob: {e}. Response: {response}")
-            return 0 # Important to return 0 as this is a critical error
+            return 0  # Important to return 0 as this is a critical error
 
     # If no responses, then not a good response
     if len(messages) == 0:

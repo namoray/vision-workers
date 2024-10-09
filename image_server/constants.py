@@ -1,5 +1,6 @@
 DEFAULT_DEVICE = "cuda:0"
 COMFY_INPUT_PATH = "ComfyUI/input/"
+COMFY_CHECKPOINTS_PATH = "ComfyUI/models/checkpoints/"
 WORKFLOWS_DIR = "assets/workflows/"
 WARMUP_WORKFLOWS_DIR = "assets/workflows/warmup"
 SAFETY_CHECKER_REPO_PATH = "Lykon/DreamShaper"
@@ -14,8 +15,8 @@ DEFAULT_CFG = 2
 DEFAULT_STYLE = "Base"
 DEFAULT_NEG_PROMPT = "(lowres, low quality, worst quality:1.2), (text:1.2), (watermark:1.2)"
 DEFAULT_SEED = 0
-DEFAULT_WIDTH = 1280
-DEFAULT_HEIGHT = 1280
+DEFAULT_WIDTH = 1024
+DEFAULT_HEIGHT = 1024
 DEFAULT_IMAGE_STRENGTH = 0.3
 SPECIAL_CONCEPTS = [
     "little girl",

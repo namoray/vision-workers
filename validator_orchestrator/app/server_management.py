@@ -27,6 +27,10 @@ class ServerManager:
         self.server_process = None
         self.running_servers = {checking_server_config.name: False for checking_server_config in checking_server_configs}
 
+    def generate_gpu_string(self, num_gpus: int) -> str:
+        gpu_devices = ','.join(str(i) for i in range(num_gpus))
+        return f'--gpus "device={gpu_devices}" --runtime=nvidia'
+
     def _kill_process_on_port(self, port):
         """
         Stop and remove Docker container running on the given port.
@@ -98,7 +102,7 @@ class ServerManager:
         except httpx.HTTPError:
             raise Exception("Timeout when loading model :(")
 
-    async def start_server(self, server_type: ServerType):
+    async def start_server(self, server_type: ServerType, load_model_config : dict | None ):
         """
         Start a server with the given name.
         """
@@ -133,19 +137,27 @@ class ServerManager:
             logger.info(f"Running servers: {self.running_servers}. This is correct, so doing nothing...")
             return
         
+        docker_run_flags = self.docker_run_flags
+        if load_model_config is not None and "num_gpus" in load_model_config.keys():
+            num_gpus = load_model_config["num_gpus"]
+            docker_run_flags = self.generate_gpu_string(num_gpus)
+
         sleep(2)
 
+        shared_vol_size = os.getenv("SHARED_VOLUME_SIZE", "10g")
+
         command = (
-            f"docker run -d --rm --name {server_config.name} "
+            f"docker run -d --rm --shm-size={shared_vol_size} --name {server_config.name} "
             + " ".join([f"-v {volume}:{mount_path}" for volume, mount_path in server_config.volumes.items()])
-            + f" {self.docker_run_flags} "
+            + f" {docker_run_flags} "
             + f"-p {server_config.port}:{server_config.port} "
             + f"--network {server_config.network} "
             + f"{server_config.docker_image}"
         )
 
         logger.info(f"Starting server: {server_config.name} 🦄")
-
+        logger.debug(f"docker run cmd : {command}")
+        
         self.server_process = subprocess.Popen(command, shell=True)
 
         server_is_up = await self.is_server_healthy(
