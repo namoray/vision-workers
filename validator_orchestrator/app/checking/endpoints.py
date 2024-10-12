@@ -62,7 +62,7 @@ async def process_check_result(
             load_model_config = task_config.load_model_config
             await server_manager.start_server(server_needed, load_model_config)
 
-            if load_model_config is not None:
+            if load_model_config:
                 # TODO: Why is this needed? Slows down checking *alot*
                 # if task_manager.last_task_type != task_config.task:
                 #     load_model_config_dumped["force_reload"] = True
