@@ -28,5 +28,3 @@ if __name__ == "__main__":
 
     write_config_to_file(config, name)
     print(f"Configuration has been written to .{name}.env")
-    if not args.miner:
-        print("Please make sure to keep your database credentials secure.")
