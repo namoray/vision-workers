@@ -9,7 +9,7 @@ def parse_args() -> argparse.Namespace:
 
 def generate_worker_config(dev: bool = False) -> dict[str, Any]:
     config: dict[str, Any] = {}
-    config["PORT"] = input("Enter the port to run the miner server on (default: 6920): ") or "6920"
+    config["PORT"] = input("Enter the port to run the orchestrator server on (default: 6920): ") or "6920"
     return config
 
 
