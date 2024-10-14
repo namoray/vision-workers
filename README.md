@@ -8,6 +8,11 @@ Providing Access to Bittensor with Decentralized Subnet Inference at Scale
 [Bittensor](https://bittensor.com/whitepaper) • [Discord](https://discord.gg/dR865yTPaZ) • [Corcel](https://app.corcel.io/studio)
 </div>
 
+## NOTE:
+PLEASE MAKE ANY PR'S TO THE *PRE-MAIN* BRANCH FIRST.
+
+This way we can build the images before merging to main
+
 ## Introduction
 
 Welcome to sn19 GPU stuff! Follow the below guides to get started
