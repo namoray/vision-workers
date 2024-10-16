@@ -85,6 +85,15 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     if len(messages) == 1:
         indicies_to_check = [0]
+    elif '<|eot_id|>' in messages[-1].content:
+        # Always check first & last
+        indicies_to_check = [0]
+        number_of_additional_indicies_to_check = len(messages) - 2
+        additional_indicies_to_check = random.sample(
+            range(1, len(messages) - 1),
+            number_of_additional_indicies_to_check,
+        )
+        indicies_to_check.extend(additional_indicies_to_check)
     else:
         # Always check first & last
         indicies_to_check = [0, len(messages) - 1]
