@@ -86,7 +86,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     if len(messages) == 1:
         indicies_to_check = [0]
     elif 'max_model_len' in task_config.load_model_config and len(messages) > task_config.load_model_config['max_model_len']: #naive atm, need to calculate input num tokens + output num tokens actually
-        # Always check first & last
+        # Always check first
         indicies_to_check = [0]
         number_of_additional_indicies_to_check = len(messages) - 2
         additional_indicies_to_check = random.sample(
