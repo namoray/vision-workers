@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List
+from typing import AsyncGenerator, List, Any
 import imagehash
 from PIL import Image
 import httpx
@@ -84,3 +84,88 @@ async def fetch_image_as_bytes(url):
     except Exception as e:
         logger.debug(f"Error when fetching image {url}: {e}")
         return False
+
+
+SYSTEM_PROMPT_PREFIX = "Instructions to follow for all following messages: "
+
+
+def missing_system_prompts(tokenizer: Any) -> bool:
+    return "must alternate" in tokenizer.chat_template.lower()
+
+
+def _join_sequential_messages(current_content: str, new_content: str, add_system_instruction: bool = False) -> str:
+    # if there is already content, add a newline before adding the new content
+    # otherwise, just add the new content
+    return f"{current_content}\n{new_content}" if len(current_content) > 0 else new_content
+
+
+def fix_message_structure_for_prompt(tokenizer: Any, messages: List[utility_models.Message]) -> List[utility_models.Message]:
+    """
+    Because the chat_formats in the tokenizer are fixed and don't allow things like system instructions (mistralai),
+    or message ordering like usr -> usr -> assistant we need to fix the message structure before sending it to the model
+    we do this by joining the system prompt to the next user (or a blank user message) for mistral
+    and joining usr -> usr to become usr:concat(usr, usr), ass -> ass to become ass:concat(ass, ass)
+    If there is a system message with mistral we join it with the next usr message so sys -> sys -> usr becomes usr:concat(sys, sys, usr)
+    """
+
+    # Mistral can't handle system prompts. If Mistral is detected, we need to join the system prompt with the next user message
+    if not missing_system_prompts(tokenizer):
+        return messages
+
+    user_message_buffer: str = ""
+    assistant_buffer: str = ""
+    processed_messages: List[str] = []
+
+    def _add_assistant_buffer_to_processed_messages() -> None:
+        nonlocal assistant_buffer
+
+        # Edge case if assistant is the first messsage:
+        if len(processed_messages) == 0:
+            processed_messages.append(utility_models.Message(role=utility_models.Role.user, content=":"))
+
+        if assistant_buffer:
+            processed_messages.append(utility_models.Message(role=utility_models.Role.assistant, content=assistant_buffer))
+            assistant_buffer = ""
+
+    def _add_user_buffer_to_processed_messages() -> None:
+        nonlocal user_message_buffer
+
+        if user_message_buffer:
+            processed_messages.append(utility_models.Message(role=utility_models.Role.user, content=user_message_buffer))
+            user_message_buffer = ""
+
+    last_message_was_assistant: bool = False
+
+    for message in messages:
+        if message.role == utility_models.Role.system:
+            if last_message_was_assistant:
+                _add_assistant_buffer_to_processed_messages()
+
+            if len(user_message_buffer) == 0:
+                user_message_buffer += SYSTEM_PROMPT_PREFIX
+
+            user_message_buffer = _join_sequential_messages(user_message_buffer, message.content)
+            last_message_was_assistant = False
+
+        elif message.role == utility_models.Role.user:
+            if last_message_was_assistant:
+                _add_assistant_buffer_to_processed_messages()
+
+            user_message_buffer = _join_sequential_messages(user_message_buffer, message.content)
+            last_message_was_assistant = False
+
+        elif message.role == utility_models.Role.assistant:
+            if not last_message_was_assistant:
+                _add_user_buffer_to_processed_messages()
+
+            assistant_buffer = _join_sequential_messages(assistant_buffer, message.content)
+
+            last_message_was_assistant = True
+
+    if assistant_buffer:
+        _add_assistant_buffer_to_processed_messages()
+    elif user_message_buffer:
+        _add_user_buffer_to_processed_messages()
+
+    logger.debug(f"Processed messages: {processed_messages}")
+    return processed_messages

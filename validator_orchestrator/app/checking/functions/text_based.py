@@ -6,6 +6,7 @@ import random
 import math
 from loguru import logger
 from app.core.constants import AI_SERVER_PORT
+from app.checking.utils import fix_message_structure_for_prompt
 
 
 ########### TEXT ###########
@@ -79,13 +80,21 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             logger.error(f"Error with logprob: {e}. Response: {response}")
             return 0  # Important to return 0 as this is a critical error
 
+
+    tokenizer = task_config.load_model_config["tokenizer"]
+    messages_dict = [message.model_dump() for message in fix_message_structure_for_prompt(tokenizer, payload["messages"])]
+    input_prompt_tokens = tokenizer.apply_chat_template(conversation=messages_dict, tokenize=True, add_generation_prompt=payload["starting_assistant_message"])
+    num_input_prompt_tokens = len(input_prompt_tokens)
+
+    num_output_prompt_tokens = len(messages) #Also includes the "" content first message from vLLM, assuming that to be included in max_model_len
+
     # If no responses, then not a good response
     if len(messages) == 0:
         return 0
 
     if len(messages) == 1:
         indicies_to_check = [0]
-    elif 'max_model_len' in task_config.load_model_config and len(messages) > task_config.load_model_config['max_model_len']: #naive atm, need to calculate input num tokens + output num tokens actually
+    elif 'max_model_len' in task_config.load_model_config and num_output_prompt_tokens + num_input_prompt_tokens == task_config.load_model_config['max_model_len']: #naive atm, need to calculate input num tokens + output num tokens actually
         # Always check first
         indicies_to_check = [0]
         number_of_additional_indicies_to_check = len(messages) - 2
@@ -103,6 +112,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             number_of_additional_indicies_to_check,
         )
         indicies_to_check.extend(additional_indicies_to_check)
+
+    if num_output_prompt_tokens + num_input_prompt_tokens > task_config.load_model_config['max_model_len']:
+        logger.error(f"Too many tokens: {num_output_prompt_tokens} + {num_input_prompt_tokens} > {task_config.load_model_config['max_model_len']}")
 
     total_distance = 0
     checks = 0
