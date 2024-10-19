@@ -92,7 +92,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         return 0
 
     tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config["tokenizer"])
-    messages_dict = [message for message in fix_message_structure_for_prompt(tokenizer, payload["messages"])]
+    # messages_dict = [message.model_dump() for message in fix_message_structure_for_prompt(tokenizer, payload["messages"])]
+    messages_dict = payload["messages"]
     input_prompt_tokens = tokenizer.apply_chat_template(conversation=messages_dict, tokenize=True, add_generation_prompt=payload["starting_assistant_message"])
     num_input_prompt_tokens = len(input_prompt_tokens)
 
