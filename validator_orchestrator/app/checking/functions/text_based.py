@@ -56,7 +56,7 @@ async def _calculate_distance_for_token(
     validator_log_probs_for_token = {i.decoded: i.logprob for i in validator_checking_response.logprobs}
 
     if token not in validator_log_probs_for_token:
-        return 1.0, ""
+        return 1.0, validator_checking_response.finish_reason
     else:
         distance = abs(math.exp(validator_log_probs_for_token[token]) - math.exp(chat_responses[index].logprob))
 
