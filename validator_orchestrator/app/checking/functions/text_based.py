@@ -99,8 +99,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     input_prompt_tokens = tokenizer.apply_chat_template(conversation=messages_dict, tokenize=True, add_generation_prompt=payload["starting_assistant_message"])
     num_input_prompt_tokens = len(input_prompt_tokens)
 
-    num_output_prompt_tokens = len(messages) - 1 #Also includes the "" content first message from vLLM, assuming that to be included in max_model_len
-
+    num_output_prompt_tokens = len(messages)
 
     # Model tried to output more tokens than are possible? you cannae do that
     try:
