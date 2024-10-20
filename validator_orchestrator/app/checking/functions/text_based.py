@@ -142,7 +142,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     payload["top_k"] = 5
 
     llm_request = models.ChatRequestModel(**payload)
-    llm_request.max_tokens = 1
+    llm_request.max_tokens = 2
 
     for counter, index in enumerate(indicies_to_check):
         if index == 0:
