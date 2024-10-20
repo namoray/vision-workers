@@ -108,7 +108,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     except AssertionError as e:
         logger.error(f"Miner generated more than max model length?!: {e}")
         return 0
-
+    
+    logger.info(f"num_input_prompt_tokens: {num_input_prompt_tokens} ; num_output_prompt_tokens: {num_output_prompt_tokens}")
     if last_response["choices"][0]["finish_reason"] == "length":
         try:
             assert num_input_prompt_tokens + num_output_prompt_tokens == task_config.load_model_config["max_model_len"] or num_output_prompt_tokens == payload["max_tokens"]
