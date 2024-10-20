@@ -142,7 +142,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     payload["top_k"] = 5
 
     llm_request = models.ChatRequestModel(**payload)
-    llm_request.max_tokens = 2
+    llm_request.max_tokens = 1
 
     for counter, index in enumerate(indicies_to_check):
         if index == 0:
@@ -159,6 +159,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
                     }
                 )
             )
+        if counter == len(indicies_to_check) - 1:
+            llm_request.max_tokens = 2
         distance, finish_reason_vali = await _calculate_distance_for_token(task_config, llm_request, messages, index)
 
         # logger.info(f"len(indicies_to_check): {len(indicies_to_check)} counter: {counter}; index: {index}; distance: {distance}; finish_reason_vali: {finish_reason_vali}; finish_reason: {finish_reason}")
