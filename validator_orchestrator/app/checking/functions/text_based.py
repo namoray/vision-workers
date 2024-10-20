@@ -125,7 +125,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     else:
         # Always check first & last
         indicies_to_check = [0]
-        number_of_additional_indicies_to_check = len(messages) - 2
+        number_of_additional_indicies_to_check = 3
         additional_indicies_to_check = random.sample(
             range(1, len(messages) - 1),
             number_of_additional_indicies_to_check,
@@ -144,9 +144,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     llm_request.max_tokens = 1
 
     for counter, index in enumerate(indicies_to_check):
-        if checks >= 5:
-            continue
-
         if index == 0:
             llm_request.starting_assistant_message = True
         else:
