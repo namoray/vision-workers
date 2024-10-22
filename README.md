@@ -43,7 +43,7 @@ Refer to the following guides:
 
 # Conclusion
 
-Please refer to the [Proxy setup](https://github.com/namoray/vision/tree/main/docs) page in order to set up the proxy.
+Please refer to the [Proxy setup](https://github.com/namoray/vision) page in order to set up the proxy.
 
 For further assistance, refer to the [Bittensor Documentation](https://docs.bittensor.com/) and join our [Discord](https://discord.gg/dR865yTPaZ).
 
