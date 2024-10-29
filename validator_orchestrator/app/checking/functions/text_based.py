@@ -168,7 +168,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         if counter == len(indicies_to_check) - 1:
             try:
                 # We already checked corner cases for length above
-                if finish_reason == "stop":
+                if finish_reason != "length":
                     assert finish_reason == finish_reason_vali
             except AssertionError as e:
                 logger.error(f"Validator's LLM checking server's last token check indicates finish reason {finish_reason_vali} but miner implies it has stopped at the last token ; Error: {e}")
