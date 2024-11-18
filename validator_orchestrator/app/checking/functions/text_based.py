@@ -127,12 +127,14 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         # Always check first & last
         indicies_to_check = [0]
         number_of_additional_indicies_to_check = max(0, min(len(messages) - 2, 3))
-        additional_indicies_to_check = random.sample(
-            range(1, len(messages) - 1),
-            number_of_additional_indicies_to_check,
-        )
-        indicies_to_check.extend(additional_indicies_to_check)
-        indicies_to_check.extend([len(messages) - 1])
+        if number_of_additional_indicies_to_check > 0:
+            additional_indicies_to_check = random.sample(
+                range(1, len(messages) - 2),
+                number_of_additional_indicies_to_check,
+            )
+            indicies_to_check.extend(additional_indicies_to_check)
+        if len(messages) > 1:
+            indicies_to_check.extend([len(messages) - 1])
 
     total_distance = 0
     checks = 0
