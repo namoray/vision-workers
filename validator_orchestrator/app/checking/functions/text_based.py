@@ -15,6 +15,7 @@ from transformers import AutoTokenizer
 BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
 
+current_tokenizer = None
 
 def _score_average_distance(average_distance: float, alpha: int = 5) -> float:
     """Calculate quality score from logprobs average distances.
@@ -68,6 +69,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
     messages: list[models.MessageResponse] = []
     last_response = None
+    global current_tokenizer
+
     for response in formatted_response:
         try:
             content = response["choices"][0]["delta"]["content"]
@@ -92,7 +95,10 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         logger.error(f"Error with last response: {e}; miner's last response taken doesn't have finish reason ; Response: {last_response}")
         return 0
 
-    tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config["tokenizer"])
+    if current_tokenizer is None or current_tokenizer != task_config.load_model_config["tokenizer"]:
+        tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config["tokenizer"])
+        current_tokenizer = task_config.load_model_config["tokenizer"]
+    
     messages_dict = [message for message in fix_message_structure_for_prompt(tokenizer, payload["messages"])]
     # logger.info(f"[DEBUGG]: messages_dict: {messages_dict}")
     input_prompt_tokens = tokenizer.apply_chat_template(conversation=messages_dict, tokenize=True, add_generation_prompt=payload["starting_assistant_message"])
