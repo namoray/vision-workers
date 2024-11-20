@@ -58,9 +58,9 @@ async def process_check_result(
             logger.debug(f"Config: {task_config}")
             server_needed = task_config.server_needed
             logger.info(f"Server needed: {server_needed}")
-            await server_manager.start_server(server_needed)
 
             load_model_config = task_config.load_model_config
+            await server_manager.start_server(server_needed, load_model_config)
 
             if load_model_config is not None:
                 # TODO: Why is this needed? Slows down checking *alot*

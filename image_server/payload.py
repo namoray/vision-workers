@@ -8,11 +8,13 @@ from base_model import (
     ImageToImageBase,
     AvatarBase,
     OutpaintingBase,
+    LoadModelRequest
 )
 from typing import Dict, Any, Tuple, List
 from utils.base64_utils import base64_to_image
 import os
 from loguru import logger
+from model_manager import model_manager
 import copy
 import random
 
@@ -20,12 +22,15 @@ import random
 class PayloadModifier:
     def __init__(self):
         self._payloads = {}
+        self.supported_workflows = []
         self._load_workflows()
+        self.model_manager = model_manager
 
     def _load_workflows(self):
         directory = cst.WORKFLOWS_DIR
         for filename in os.listdir(directory):
             if filename.endswith(".json"):
+                self.supported_workflows.append(filename.split(".")[0])
                 filepath = os.path.join(directory, filename)
                 with open(filepath, "r") as file:
                     try:
@@ -33,6 +38,15 @@ class PayloadModifier:
                         self._payloads[os.path.splitext(filename)[0]] = data
                     except json.JSONDecodeError as e:
                         logger.error(f"Error decoding JSON from {filename}: {e}")
+
+    def is_valid_model_workflow(self, model: str) -> bool:
+        return model in self.supported_workflows
+
+    def is_valid_dynamic_string(self, model: str) -> bool:
+        if "|" in model:
+            repo_name, model_name = model.split("|", 1)
+            return bool(model_name.strip()) and bool(repo_name.strip())
+        return False
 
     def modify_inpaint(self, input_data: InpaintingBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads["inpaint"])
@@ -71,26 +85,49 @@ class PayloadModifier:
         payload["Sampler"]["inputs"]["noise_seed"] = seed
         return payload
 
-    def modify_text_to_image(self, input_data: TextToImageBase) -> Dict[str, Any]:
-        payload = copy.deepcopy(self._payloads[f"{input_data.model}"])
-
-        positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
-        payload["Prompt"]["inputs"]["text"] = positive_prompt
-        payload["Sampler"]["inputs"]["steps"] = input_data.steps
-        payload["Latent"]["inputs"]["width"] = input_data.width
-        payload["Latent"]["inputs"]["height"] = input_data.height
-        seed = input_data.seed
-        if seed == 0:
-            seed = random.randint(1, 2**16)
-        if "flux" in input_data.model:
-            payload["Seed"]["inputs"]["noise_seed"] = seed
-            payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
+    async def modify_text_to_image(self, input_data: TextToImageBase) -> Dict[str, Any]:
+        if self.is_valid_model_workflow(input_data.model.strip().lower()):
+            payload = copy.deepcopy(self._payloads[f"{input_data.model}"])
+            positive_prompt, negative_prompt = input_data.prompt, input_data.negative_prompt
+            payload["Prompt"]["inputs"]["text"] = positive_prompt
+            payload["Sampler"]["inputs"]["steps"] = input_data.steps
+            payload["Latent"]["inputs"]["width"] = input_data.width
+            payload["Latent"]["inputs"]["height"] = input_data.height
+            seed = input_data.seed
+            if seed == 0:
+                seed = random.randint(1, 2**16)
+            if "flux" in input_data.model:
+                payload["Seed"]["inputs"]["noise_seed"] = seed
+                payload["Guidance"]["inputs"]["guidance"] = input_data.cfg_scale
+            else:
+                payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
+                payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
+                payload["Sampler"]["inputs"]["seed"] = seed
+            return payload
         else:
-            payload["Negative_prompt"]["inputs"]["text"] += negative_prompt
-            payload["Sampler"]["inputs"]["cfg"] = input_data.cfg_scale
-            payload["Sampler"]["inputs"]["seed"] = seed
+            if self.is_valid_dynamic_string(input_data.model):
+                model_repo, safetensors_filename = [val.strip() for val in input_data.model.split('|')]
+                logger.info(f"Loading {safetensors_filename}")
+                load_model_data = LoadModelRequest(model_repo=model_repo, safetensors_filename=safetensors_filename)
+                load_model_response = await self.model_manager.download_model(load_model_data)
+                input_data.model = safetensors_filename
+                logger.info(load_model_response.status)
+            else:
+                input_data.model = self.model_manager.get_last_used_model()
+                logger.info("Using last loaded model")
+            payload = json.dumps(copy.deepcopy(self._payloads["dynamic-text-to-image"]))
+            if input_data.seed == 0:
+                input_data.seed = random.randint(1, 2**16)
+            for key, value in input_data:
+                placeholder = f"{{{{{key}}}}}"
+                if isinstance(value, str):
+                    replacement_value = value
+                else:
+                    replacement_value = str(value)
+                payload = payload.replace(placeholder, replacement_value)
+            payload = json.loads(payload)
+            return payload
 
-        return payload
 
     def modify_image_to_image(self, input_data: ImageToImageBase) -> Dict[str, Any]:
         payload = copy.deepcopy(self._payloads[f"{input_data.model}"])

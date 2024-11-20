@@ -10,14 +10,19 @@ from app.core.constants import AI_SERVER_PORT
 
 ########### TEXT ###########
 
+BOTTOM_TEXT_THRESHOLD = 0.125
+TOP_TEXT_THRESHOLD = 0.25
 
-def _score_average_distance(average_distance: float) -> float:
-    if average_distance <= 0.06:
+
+def _score_average_distance(average_distance: float, alpha: int = 5) -> float:
+    """Calculate quality score from logprobs average distances.
+    alpha decides how severe we penalize for big distances"""
+    if average_distance <= BOTTOM_TEXT_THRESHOLD:
         return 1
-    elif average_distance <= 0.12:
-        return 1 - 0.5 * (average_distance - 0.06) / 0.06
+    elif average_distance <= TOP_TEXT_THRESHOLD:
+        return 1 - 0.5 * (average_distance - BOTTOM_TEXT_THRESHOLD) / (TOP_TEXT_THRESHOLD - BOTTOM_TEXT_THRESHOLD)
     else:
-        return 0.0
+        return 0
 
 
 async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any], server_name: str = "llm_server") -> httpx.Response:
@@ -62,11 +67,17 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     for response in formatted_response:
         try:
             content = response["choices"][0]["delta"]["content"]
-            logprob = response["choices"][0]["logprobs"]["content"][0]["logprob"]
+            logprobs = response["choices"][0]["logprobs"]
+            # Below is a fix for the first message not having logprobs
+            if content == "" and logprobs is None:
+                role = response["choices"][0]["delta"]["role"]
+                if role == "assistant":
+                    continue
+            logprob = logprobs["content"][0]["logprob"]
+            messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
         except Exception as e:
             logger.error(f"Error with logprob: {e}. Response: {response}")
-            return 0
-        messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
+            return 0  # Important to return 0 as this is a critical error
 
     # If no responses, then not a good response
     if len(messages) == 0:

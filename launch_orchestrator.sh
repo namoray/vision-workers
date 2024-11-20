@@ -5,6 +5,8 @@ IMAGE_SERVER_IMAGE="nineteenai/sn19:image_server-latest"
 PORT=6920
 REFRESH_LOCAL_IMAGES=1
 
+# ./launch_orchestrator.sh --llm-image nineteenai/sn19:llm_server-6.0.0 --image-server-image nineteenai/sn19:image_server-6.0.0 --orchestrator-image nineteenai/sn19:orchestrator-6.0.0
+
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
   case $1 in

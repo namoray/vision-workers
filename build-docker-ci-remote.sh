@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 
+# BUILD_ID=6.0.0 ./build-docker-ci-remote.sh --nineteen
+
 # Default image prefix
-IMAGE_PREFIX="nineteenai"
+IMAGE_PREFIX="corcelio"
 
 REPOSITORY="cicd"
 
