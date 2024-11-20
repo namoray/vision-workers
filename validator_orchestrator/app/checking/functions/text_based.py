@@ -16,6 +16,7 @@ BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
 
 current_tokenizer = None
+tokenizer = None
 
 def _score_average_distance(average_distance: float, alpha: int = 5) -> float:
     """Calculate quality score from logprobs average distances.
@@ -70,6 +71,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     messages: list[models.MessageResponse] = []
     last_response = None
     global current_tokenizer
+    global tokenizer
 
     for response in formatted_response:
         try:
@@ -94,6 +96,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     except AssertionError as e:
         logger.error(f"Error with last response: {e}; miner's last response taken doesn't have finish reason ; Response: {last_response}")
         return 0
+
 
     if current_tokenizer is None or current_tokenizer != task_config.load_model_config["tokenizer"]:
         tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config["tokenizer"])
@@ -126,22 +129,23 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     # If no responses, then not a good response
     if len(messages) == 0:
         return 0
-
-    if len(messages) == 1:
+    elif len(messages) == 1:
         indicies_to_check = [0]
     else:
-        # Always check first & last
         indicies_to_check = [0]
-        number_of_additional_indicies_to_check = max(0, min(len(messages) - 2, 3))
+        valid_range = range(1, len(messages) - 1)
+        population_size = len(valid_range)
+        number_of_additional_indicies_to_check = max(0, min(population_size, 3))
+        
         if number_of_additional_indicies_to_check > 0:
             additional_indicies_to_check = random.sample(
-                range(1, len(messages) - 2),
+                valid_range,
                 number_of_additional_indicies_to_check,
             )
             indicies_to_check.extend(additional_indicies_to_check)
         if len(messages) > 1:
             indicies_to_check.extend([len(messages) - 1])
-
+            
     total_distance = 0
     checks = 0
 
