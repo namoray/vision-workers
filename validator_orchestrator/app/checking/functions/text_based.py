@@ -156,7 +156,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     llm_request.max_tokens = 1
 
     for index in indicies_to_check:
-        if checks >= 5:
+        if checks >= 5 and not repeating_patterns_flag:
+            continue
+        if checks >= 10 and repeating_patterns_flag:
             continue
 
         if index == 0:
