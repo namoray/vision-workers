@@ -13,7 +13,7 @@ from app.core.constants import AI_SERVER_PORT
 def _score_average_distance(average_distance: float, repeating_patterns_flag: bool) -> float:
     if repeating_patterns_flag:
         # If found repeating patterns, then be super harsh please
-        return float(average_distance <= 0.02)
+        return float(average_distance <= 0.05)
     elif average_distance <= 0.06:
         return 1
     elif average_distance <= 0.12:
