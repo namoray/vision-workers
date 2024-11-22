@@ -45,13 +45,15 @@ async def _calculate_distance_for_token(
     llm_request: models.ChatRequestModel,
     chat_responses: List[models.Message],
     index: int,
+    repeating_patterns_flag: bool = False,
 ) -> float:
     validator_checking_response = await _get_chat_data_validator_response(task_config.endpoint, llm_request.model_dump(), server_name=task_config.server_needed.value)
     token = chat_responses[index].content
     validator_log_probs_for_token = {i.decoded: i.logprob for i in validator_checking_response.logprobs}
 
     if token not in validator_log_probs_for_token:
-        return 1.0
+        repeating_penalty = 10 if repeating_patterns_flag else 1
+        return 1 * repeating_penalty
     else:
         distance = abs(math.exp(validator_log_probs_for_token[token]) - math.exp(chat_responses[index].logprob))
 
@@ -171,8 +173,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
                 )
             )
 
-        distance = await _calculate_distance_for_token(task_config, llm_request, messages, index)
+        distance = await _calculate_distance_for_token(task_config, llm_request, messages, index, repeating_patterns_flag)
         checks += 1
+        # If repeating patterns, then be super harsh to make sure nothing went wrong
         total_distance += distance
         if index != 0:
             llm_request.messages = llm_request.messages[:-1]
