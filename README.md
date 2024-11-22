@@ -5,7 +5,7 @@ Providing Access to Bittensor with Decentralized Subnet Inference at Scale
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[Bittensor](https://bittensor.com/whitepaper) • [Discord](https://discord.gg/dR865yTPaZ) • [Corcel](https://app.corcel.io/studio)
+[Bittensor](https://bittensor.com/whitepaper) • [Discord](https://discord.gg/dR865yTPaZ) • [Corcel](https://app.corcel.io/studio) • [Nineteen](https://nineteen.ai/)
 </div>
 
 ## NOTE:
