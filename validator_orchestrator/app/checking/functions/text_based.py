@@ -63,7 +63,8 @@ async def _calculate_distance_for_token(
 min_occurences = {1: 4, 2: 3, 3: 3, 4: 3}
 
 
-def _find_repeating_patterns(tokens: list[str]) -> dict[tuple[str, ...], tuple[int, int, int]]:
+def _find_repeating_patterns(messages: list[models.MessageResponse]) -> dict[tuple[str, ...], tuple[int, int, int]]:
+    tokens = [message.content for message in messages]
     n = len(tokens)
     patterns = {}
 
