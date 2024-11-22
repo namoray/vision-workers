@@ -182,5 +182,5 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     except Exception as e:
         logger.error(f"Error with average distance: {e}. Total distance: {total_distance}. Checks: {checks}")
         return 0
-    score = _score_average_distance(average_distance)
+    score = _score_average_distance(average_distance, repeating_patterns_flag)
     return score
