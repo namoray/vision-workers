@@ -7,10 +7,6 @@ import math
 from loguru import logger
 from app.core.constants import AI_SERVER_PORT
 
-import nltk
-
-nltk.download("punkt")
-
 ########### TEXT ###########
 
 
