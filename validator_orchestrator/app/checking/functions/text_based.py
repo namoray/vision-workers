@@ -142,6 +142,7 @@ async def check_text_result(
                 tokenizer=tokenizer,
                 temperature=payload.get("temperature", 0.9),
                 top_p=payload.get("top_p", 0.95)
+                seed=payload.get("seed", 369)
             )
             
             if not validation_result.is_valid:
