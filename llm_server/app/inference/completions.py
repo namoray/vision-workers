@@ -98,26 +98,17 @@ def fix_message_structure_for_prompt(tokenizer: Any, messages: List[Message]) ->
 
 
 async def complete_vllm(engine: models.LLMEngine, 
-                        request_info: models.RequestInfo, 
-    ) -> Union[AsyncGenerator[str, None], dict]:
-
+                       request_info: models.RequestInfo,
+) -> Union[AsyncGenerator[str, None], dict]:
     import uuid
 
     temperature = request_info.temperature
-    if hasattr(request_info, 'stream'):
-        stream = request_info.stream
-    else:
-        stream = True
-
+    stream = getattr(request_info, 'stream', True)
     seed = request_info.seed
     number_of_logprobs = request_info.number_of_logprobs
     starting_assistant_message = request_info.starting_assistant_message
-    top_k = 5  # 5 is the maximum that vllm allows for logprobs, so we must use this
-    top_p = request_info.top_p
-
-    # Our use cases have top p 0 or 1
-    if top_p not in [0, 1]:
-        top_p = 1
+    top_k = 5  # 5 is the maximum that vllm allows for logprobs
+    top_p = request_info.top_p if request_info.top_p in [0, 1] else 1
 
     if hasattr(request_info, 'prompt'):
         formatted_prompt = request_info.prompt
@@ -142,6 +133,8 @@ async def complete_vllm(engine: models.LLMEngine,
         top_k=top_k,
     )
 
+    request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
+
     if not stream:
         full_text = ""
         all_logprobs = []
@@ -161,19 +154,17 @@ async def complete_vllm(engine: models.LLMEngine,
             all_logprobs.extend(log_probs_dict)
             
         data = json.dumps(
-            {"text": full_text, "logprobs": all_logprobs[:request_info.number_of_logprobs]}
+            {"text": full_text, "logprobs": all_logprobs[:number_of_logprobs]}
         )
         yield f"data: {data}\n\n"
     else:
-        stream = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
-
         logprobs_cursor = 0
         cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
+        async for output in request_output:
+            text = output.outputs[0].text
             latest_chunk = text[cursor:]
 
-            log_probs = request_output.outputs[0].logprobs
+            log_probs = output.outputs[0].logprobs
             log_probs_dict = [
                 {
                     "index": idx,
