@@ -130,13 +130,14 @@ async def check_text_result(
                 messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
             except Exception as e:
                 logger.error(f"Error with logprob: {e}. Response: {response}")
+                logger.exception(e)
                 return 0  # Important to return 0 as this is a critical error
             
         if not messages:
             logger.warning("No valid messages in response")
             return 0.0
         
-        response_tokens = [elm.content for elm in formatted_response]
+        response_tokens = [elm.content for elm in messages]
         prompt = chat_to_prompt(payload["messages"], task_config.task)
 
         get_prompt_logprobs(prompt, response_tokens)
