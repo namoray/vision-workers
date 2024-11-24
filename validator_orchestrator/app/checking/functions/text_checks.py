@@ -113,6 +113,7 @@ async def check_response(
         
     except Exception as e:
         logger.error(f"Unexpected error in check_response: {str(e)}")
+        logger.exception(e)
         return TokenCheckResult(
             is_valid=False,
             message=f"Validation failed due to error: {str(e)}"
