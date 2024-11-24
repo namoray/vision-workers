@@ -8,7 +8,7 @@ from loguru import logger
 
 from app.core import models
 from app.core.constants import AI_SERVER_PORT
-from app.checking.functions.text_checks import check_response, TokenCheckResult
+from app.checking.functions.text_checks import check_response
 
 tokenizer_name = "tau-vision/llama-tokenizer-fix"
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)

@@ -4,6 +4,7 @@ from starlette.responses import StreamingResponse
 from app import schemas, dependencies
 from app.inference import infer
 from app.inference.state import EngineState
+from app import models
 import transformers
 from vllm import SamplingParams
 import json
@@ -63,69 +64,41 @@ async def completion(
     request: schemas.CompletionRequest,
     EngineState: EngineState = fastapi.Depends(dependencies.get_engine_state),
 ) -> Response:
-    
     if not EngineState.model_loaded:
         return Response(
-            content='{"error": "No model has been loaded, please use the load_model endpoint to load a model"}',
+            content='{"error": "No model has been loaded"}',
             status_code=status.HTTP_400_BAD_REQUEST,
             media_type="application/json",
         )
 
     try:
-        sampling_params = SamplingParams(
-            temperature=request.temperature,
-            top_p=request.top_p,
-            top_k=request.top_k,
-            max_tokens=request.max_tokens,
-            prompt_logprobs=request.prompt_logprobs,
-            logprobs=request.logprobs
-        )
-
-        outputs = EngineState.llm.generate(request.prompt, sampling_params)
-
-        result = process_completion_output(outputs[0], request.max_tokens)
+        request_info = models.RequestInfo(**request.dict(), stream=False)
+        response = await EngineState.forward_request(request_info)
         
-        return Response(
-            content=json.dumps(result),
-            status_code=status.HTTP_200_OK,
-            media_type="application/json"
-        )
-
+        if isinstance(response, str) and response.startswith("data: "):
+            json_str = response.replace("data: ", "").strip()
+            response_data = json.loads(json_str)            
+            output_data = {
+                "choices": [{
+                    "text": response_data["text"],
+                    "logprobs": response_data["logprobs"],
+                }]
+            }
+            
+            return Response(
+                content=json.dumps(output_data),
+                status_code=status.HTTP_200_OK,
+                media_type="application/json"
+            )
+        
+        raise ValueError("Unexpected response format")
+        
     except Exception as e:
         return Response(
             content=f'{{"error": "{str(e)}"}}',
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            media_type="application/json",
+            media_type="application/json"
         )
-
-def process_completion_output(output: Any, max_tokens: int) -> Dict[str, Any]:
-
-    try:
-        tokens = []
-        logprobs = []
-        prompt_logprobs = []
-
-        if hasattr(output, 'prompt_logprobs'):
-            prompt_logprobs = output.prompt_logprobs
-
-        for logprob_dict in output.outputs[0].logprobs:
-            token_info = list(logprob_dict.values())[0]
-            tokens.append(token_info.decoded_token)
-            logprobs.append(token_info.logprob)
-
-        return {
-            "choices": [{
-                "text": ''.join(tokens),
-                "tokens": tokens,
-                "logprobs": logprobs,
-                "prompt_logprobs": prompt_logprobs,
-                "finish_reason": "length" if len(tokens) >= max_tokens else "stop"
-            }]
-        }
-
-    except Exception as e:
-        logging.error(f"Error processing completion output: {str(e)}")
-        raise
 
 router = fastapi.APIRouter(
     prefix="",

@@ -9,6 +9,8 @@ import json
 from app.logging import logging
 from typing import Any
 from loguru import logger
+from typing import List, Any, Union
+
 
 SYSTEM_PROMPT_PREFIX = "Instructions to follow for all following messages: "
 
@@ -95,10 +97,17 @@ def fix_message_structure_for_prompt(tokenizer: Any, messages: List[Message]) ->
     return processed_messages
 
 
-async def complete_vllm(engine: models.LLMEngine, request_info: models.RequestInfo) -> AsyncGenerator[str, None]:
+async def complete_vllm(engine: models.LLMEngine, 
+                        request_info: models.RequestInfo, 
+    ) -> Union[AsyncGenerator[str, None], dict]:
+
     import uuid
 
     temperature = request_info.temperature
+    if hasattr(request_info, 'stream'):
+        stream = request_info.stream
+    else:
+        stream = True
 
     seed = request_info.seed
     number_of_logprobs = request_info.number_of_logprobs
@@ -110,14 +119,17 @@ async def complete_vllm(engine: models.LLMEngine, request_info: models.RequestIn
     if top_p not in [0, 1]:
         top_p = 1
 
-    messages_dict = [message.model_dump() for message in fix_message_structure_for_prompt(engine.tokenizer, request_info.messages)]
-    formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=starting_assistant_message)
-    if "llama-3" in engine.model_name.lower() and not starting_assistant_message:
-        formatted_prompt = formatted_prompt[: formatted_prompt.rfind("<|eot_id|>")]
+    if hasattr(request_info, 'prompt'):
+        formatted_prompt = request_info.prompt
+    else:
+        messages_dict = [message.model_dump() for message in fix_message_structure_for_prompt(engine.tokenizer, request_info.messages)]
+        formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=starting_assistant_message)
+        if "llama-3" in engine.model_name.lower() and not starting_assistant_message:
+            formatted_prompt = formatted_prompt[: formatted_prompt.rfind("<|eot_id|>")]
 
-    end_of_string_token = engine.tokenizer.eos_token
-    if not starting_assistant_message and formatted_prompt.rstrip().endswith(end_of_string_token):
-        formatted_prompt = formatted_prompt.rstrip()[: -len(end_of_string_token)]
+        end_of_string_token = engine.tokenizer.eos_token
+        if not starting_assistant_message and formatted_prompt.rstrip().endswith(end_of_string_token):
+            formatted_prompt = formatted_prompt.rstrip()[: -len(end_of_string_token)]
 
     set_random_seed(seed)
 
@@ -129,6 +141,30 @@ async def complete_vllm(engine: models.LLMEngine, request_info: models.RequestIn
         logprobs=number_of_logprobs,
         top_k=top_k,
     )
+
+    if not stream:
+        full_text = ""
+        all_logprobs = []
+        async for output in request_output:
+            text = output.outputs[0].text
+            log_probs = output.outputs[0].logprobs
+            log_probs_dict = [
+                {
+                    "index": idx,
+                    "logprob": token_detail.logprob,
+                    "decoded": token_detail.decoded_token,
+                }
+                for token_details in log_probs
+                for idx, token_detail in token_details.items()
+            ]
+            full_text = text 
+            all_logprobs.extend(log_probs_dict)
+            
+        data = json.dumps(
+            {"text": full_text, "logprobs": all_logprobs[:request_info.number_of_logprobs]}
+        )
+        return f"data: {data}\n\n"
+
     stream = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
 
     logprobs_cursor = 0
