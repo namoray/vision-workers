@@ -32,9 +32,7 @@ async def check_response(
     logger_threshold: float = -10000,
 ) -> TokenCheckResult:
     try:
-        prompt_token_ids = tokenizer(prompt)["input_ids"]
-        
-        prompt_loggers = await get_prompt_logprobs(
+        prompt_data = await get_prompt_logprobs(
             prompt=prompt,
             response=response,
             temperature=temperature,
@@ -44,24 +42,33 @@ async def check_response(
             logprobs=logprobs
         )
         
-        if not prompt_loggers:
+        if not prompt_data:
             return TokenCheckResult(
                 is_valid=False,
-                message="Failed to get prompt logprobs"
+                message="Failed to get completions data"
             )
-        
-        response_loggers = prompt_loggers[len(prompt_token_ids):]
-        
-        for i, (token, token_logprobs) in enumerate(zip(response, response_loggers)):
+
+        if 'choices' not in prompt_data or not prompt_data['choices']:
+            return TokenCheckResult(
+                is_valid=False,
+                message="No choices in completion response"
+            )
+
+        first_choice = prompt_data['choices'][0]
+        logprobs_data = first_choice.get('logprobs', {}).get('content', [])
+        prompt_logprobs = first_choice.get('prompt_logprobs', [])
+
+        # Tokens validation
+        for i, (token, prompt_lp) in enumerate(zip(response, prompt_logprobs)):
             allowed_tokens: Set[str] = set()
             
-            for token_id, logprob_data in token_logprobs.items():
-                if isinstance(logprob_data, dict):
-                    token_logprob = logprob_data.get('logprob', float('-inf'))
-                    token_text = logprob_data.get('decoded_token', '')
+            for token_id, logprob_obj in prompt_lp.items():
+                if isinstance(logprob_obj, dict):
+                    token_logprob = logprob_obj.get('logprob', float('-inf'))
+                    token_text = logprob_obj.get('decoded_token', '')
                 else:
-                    token_logprob = getattr(logprob_data, 'logprob', float('-inf'))
-                    token_text = getattr(logprob_data, 'decoded_token', '')
+                    token_logprob = getattr(logprob_obj, 'logprob', float('-inf'))
+                    token_text = getattr(logprob_obj, 'decoded_token', '')
                 
                 if token_logprob > logger_threshold:
                     allowed_tokens.add(token_text)
@@ -76,9 +83,10 @@ async def check_response(
                         'allowed_tokens': list(allowed_tokens)
                     }
                 )
-        logger.info("Allowed tokens validation ✅")
+        
+        logger.info("Token validation ✅")
 
-        # length validation
+        # Length validation
         if len(response) > max_tokens:
             return TokenCheckResult(
                 is_valid=False,
@@ -88,24 +96,30 @@ async def check_response(
         
         # EOT validation
         if len(response) < max_tokens:
-            eos_logprobs = await get_prompt_logprobs(
+            eot_data = await get_prompt_logprobs(
                 prompt=prompt + ''.join(response),
                 response=[],
                 temperature=temperature,
+                seed=seed,
                 top_p=top_p,
                 top_k=top_k,
-                logprobs=logprobs
+                logprobs=logprobs,
+                max_tokens=1
             )
             
-            if eos_logprobs:
-                first_token_logprobs = eos_logprobs[0]
-                if not any(tokenizer.eos_token_id == int(token_id) 
-                          for token_id in first_token_logprobs.keys()):
-                    return TokenCheckResult(
-                        is_valid=False,
-                        message="End-of-text token not found in likely next tokens"
-                    )
-        logger.info("Length validation ✅")
+            if eot_data and 'choices' in eot_data and eot_data['choices']:
+                first_choice = eot_data['choices'][0]
+                if 'logprobs' in first_choice and 'content' in first_choice['logprobs']:
+                    tokens = [int(list(lp.keys())[0]) 
+                            for lp in first_choice['logprobs']['content']]
+                    
+                    if tokenizer.eos_token_id not in tokens:
+                        return TokenCheckResult(
+                            is_valid=False,
+                            message=f"End-of-text token {tokenizer.eos_token_id} not in predicted tokens {tokens}"
+                        )
+        
+        logger.info("EOT validation ✅")
         return TokenCheckResult(
             is_valid=True,
             message="Response passed all validation checks"
@@ -127,15 +141,16 @@ async def get_prompt_logprobs(
     top_p: float = 0.95,
     top_k: int = 5,
     logprobs: int = 20,
+    max_tokens: int = 1,
     server_name: str = "llm_server"
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     
     full_text = prompt + ''.join(response)
     query_data = {
         "prompt": full_text,
         "temperature": temperature,
         "top_p": top_p,
-        "max_tokens": 1,
+        "max_tokens": max_tokens,
         "top_k": top_k,
         "prompt_logprobs": logprobs,
         "logprobs": logprobs,
@@ -144,19 +159,11 @@ async def get_prompt_logprobs(
     
     try:
         response = await _query_completions(query_data, server_name)
-        response_data = response.json()
-        
-        if 'choices' in response_data and response_data['choices']:
-            first_choice = response_data['choices'][0]
-            if 'prompt_logprobs' in first_choice:
-                return first_choice['prompt_logprobs']
-                
-        logger.error("No prompt logprobs found in response")
-        return []
+        return response.json()
         
     except Exception as e:
-        logger.error(f"Error getting prompt logprobs: {str(e)}")
-        return []
+        logger.error(f"Error getting completions data: {str(e)}")
+        return {}
 
 async def _query_completions(
     data: Dict[str, Any],
