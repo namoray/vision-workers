@@ -73,11 +73,18 @@ async def completion(
 
     try:
         request_info = models.RequestInfo(**request.dict(), stream=False)
-        response = await EngineState.forward_request(request_info)
+        response_stream = EngineState.forward_request(request_info)
         
-        if isinstance(response, str) and response.startswith("data: "):
-            json_str = response.replace("data: ", "").strip()
-            response_data = json.loads(json_str)            
+        response_lines = []
+        async for line in response_stream:
+            if line and not line.endswith("[DONE]\n\n"):
+                response_lines.append(line)
+
+        if response_lines:
+            last_response = response_lines[-1]
+            json_str = last_response.replace("data: ", "").strip()
+            response_data = json.loads(json_str)
+            
             output_data = {
                 "choices": [{
                     "text": response_data["text"],
@@ -91,9 +98,10 @@ async def completion(
                 media_type="application/json"
             )
         
-        raise ValueError("Unexpected response format")
+        raise ValueError("No response received")
         
     except Exception as e:
+        logging.exception(f"Error in completion endpoint: {str(e)}")
         return Response(
             content=f'{{"error": "{str(e)}"}}',
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
