@@ -163,31 +163,31 @@ async def complete_vllm(engine: models.LLMEngine,
         data = json.dumps(
             {"text": full_text, "logprobs": all_logprobs[:request_info.number_of_logprobs]}
         )
-        return f"data: {data}\n\n"
-
-    stream = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
-
-    logprobs_cursor = 0
-    cursor = 0
-    async for request_output in stream:
-        text = request_output.outputs[0].text
-        latest_chunk = text[cursor:]
-
-        log_probs = request_output.outputs[0].logprobs
-        log_probs_dict = [
-            {
-                "index": idx,
-                "logprob": token_detail.logprob,
-                "decoded": token_detail.decoded_token,
-            }
-            for token_details in log_probs[logprobs_cursor:]
-            for idx, token_detail in token_details.items()
-        ]
-        data = json.dumps(
-            {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs]}
-        )
         yield f"data: {data}\n\n"
+    else:
+        stream = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
 
-        cursor = len(text)
-        logprobs_cursor = len(log_probs)
-    yield "data: [DONE]\n\n"
+        logprobs_cursor = 0
+        cursor = 0
+        async for request_output in stream:
+            text = request_output.outputs[0].text
+            latest_chunk = text[cursor:]
+
+            log_probs = request_output.outputs[0].logprobs
+            log_probs_dict = [
+                {
+                    "index": idx,
+                    "logprob": token_detail.logprob,
+                    "decoded": token_detail.decoded_token,
+                }
+                for token_details in log_probs[logprobs_cursor:]
+                for idx, token_detail in token_details.items()
+            ]
+            data = json.dumps(
+                {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs]}
+            )
+            yield f"data: {data}\n\n"
+
+            cursor = len(text)
+            logprobs_cursor = len(log_probs)
+        yield "data: [DONE]\n\n"
