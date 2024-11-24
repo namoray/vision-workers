@@ -136,10 +136,14 @@ async def complete_vllm(engine: models.LLMEngine,
     request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
 
     if not stream:
-        full_text = ""
+        logprobs_cursor = 0
+        cursor = 0
+        all_txt = ''
         all_logprobs = []
         async for output in request_output:
             text = output.outputs[0].text
+            latest_chunk = text[cursor:]
+
             log_probs = output.outputs[0].logprobs
             log_probs_dict = [
                 {
@@ -147,14 +151,14 @@ async def complete_vllm(engine: models.LLMEngine,
                     "logprob": token_detail.logprob,
                     "decoded": token_detail.decoded_token,
                 }
-                for token_details in log_probs
+                for token_details in log_probs[logprobs_cursor:]
                 for idx, token_detail in token_details.items()
             ]
-            full_text = text 
-            all_logprobs.extend(log_probs_dict)
+            all_txt += latest_chunk
+            all_logprobs.append(log_probs_dict[:number_of_logprobs])
             
         data = json.dumps(
-            {"text": full_text, "logprobs": all_logprobs[:number_of_logprobs]}
+            {"text": all_txt, "logprobs": all_logprobs}
         )
         yield f"data: {data}\n\n"
     else:
