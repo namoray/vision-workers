@@ -23,6 +23,7 @@ async def check_response(
     prompt: str,
     response: List[str],
     tokenizer: AutoTokenizer,
+    seed: int,
     temperature: float = 0.9,
     top_p: float = 0.95,
     top_k: int = 5,
@@ -37,6 +38,7 @@ async def check_response(
             prompt=prompt,
             response=response,
             temperature=temperature,
+            seed=seed,
             top_p=top_p,
             top_k=top_k,
             logprobs=logprobs
@@ -119,7 +121,8 @@ async def check_response(
 async def get_prompt_logprobs(
     prompt: str,
     response: List[str],
-    temperature: float = 0.9,
+    temperature: float,
+    seed: int,
     top_p: float = 0.95,
     top_k: int = 5,
     logprobs: int = 20,
@@ -134,7 +137,8 @@ async def get_prompt_logprobs(
         "max_tokens": 1,
         "top_k": top_k,
         "prompt_logprobs": logprobs,
-        "logprobs": logprobs
+        "logprobs": logprobs,
+        "seed": seed
     }
     
     try:

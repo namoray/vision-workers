@@ -142,8 +142,23 @@ async def complete_vllm(engine: models.LLMEngine,
         async for output in request_output:
             text = output.outputs[0].text
             log_probs = output.outputs[0].logprobs
+            prompt_log_probs = output.prompt_logprobs
+            
             logger.info(f"{output}")
             logger.info('-----'*5)
+
+            formatted_prompt_logprobs = {}
+            if prompt_log_probs:
+                for i, token_logprobs in enumerate(prompt_log_probs):
+                    if token_logprobs:
+                        formatted_prompt_logprobs[str(i)] = {
+                            str(token_id): {
+                                "logprob": logprob.logprob,
+                                "decoded_token": logprob.decoded_token
+                            }
+                            for token_id, logprob in token_logprobs.items()
+                        }
+
             choices_data = {
                 "choices": [{
                     "delta": {
@@ -158,9 +173,11 @@ async def complete_vllm(engine: models.LLMEngine,
                             for token_details in log_probs
                             for _, token_detail in token_details.items()
                         ]
-                    }
+                    },
+                    "prompt_logprobs": formatted_prompt_logprobs
                 }]
             }
+            
         yield f"data: {json.dumps(choices_data)}\n\n"
     else:
         logprobs_cursor = 0
