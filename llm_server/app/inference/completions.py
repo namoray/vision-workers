@@ -153,7 +153,7 @@ async def complete_vllm(engine: models.LLMEngine,
                 for idx, token_detail in token_details.items()
             ]            
         data = json.dumps(
-            {"text": text, "logprobs": log_probs}
+            {"text": text, "logprobs": log_probs_dict}
         )
         yield f"data: {data}\n\n"
     else:
