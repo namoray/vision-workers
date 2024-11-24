@@ -141,7 +141,17 @@ async def complete_vllm(engine: models.LLMEngine,
         async for output in request_output:
             text = output.outputs[0].text
             log_probs = output.outputs[0].logprobs
-            
+            logger.info(f"{output}")
+            logger.info('-----'*5)
+            log_probs_dict = [
+                {
+                    "index": idx,
+                    "logprob": token_detail.logprob,
+                    "decoded": token_detail.decoded_token,
+                }
+                for token_details in log_probs
+                for idx, token_detail in token_details.items()
+            ]            
         data = json.dumps(
             {"text": text, "logprobs": log_probs}
         )
