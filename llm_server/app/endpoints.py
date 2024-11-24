@@ -5,6 +5,13 @@ from app import schemas, dependencies
 from app.inference import infer
 from app.inference.state import EngineState
 import transformers
+from vllm import SamplingParams
+import json
+from typing import Dict, Any
+import loguru
+
+logging = loguru.logger
+
 
 
 async def load_model(
@@ -51,12 +58,91 @@ async def generate_text(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             media_type="application/json",
         )
+    
+async def completion(
+    request: schemas.CompletionRequest,
+    EngineState: EngineState = fastapi.Depends(dependencies.get_engine_state),
+) -> Response:
+    
+    if not EngineState.model_loaded:
+        return Response(
+            content='{"error": "No model has been loaded, please use the load_model endpoint to load a model"}',
+            status_code=status.HTTP_400_BAD_REQUEST,
+            media_type="application/json",
+        )
 
+    try:
+        sampling_params = SamplingParams(
+            temperature=request.temperature,
+            top_p=request.top_p,
+            top_k=request.top_k,
+            max_tokens=request.max_tokens,
+            prompt_logprobs=request.prompt_logprobs,
+            logprobs=request.logprobs
+        )
+
+        outputs = EngineState.llm.generate(request.prompt, sampling_params)
+
+        result = process_completion_output(outputs[0], request.max_tokens)
+        
+        return Response(
+            content=json.dumps(result),
+            status_code=status.HTTP_200_OK,
+            media_type="application/json"
+        )
+
+    except Exception as e:
+        return Response(
+            content=f'{{"error": "{str(e)}"}}',
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            media_type="application/json",
+        )
+
+def process_completion_output(output: Any, max_tokens: int) -> Dict[str, Any]:
+
+    try:
+        tokens = []
+        logprobs = []
+        prompt_logprobs = []
+
+        if hasattr(output, 'prompt_logprobs'):
+            prompt_logprobs = output.prompt_logprobs
+
+        for logprob_dict in output.outputs[0].logprobs:
+            token_info = list(logprob_dict.values())[0]
+            tokens.append(token_info.decoded_token)
+            logprobs.append(token_info.logprob)
+
+        return {
+            "choices": [{
+                "text": ''.join(tokens),
+                "tokens": tokens,
+                "logprobs": logprobs,
+                "prompt_logprobs": prompt_logprobs,
+                "finish_reason": "length" if len(tokens) >= max_tokens else "stop"
+            }]
+        }
+
+    except Exception as e:
+        logging.error(f"Error processing completion output: {str(e)}")
+        raise
 
 router = fastapi.APIRouter(
     prefix="",
     tags=["LLM"],
     responses={404: {"description": "Not found"}},
+)
+
+router.add_api_route(
+    "/completions",
+    completion,
+    methods=["POST"],
+    response_model=None,
+    responses={
+        400: {"description": "Invalid request format or missing prompt"},
+        500: {"description": "Internal server error"},
+        200: {"description": "Completion generated successfully"},
+    },
 )
 
 router.add_api_route(
