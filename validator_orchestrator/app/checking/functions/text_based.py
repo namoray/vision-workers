@@ -67,14 +67,6 @@ async def _calculate_distance_for_token(
 
     return distance
 
-def get_prompt_logprobs(prompt, response):
-    rt = ''.join(response)
-    # print(prompt + rt)
-    sampling_params = SamplingParams(temperature=0.9, top_p=0.95, max_tokens=1, prompt_logprobs=20, logprobs=10, top_k=5)
-    outputs = llm.generate(prompt + rt, sampling_params)
-
-    return outputs
-
 def chat_to_prompt(
     messages: List[Dict[str, str]],
     model_name: str,
@@ -139,8 +131,6 @@ async def check_text_result(
         
         response_tokens = [elm.content for elm in messages]
         prompt = chat_to_prompt(payload["messages"], task_config.task)
-
-        get_prompt_logprobs(prompt, response_tokens)
         
         # Validate response tokens
         if tokenizer and response_tokens and prompt_loggers:

@@ -131,6 +131,7 @@ async def complete_vllm(engine: models.LLMEngine,
         seed=seed,
         logprobs=number_of_logprobs,
         top_k=top_k,
+        prompt_logprobs=number_of_logprobs
     )
 
     request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
@@ -143,20 +144,24 @@ async def complete_vllm(engine: models.LLMEngine,
             log_probs = output.outputs[0].logprobs
             logger.info(f"{output}")
             logger.info('-----'*5)
-            log_probs_dict = [
-                {
-                    "index": idx,
-                    "logprob": token_detail.logprob,
-                    "decoded": token_detail.decoded_token,
-                }
-                for token_details in log_probs
-                for idx, token_detail in token_details.items()
-            ]        
-        log_probs_dict = [[x] for x in log_probs_dict] if number_of_logprobs == 1 else [log_probs_dict[i:i+number_of_logprobs] for i in range(0, len(log_probs_dict), number_of_logprobs)]    
-        data = json.dumps(
-            {"text": text, "logprobs": log_probs_dict}
-        )
-        yield f"data: {data}\n\n"
+            choices_data = {
+                "choices": [{
+                    "delta": {
+                        "content": text
+                    },
+                    "logprobs": {
+                        "content": [
+                            {
+                                "logprob": token_detail.logprob,
+                                "token": token_detail.decoded_token
+                            }
+                            for token_details in log_probs
+                            for _, token_detail in token_details.items()
+                        ]
+                    }
+                }]
+            }
+        yield f"data: {json.dumps(choices_data)}\n\n"
     else:
         logprobs_cursor = 0
         cursor = 0

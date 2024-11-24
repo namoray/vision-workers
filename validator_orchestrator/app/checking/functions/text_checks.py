@@ -30,23 +30,6 @@ async def check_response(
     max_tokens: int = 1000,
     logger_threshold: float = -10000,
 ) -> TokenCheckResult:
-    """
-    Validates a language model's response by checking token probabilities and end-of-text prediction.
-    
-    Args:
-        prompt: Original prompt text
-        response: List of generated tokens
-        tokenizer: Tokenizer for processing text
-        temperature: Sampling temperature
-        top_p: Top-p sampling parameter
-        top_k: Top-k sampling parameter
-        logprobs: Number of logprobs to return
-        max_tokens: Maximum allowed response length
-        logger_threshold: Threshold for token probability acceptance
-    
-    Returns:
-        TokenCheckResult containing validation status and details
-    """
     try:
         prompt_token_ids = tokenizer(prompt)["input_ids"]
         
