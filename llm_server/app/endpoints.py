@@ -84,14 +84,14 @@ async def completion(
             last_response = response_lines[-1]
             json_str = last_response.replace("data: ", "").strip()
             response_data = json.loads(json_str)
-            
             output_data = {
                 "choices": [{
-                    "text": response_data["text"],
-                    "logprobs": response_data["logprobs"],
+                    "text": response_data["choices"][0]["delta"]["content"],
+                    "logprobs": response_data["choices"][0]["logprobs"]["content"],
+                    "prompt_logprobs": response_data["choices"][0].get("prompt_logprobs", {})
                 }]
             }
-            
+
             return Response(
                 content=json.dumps(output_data),
                 status_code=status.HTTP_200_OK,
