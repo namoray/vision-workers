@@ -151,7 +151,8 @@ async def complete_vllm(engine: models.LLMEngine,
                 }
                 for token_details in log_probs
                 for idx, token_detail in token_details.items()
-            ]            
+            ]        
+        log_probs_dict = [[x] for x in log_probs_dict] if number_of_logprobs == 1 else [log_probs_dict[i:i+number_of_logprobs] for i in range(0, len(log_probs_dict), number_of_logprobs)]    
         data = json.dumps(
             {"text": text, "logprobs": log_probs_dict}
         )
