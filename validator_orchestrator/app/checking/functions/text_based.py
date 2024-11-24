@@ -134,6 +134,7 @@ async def check_text_result(
         
         # Validate response tokens
         if tokenizer and response_tokens and prompt_loggers:
+            logger.info("Validating response tokens")
             validation_result = await check_response(
                 prompt=prompt,
                 response=response_tokens,

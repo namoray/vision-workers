@@ -74,13 +74,15 @@ async def check_response(
                         'allowed_tokens': list(allowed_tokens)
                     }
                 )
-        
+        logger.info("Allowed tokens validation ✅")
+
         # length validation
         if len(response) > max_tokens:
             return TokenCheckResult(
                 is_valid=False,
                 message=f"Response exceeds maximum length: {len(response)} > {max_tokens}"
             )
+        logger.info("Length validation ✅")
         
         # EOT validation
         if len(response) < max_tokens:
@@ -101,7 +103,7 @@ async def check_response(
                         is_valid=False,
                         message="End-of-text token not found in likely next tokens"
                     )
-        
+        logger.info("Length validation ✅")
         return TokenCheckResult(
             is_valid=True,
             message="Response passed all validation checks"
