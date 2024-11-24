@@ -141,7 +141,7 @@ async def check_text_result(
                 response=response_tokens,
                 tokenizer=tokenizer,
                 temperature=payload.get("temperature", 0.9),
-                top_p=payload.get("top_p", 0.95)
+                top_p=payload.get("top_p", 0.95),
                 seed=payload.get("seed", 369)
             )
             
