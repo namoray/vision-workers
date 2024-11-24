@@ -133,7 +133,8 @@ async def check_text_result(
         prompt = chat_to_prompt(payload["messages"], task_config.task)
         
         # Validate response tokens
-        if tokenizer and response_tokens and prompt_loggers:
+
+        if tokenizer and response_tokens:
             logger.info("Validating response tokens")
             validation_result = await check_response(
                 prompt=prompt,
