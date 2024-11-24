@@ -138,22 +138,12 @@ async def complete_vllm(engine: models.LLMEngine,
     if not stream:
         logprobs_cursor = 0
         cursor = 0
-        all_txt = ''
-        all_logprobs = []
         async for output in request_output:
             text = output.outputs[0].text
             log_probs = output.outputs[0].logprobs
-            log_probs_dict = [
-                {
-                    "index": idx,
-                    "logprob": token_detail.logprob,
-                    "decoded": token_detail.decoded_token,
-                }
-                for token_details in log_probs
-                for idx, token_detail in token_details.items()
-            ]            
+            
         data = json.dumps(
-            {"text": text, "logprobs": log_probs_dict}
+            {"text": text, "logprobs": log_probs}
         )
         yield f"data: {data}\n\n"
     else:
