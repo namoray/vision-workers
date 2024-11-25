@@ -64,7 +64,6 @@ class CheckResultsRequest(BaseModel):
 class Message(BaseModel):
     role: str
     content: str
-    index: str
 
 
 class MessageResponse(BaseModel):

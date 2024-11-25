@@ -213,4 +213,5 @@ async def check_text_result(
         
     except Exception as e:
         logger.error(f"Critical error in check_text_result: {str(e)}")
+        logger.exception(e)
         return None
