@@ -109,9 +109,7 @@ async def check_response(
                 top_k=top_k,
                 logprobs=logprobs,
                 max_tokens=1
-            )
-            logger.info(eot_data)
-            
+            )            
             if eot_data and 'choices' in eot_data and eot_data['choices']:
                 first_eot_choice = eot_data['choices'][0]
                 if 'logprobs' in first_eot_choice:
@@ -161,7 +159,6 @@ async def get_prompt_logprobs(
         "logprobs": logprobs,
         "seed": seed
     }
-    logger.info(f"sending completion query = {query_data}")
     try:
         response = await _query_completions(query_data, server_name)
         return response.json()
