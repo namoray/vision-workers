@@ -111,7 +111,7 @@ router = fastapi.APIRouter(
 )
 
 router.add_api_route(
-    "/completions",
+    "/vali-completions",
     completion,
     methods=["POST"],
     response_model=None,

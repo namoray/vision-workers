@@ -174,7 +174,7 @@ async def _query_completions(
     timeout: int = 5
 ) -> httpx.Response:
 
-    url = f"http://{server_name}:{AI_SERVER_PORT}/completions"
+    url = f"http://{server_name}:{AI_SERVER_PORT}/vali-completions"
     
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
