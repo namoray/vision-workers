@@ -94,7 +94,10 @@ async def check_text_result(
     payload: dict,
     task_config: models.OrchestratorServerConfig
 ) -> Union[float, None]:
-    global tokenizer
+    global tokenizer, tokenizer_name
+
+    if task_config.load_model_config['tokenizer'] != tokenizer_name:
+        tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config['tokenizer'])
 
     try:
         # Parse formatted response
@@ -107,7 +110,6 @@ async def check_text_result(
         # Extract messages and validate format
         messages: List[models.MessageResponse] = []
         response_tokens: List[str] = []
-        prompt_loggers: List[Dict[str, Any]] = []
         
         for response in formatted_response:
             try:
@@ -133,14 +135,13 @@ async def check_text_result(
         prompt = chat_to_prompt(payload["messages"], task_config.task)
         
         # Validate response tokens
-
         if tokenizer and response_tokens:
             logger.info("Validating response tokens")
             validation_result = await check_response(
                 prompt=prompt,
                 response=response_tokens,
                 tokenizer=tokenizer,
-                temperature=payload.get("temperature", 0.9),
+                temperature=payload.get("temperature", 0.5),
                 top_p=payload.get("top_p", 0.95),
                 seed=payload.get("seed", 369)
             )

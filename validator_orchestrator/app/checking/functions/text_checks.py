@@ -87,7 +87,7 @@ async def check_response(
                     }
                 )
         
-        logger.info("Token validation ✅")
+        logger.info("Tokens validation ✅")
 
         # length validation
         if len(response) > max_tokens:
@@ -149,7 +149,7 @@ async def get_prompt_logprobs(
     top_p: float = 0.95,
     top_k: int = 5,
     logprobs: int = 20,
-    max_tokens: int = 1,
+    max_tokens: int = 100,
     server_name: str = "llm_server"
 ) -> Dict[str, Any]:
     
