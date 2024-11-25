@@ -123,7 +123,7 @@ async def check_text_result(
                         continue
                 logprob = logprobs["content"][0]["logprob"]
                 index = logprobs["content"][0]["index"]
-                messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob))
+                messages.append(models.MessageResponse(role="assistant", content=content, logprob=logprob, index=index))
             except Exception as e:
                 logger.error(f"Error with logprob: {e}. Response: {response}")
                 logger.exception(e)
