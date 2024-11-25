@@ -102,21 +102,22 @@ async def check_response(
         if len(response) < max_tokens:
             eot_data = await get_prompt_logprobs(
                 prompt=prompt,
-                response=response[:-1],
+                response=response[:-3],
                 temperature=temperature,
                 seed=seed,
                 top_p=top_p,
                 top_k=top_k,
                 logprobs=logprobs,
-                max_tokens=1
-            )            
+                max_tokens=3
+            )     
+            logger.info(f"eot_data : {eot_data}")       
             if eot_data and 'choices' in eot_data and eot_data['choices']:
                 first_eot_choice = eot_data['choices'][0]
                 if 'logprobs' in first_eot_choice:
                     token_ids = [elm['index'] for elm in first_eot_choice['logprobs']]
                     if tokenizer.eos_token_id not in token_ids:
                         # in case of finish reason = length
-                        if len(response) != max_tokens:
+                        if len(response) != max_tokens and (max_model_len > len(prompt_token_ids) + len(response)):
                             return TokenCheckResult(
                                 is_valid=False,
                                 message=f"End-of-text token {tokenizer.eos_token_id} not in predicted tokens {token_ids}"
