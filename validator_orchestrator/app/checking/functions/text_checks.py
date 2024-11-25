@@ -102,13 +102,13 @@ async def check_response(
         if len(response) < max_tokens:
             eot_data = await get_prompt_logprobs(
                 prompt=prompt,
-                response=response[:-3],
+                response=response[:-1],
                 temperature=temperature,
                 seed=seed,
                 top_p=top_p,
                 top_k=top_k,
                 logprobs=logprobs,
-                max_tokens=3
+                max_tokens=1
             )     
             logger.info(f"eot_data : {eot_data}")       
             if eot_data and 'choices' in eot_data and eot_data['choices']:
