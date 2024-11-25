@@ -24,6 +24,7 @@ async def check_response(
     response: List[str],
     tokenizer: AutoTokenizer,
     seed: int,
+    max_model_len : int,
     temperature: float = 0.9,
     top_p: float = 0.95,
     top_k: int = 5,
@@ -100,7 +101,7 @@ async def check_response(
         # EOT validation
         if len(response) < max_tokens:
             eot_data = await get_prompt_logprobs(
-                prompt=prompt + ''.join(response),
+                prompt=''.join(response),
                 response=[],
                 temperature=temperature,
                 seed=seed,
@@ -122,10 +123,12 @@ async def check_response(
                             continue
                     
                     if tokenizer.eos_token_id not in token_ids:
-                        return TokenCheckResult(
-                            is_valid=False,
-                            message=f"End-of-text token {tokenizer.eos_token_id} not in predicted tokens {token_ids}"
-                        )
+                        # in case of finish reason = length
+                        if len(prompt_token_ids) + len(response) < max_model_len:
+                            return TokenCheckResult(
+                                is_valid=False,
+                                message=f"End-of-text token {tokenizer.eos_token_id} not in predicted tokens {token_ids}"
+                            )
         
         logger.info("EOT validation ✅")
         return TokenCheckResult(

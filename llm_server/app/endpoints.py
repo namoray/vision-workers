@@ -9,11 +9,7 @@ import transformers
 from vllm import SamplingParams
 import json
 from typing import Dict, Any
-import loguru
-
-logging = loguru.logger
-
-
+from loguru import logger
 
 async def load_model(
     request: schemas.LoadModelRequest,
@@ -101,7 +97,7 @@ async def completion(
         raise ValueError("No response received")
         
     except Exception as e:
-        logging.exception(f"Error in completion endpoint: {str(e)}")
+        logger.exception(f"Error in completion endpoint: {str(e)}")
         return Response(
             content=f'{{"error": "{str(e)}"}}',
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
