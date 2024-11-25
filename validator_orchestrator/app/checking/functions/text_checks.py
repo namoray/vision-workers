@@ -110,18 +110,12 @@ async def check_response(
                 logprobs=logprobs,
                 max_tokens=1
             )
+            logger.info(eot_data)
             
             if eot_data and 'choices' in eot_data and eot_data['choices']:
                 first_eot_choice = eot_data['choices'][0]
                 if 'logprobs' in first_eot_choice:
-                    token_ids = []
-                    for logprob_item in first_eot_choice['logprobs']:
-                        try:
-                            token_id = tokenizer.encode(logprob_item['token'])[0]
-                            token_ids.append(token_id)
-                        except:
-                            continue
-                    
+                    token_ids = [elm['index'] for elm in first_eot_choice['logprobs']]
                     if tokenizer.eos_token_id not in token_ids:
                         # in case of finish reason = length
                         if len(response) != max_tokens:

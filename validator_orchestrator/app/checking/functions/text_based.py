@@ -98,6 +98,7 @@ async def check_text_result(
 
     if task_config.load_model_config['tokenizer'] != tokenizer_name:
         tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config['tokenizer'])
+        tokenizer_name = task_config.load_model_config['tokenizer']
 
     try:
         # Parse formatted response
