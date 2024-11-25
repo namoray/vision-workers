@@ -56,7 +56,7 @@ async def generate_text(
             media_type="application/json",
         )
     
-async def completion(
+async def completions(
     request: schemas.CompletionRequest,
     EngineState: EngineState = fastapi.Depends(dependencies.get_engine_state),
 ) -> Response:
@@ -67,35 +67,11 @@ async def completion(
             media_type="application/json",
         )
 
+    transformers.set_seed(request.seed)
+
     try:
-        request_info = models.RequestInfo(**request.dict(), stream=False)
-        response_stream = EngineState.forward_request(request_info)
-        
-        response_lines = []
-        async for line in response_stream:
-            if line and not line.endswith("[DONE]\n\n"):
-                response_lines.append(line)
-
-        if response_lines:
-            last_response = response_lines[-1]
-            json_str = last_response.replace("data: ", "").strip()
-            response_data = json.loads(json_str)
-            output_data = {
-                "choices": [{
-                    "text": response_data["choices"][0]["delta"]["content"],
-                    "logprobs": response_data["choices"][0]["logprobs"]["content"],
-                    "prompt_logprobs": response_data["choices"][0].get("prompt_logprobs", {})
-                }]
-            }
-
-            return Response(
-                content=json.dumps(output_data),
-                status_code=status.HTTP_200_OK,
-                media_type="application/json"
-            )
-        
-        raise ValueError("No response received")
-        
+        async_text_generator = infer.infer(request, EngineState, EngineState.toxic_checker, base_completion = True)
+        return StreamingResponse(async_text_generator, media_type="text/plain")
     except Exception as e:
         logger.exception(f"Error in completion endpoint: {str(e)}")
         return Response(
@@ -112,7 +88,7 @@ router = fastapi.APIRouter(
 
 router.add_api_route(
     "/completions",
-    completion,
+    completions,
     methods=["POST"],
     response_model=None,
     responses={

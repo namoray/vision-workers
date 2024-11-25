@@ -138,20 +138,52 @@ async def complete_vllm(engine: models.LLMEngine, request_info: models.RequestIn
         latest_chunk = text[cursor:]
 
         log_probs = request_output.outputs[0].logprobs
-        log_probs_dict = [
-            {
-                "index": idx,
-                "logprob": token_detail.logprob,
-                "decoded": token_detail.decoded_token,
-            }
-            for token_details in log_probs[logprobs_cursor:]
-            for idx, token_detail in token_details.items()
-        ]
-        data = json.dumps(
-            {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs]}
-        )
+        
+        if request_info.base_completion:
+            log_probs_dict = [
+                {
+                    token_detail.decoded_token : token_detail.logprob,
+                }
+                for token_details in log_probs[logprobs_cursor:]
+                for idx, token_detail in token_details.items()
+            ]
+            data = json.dumps(
+                {
+                    "choices": {
+                        "text": latest_chunk, 
+                        "logprobs": {
+                            "token_logprobs": [log_probs_dict[0].values()[0]],
+                            "tokens": [log_probs_dict[0].keys()[0]],
+                            "top_logprobs": [log_probs_dict[:number_of_logprobs]]
+                        },
+                        "finish_reason": request_output.outputs[0].finish_reason
+                    }
+                }
+            )
+        else:
+            log_probs_dict = [
+                {
+                    "index": idx,
+                    "logprob": token_detail.logprob,
+                    "decoded": token_detail.decoded_token,
+                }
+                for token_details in log_probs[logprobs_cursor:]
+                for idx, token_detail in token_details.items()
+            ]
+            data = json.dumps(
+                {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs], "finish_reason": request_output.outputs[0].finish_reason}
+            )
         yield f"data: {data}\n\n"
 
         cursor = len(text)
         logprobs_cursor = len(log_probs)
     yield "data: [DONE]\n\n"
+
+
+output_data = {
+                "choices": [{
+                    "text": response_data["choices"][0]["delta"]["content"],
+                    "logprobs": {"token_logprobs": [response_data["choices"][0]["logprobs"]["content"]]},
+                    "finish_reason": request_output.outputs[0].finish_reason
+                }]
+            }

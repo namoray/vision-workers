@@ -75,6 +75,11 @@ class RequestInfo(BaseModel):
         title="Top P",
         description="Top P for text generation. This nearly always should be 1",
     )
+    base_completion: bool = Field(
+        default=False,
+        title="Base Completion",
+        description="True if we are using the base /completion route rather than /chat/completions",
+    )
 
     class Config:
         extra = "allow"
