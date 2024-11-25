@@ -1,4 +1,4 @@
-from app.core import models
+from app.core import models, utility_models
 from typing import Dict, Any, List, Union
 import httpx
 import json
@@ -178,6 +178,10 @@ async def check_text_comp_result(result: models.QueryResult, payload: dict, task
     payload["starting_assistant_message"] = True
     payload["number_of_logprobs"] = 5
     payload["top_k"] = 5
+
+    
+    payload["messages"] = [models.Message(role = utility_models.Role.user, content = payload["prompt"])]
+    del payload["prompt"]
 
     llm_request = models.ChatRequestModel(**payload)
     llm_request.max_tokens = 1
