@@ -141,6 +141,7 @@ async def check_text_result(
                 prompt=prompt,
                 response=response_tokens,
                 tokenizer=tokenizer,
+                max_model_len=task_config.load_model_config['max_model_len'].
                 temperature=payload.get("temperature", 0.5),
                 top_p=payload.get("top_p", 0.95),
                 seed=payload.get("seed", 369)
