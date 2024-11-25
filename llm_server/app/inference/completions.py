@@ -167,12 +167,12 @@ async def complete_vllm(engine: models.LLMEngine,
                     "logprobs": {
                         "content": [
                             {
-                                "index": token_detail.index,
+                                "index": index,
                                 "logprob": token_detail.logprob,
                                 "token": token_detail.decoded_token
                             }
                             for token_details in log_probs
-                            for _, token_detail in token_details.items()
+                            for index, token_detail in token_details.items()
                         ]
                     },
                     "prompt_logprobs": formatted_prompt_logprobs
