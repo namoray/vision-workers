@@ -97,11 +97,7 @@ async def check_response(
                 message=f"Response exceeds maximum length: {len(response)} > {max_tokens}"
             )
         
-        logger.info("Length validation ✅")
-        logger.info(f"max_tokens : {max_tokens}")
-        logger.info(f"n° response tokens : {len(response)}")
-        logger.info(f"n° prompt tokens : {len(prompt_token_ids)}")
-        
+        logger.info("Length validation ✅")        
         # EOT validation
         if len(response) < max_tokens:
             eot_data = await get_prompt_logprobs(

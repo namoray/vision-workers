@@ -167,6 +167,7 @@ async def complete_vllm(engine: models.LLMEngine,
                     "logprobs": {
                         "content": [
                             {
+                                "index": token_detail.index,
                                 "logprob": token_detail.logprob,
                                 "token": token_detail.decoded_token
                             }
