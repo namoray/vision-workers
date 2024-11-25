@@ -111,7 +111,6 @@ async def check_text_result(
         # Extract messages and validate format
         messages: List[models.MessageResponse] = []
         response_tokens: List[str] = []
-        logger.info(f"formatted-response = {formatted_response}")
         for response in formatted_response:
             try:
                 content = response["choices"][0]["delta"]["content"]
