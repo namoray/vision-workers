@@ -25,11 +25,11 @@ async def check_response(
     tokenizer: AutoTokenizer,
     max_model_len : int,
     seed: int,
+    max_tokens: int = 500,
     temperature: float = 0.9,
     top_p: float = 0.95,
     top_k: int = 5,
     logprobs: int = 20,
-    max_tokens: int = 1000,
     logger_threshold: float = -10000,
 ) -> TokenCheckResult:
     try:
@@ -96,7 +96,11 @@ async def check_response(
                 is_valid=False,
                 message=f"Response exceeds maximum length: {len(response)} > {max_tokens}"
             )
+        
         logger.info("Length validation ✅")
+        logger.info(f"max_tokens : {max_tokens}")
+        logger.info(f"n° response tokens : {len(response)}")
+        logger.info(f"n° prompt tokens : {len(prompt_token_ids)}")
         
         # EOT validation
         if len(response) < max_tokens:
@@ -124,7 +128,7 @@ async def check_response(
                     
                     if tokenizer.eos_token_id not in token_ids:
                         # in case of finish reason = length
-                        if len(prompt_token_ids) + len(response) < max_model_len:
+                        if len(response) != max_tokens:
                             return TokenCheckResult(
                                 is_valid=False,
                                 message=f"End-of-text token {tokenizer.eos_token_id} not in predicted tokens {token_ids}"
