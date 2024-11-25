@@ -32,6 +32,8 @@ async def check_response(
     logger_threshold: float = -10000,
 ) -> TokenCheckResult:
     try:
+        prompt_token_ids = tokenizer(prompt)["input_ids"]
+        
         prompt_data = await get_prompt_logprobs(
             prompt=prompt,
             response=response,
@@ -42,35 +44,34 @@ async def check_response(
             logprobs=logprobs
         )
         
-        if not prompt_data:
+        if not prompt_data or 'choices' not in prompt_data or not prompt_data['choices']:
             return TokenCheckResult(
                 is_valid=False,
                 message="Failed to get completions data"
             )
 
-        if 'choices' not in prompt_data or not prompt_data['choices']:
-            return TokenCheckResult(
-                is_valid=False,
-                message="No choices in completion response"
-            )
-
-        logger.info(f"------- {prompt_data} ----")
-
         first_choice = prompt_data['choices'][0]
-        logprobs_data = first_choice.get('logprobs', {}).get('content', [])
-        prompt_logprobs = first_choice.get('prompt_logprobs', [])
+        prompt_logprobs = first_choice.get('prompt_logprobs', {})
 
-        # Tokens validation
-        for i, (token, prompt_lp) in enumerate(zip(response, prompt_logprobs)):
+        # Token validation
+        indices = [int(idx) for idx in prompt_logprobs.keys()]
+        indices.sort()        
+        response_indices = [idx for idx in indices if idx >= len(prompt_token_ids)]
+        response_loggers = {
+            str(idx): prompt_logprobs[str(idx)]
+            for idx in response_indices
+        }
+        
+        for i, (token, token_logprobs) in enumerate(zip(response, response_loggers.values())):
             allowed_tokens: Set[str] = set()
             
-            for token_id, logprob_obj in prompt_lp.items():
-                if isinstance(logprob_obj, dict):
-                    token_logprob = logprob_obj.get('logprob', float('-inf'))
-                    token_text = logprob_obj.get('decoded_token', '')
+            for token_id, logprob_data in token_logprobs.items():
+                if isinstance(logprob_data, dict):
+                    token_logprob = logprob_data.get('logprob', float('-inf'))
+                    token_text = logprob_data.get('decoded_token', '')
                 else:
-                    token_logprob = getattr(logprob_obj, 'logprob', float('-inf'))
-                    token_text = getattr(logprob_obj, 'decoded_token', '')
+                    token_logprob = getattr(logprob_data, 'logprob', float('-inf'))
+                    token_text = getattr(logprob_data, 'decoded_token', '')
                 
                 if token_logprob > logger_threshold:
                     allowed_tokens.add(token_text)
@@ -88,7 +89,7 @@ async def check_response(
         
         logger.info("Token validation ✅")
 
-        # Length validation
+        # length validation
         if len(response) > max_tokens:
             return TokenCheckResult(
                 is_valid=False,
@@ -110,15 +111,20 @@ async def check_response(
             )
             
             if eot_data and 'choices' in eot_data and eot_data['choices']:
-                first_choice = eot_data['choices'][0]
-                if 'logprobs' in first_choice and 'content' in first_choice['logprobs']:
-                    tokens = [int(list(lp.keys())[0]) 
-                            for lp in first_choice['logprobs']['content']]
+                first_eot_choice = eot_data['choices'][0]
+                if 'logprobs' in first_eot_choice:
+                    token_ids = []
+                    for logprob_item in first_eot_choice['logprobs']:
+                        try:
+                            token_id = tokenizer.encode(logprob_item['token'])[0]
+                            token_ids.append(token_id)
+                        except:
+                            continue
                     
-                    if tokenizer.eos_token_id not in tokens:
+                    if tokenizer.eos_token_id not in token_ids:
                         return TokenCheckResult(
                             is_valid=False,
-                            message=f"End-of-text token {tokenizer.eos_token_id} not in predicted tokens {tokens}"
+                            message=f"End-of-text token {tokenizer.eos_token_id} not in predicted tokens {token_ids}"
                         )
         
         logger.info("EOT validation ✅")
@@ -134,7 +140,7 @@ async def check_response(
             is_valid=False,
             message=f"Validation failed due to error: {str(e)}"
         )
-    
+        
 async def get_prompt_logprobs(
     prompt: str,
     response: List[str],
