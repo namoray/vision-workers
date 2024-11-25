@@ -101,8 +101,8 @@ async def check_response(
         # EOT validation
         if len(response) < max_tokens:
             eot_data = await get_prompt_logprobs(
-                prompt=''.join(response[:-1]),
-                response=[],
+                prompt=prompt,
+                response=response[:-1],
                 temperature=temperature,
                 seed=seed,
                 top_p=top_p,
@@ -161,7 +161,7 @@ async def get_prompt_logprobs(
         "logprobs": logprobs,
         "seed": seed
     }
-    
+    logger.info(f"sending completion query = {query_data}")
     try:
         response = await _query_completions(query_data, server_name)
         return response.json()
