@@ -54,7 +54,7 @@ async def check_response(
                 message="No choices in completion response"
             )
 
-        logger.info("------- {prompt_data} ----")
+        logger.info(f"------- {prompt_data} ----")
 
         first_choice = prompt_data['choices'][0]
         logprobs_data = first_choice.get('logprobs', {}).get('content', [])
