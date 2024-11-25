@@ -70,6 +70,7 @@ class MessageResponse(BaseModel):
     role: str
     content: str
     logprob: float
+    index: int
 
 
 class ChatRequestModel(BaseModel):
