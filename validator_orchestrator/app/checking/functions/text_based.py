@@ -154,6 +154,9 @@ async def check_text_result(
                 logger.warning(f"Response validation failed: {validation_result.message}")
                 return 0.0
         
+        if messages[-1].content == "":
+            messages = messages[:-1]
+
         if len(messages) == 1:
             indicies_to_check = [0]
         else:
@@ -194,7 +197,6 @@ async def check_text_result(
                         }
                     )
                 )
-
             distance = await _calculate_distance_for_token(task_config, llm_request, messages, index)
             checks += 1
             total_distance += distance
