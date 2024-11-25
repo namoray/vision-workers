@@ -101,7 +101,7 @@ async def check_response(
         # EOT validation
         if len(response) < max_tokens:
             eot_data = await get_prompt_logprobs(
-                prompt=''.join(response),
+                prompt=''.join(response[:-1]),
                 response=[],
                 temperature=temperature,
                 seed=seed,
