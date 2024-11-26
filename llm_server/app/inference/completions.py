@@ -209,10 +209,9 @@ async def complete_vllm(engine: models.LLMEngine,
                 for token_details in log_probs[logprobs_cursor:]
                 for idx, token_detail in token_details.items()
             ]
-            data = json.dumps(
-                {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs]}
-            )
-            yield f"data: {data}\n\n"
+            data = {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs]}
+            if data["text"] and data["logprobs"]:
+                yield f"data: {json.dumps(data)}\n\n"
 
             cursor = len(text)
             logprobs_cursor = len(log_probs)
