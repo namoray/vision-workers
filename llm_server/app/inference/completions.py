@@ -107,6 +107,7 @@ async def complete_vllm(engine: models.LLMEngine,
     seed = request_info.seed
     number_of_logprobs = request_info.number_of_logprobs
     starting_assistant_message = request_info.starting_assistant_message
+    truncate_prompt_tokens = request_info.truncate_prompt_tokens
     top_k = 5  # 5 is the maximum that vllm allows for logprobs
     top_p = request_info.top_p if request_info.top_p in [0, 1] else 1
 
@@ -124,19 +125,19 @@ async def complete_vllm(engine: models.LLMEngine,
 
     set_random_seed(seed)
 
-    sampling_params = SamplingParams(
-        max_tokens=request_info.max_tokens,
-        temperature=temperature,
-        top_p=top_p,
-        seed=seed,
-        logprobs=number_of_logprobs,
-        top_k=top_k,
-        prompt_logprobs=number_of_logprobs
-    )
-
-    request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
-
     if not stream:
+        sampling_params = SamplingParams(
+            max_tokens=request_info.max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            seed=seed,
+            logprobs=number_of_logprobs,
+            top_k=top_k,
+            prompt_logprobs=number_of_logprobs,
+            truncate_prompt_tokens=truncate_prompt_tokens
+        )
+        request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
+
         logprobs_cursor = 0
         cursor = 0
         async for output in request_output:
@@ -181,6 +182,16 @@ async def complete_vllm(engine: models.LLMEngine,
             
         yield f"data: {json.dumps(choices_data)}\n\n"
     else:
+        sampling_params = SamplingParams(
+            max_tokens=request_info.max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            seed=seed,
+            logprobs=number_of_logprobs,
+            top_k=top_k,
+            prompt_logprobs=number_of_logprobs
+        )
+        request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
         logprobs_cursor = 0
         cursor = 0
         async for output in request_output:
