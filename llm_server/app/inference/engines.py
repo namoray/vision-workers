@@ -30,7 +30,6 @@ async def _get_vllm_engine(
         revision=revision,
         max_num_seqs=256,
         max_logprobs=100,
-        max_num_batched_tokens=128,
         gpu_memory_utilization=gpu_memory_utilization,
         max_model_len=max_model_len,
         trust_remote_code=True,
