@@ -125,19 +125,18 @@ async def complete_vllm(engine: models.LLMEngine,
 
     set_random_seed(seed)
 
-    sampling_params = SamplingParams(
-        max_tokens=request_info.max_tokens,
-        temperature=temperature,
-        top_p=top_p,
-        seed=seed,
-        logprobs=number_of_logprobs,
-        top_k=top_k,
-        prompt_logprobs=number_of_logprobs
-    )
-
-    request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
-
     if not stream:
+        sampling_params = SamplingParams(
+            max_tokens=request_info.max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            seed=seed,
+            logprobs=number_of_logprobs,
+            top_k=top_k,
+            prompt_logprobs=prompt_logprobs
+        )
+        request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
+
         logprobs_cursor = 0
         cursor = 0
         async for output in request_output:
@@ -182,6 +181,15 @@ async def complete_vllm(engine: models.LLMEngine,
             
         yield f"data: {json.dumps(choices_data)}\n\n"
     else:
+        sampling_params = SamplingParams(
+            max_tokens=request_info.max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            seed=seed,
+            logprobs=number_of_logprobs,
+            top_k=top_k
+        )
+        request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
         logprobs_cursor = 0
         cursor = 0
         async for output in request_output:
@@ -189,7 +197,7 @@ async def complete_vllm(engine: models.LLMEngine,
             latest_chunk = text[cursor:]
 
             logger.info(f"text: {text}")
-            logger.info('!-----'*5)
+            logger.info('-----'*5)
 
             log_probs = output.outputs[0].logprobs
             log_probs_dict = [
