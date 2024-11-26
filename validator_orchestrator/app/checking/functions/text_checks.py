@@ -30,8 +30,7 @@ async def check_response(
     top_p: float = 0.95,
     top_k: int = 5,
     logprobs: int = 10,
-    logger_threshold: float = -10000,
-    truncate_prompt_tokens: int = 50
+    logger_threshold: float = -10000
 ) -> TokenCheckResult:
     try:
         prompt_token_ids = tokenizer(prompt)["input_ids"]
@@ -48,7 +47,6 @@ async def check_response(
             top_k=top_k,
             logprobs=logprobs,
             max_tokens=1,
-            truncate_prompt_tokens=truncate_prompt_tokens
         )
         if not prompt_data or 'choices' not in prompt_data or not prompt_data['choices']:
             return TokenCheckResult(
@@ -113,8 +111,7 @@ async def check_response(
                 top_p=top_p,
                 top_k=top_k,
                 logprobs=logprobs,
-                max_tokens=1,
-                truncate_prompt_tokens=truncate_prompt_tokens
+                max_tokens=1
             )     
             if eot_data and 'choices' in eot_data and eot_data['choices']:
                 first_eot_choice = eot_data['choices'][0]
@@ -151,7 +148,6 @@ async def get_prompt_logprobs(
     top_k: int = 5,
     logprobs: int = 10,
     max_tokens: int = 100,
-    truncate_prompt_tokens: int = 50,
     server_name: str = "llm_server"
 ) -> Dict[str, Any]:
     
@@ -164,8 +160,7 @@ async def get_prompt_logprobs(
         "top_k": top_k,
         "prompt_logprobs": logprobs,
         "logprobs": logprobs,
-        "seed": seed,
-        "truncate_prompt_tokens": truncate_prompt_tokens
+        "seed": seed
     }
     try:
         response = await _query_completions(query_data, server_name)

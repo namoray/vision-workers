@@ -83,11 +83,6 @@ class RequestInfo(BaseModel):
         title="Top P",
         description="Top P for text generation. This nearly always should be 1",
     )
-    truncate_prompt_tokens: int = Field(
-        default=50,
-        title="Truncate Prompt Tokens",
-        description="Truncate the prompt to this many tokens",
-    )
 
     class Config:
         extra = "allow"

@@ -108,7 +108,6 @@ async def complete_vllm(engine: models.LLMEngine,
     number_of_logprobs = request_info.number_of_logprobs
     prompt_logprobs = request_info.prompt_logprobs
     starting_assistant_message = request_info.starting_assistant_message
-    truncate_prompt_tokens = request_info.truncate_prompt_tokens
     top_k = 5  # 5 is the maximum that vllm allows for logprobs
     top_p = request_info.top_p if request_info.top_p in [0, 1] else 1
 
@@ -135,7 +134,6 @@ async def complete_vllm(engine: models.LLMEngine,
             logprobs=number_of_logprobs,
             top_k=top_k,
             prompt_logprobs=prompt_logprobs,
-            truncate_prompt_tokens=truncate_prompt_tokens
         )
         request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
 
