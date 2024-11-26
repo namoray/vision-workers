@@ -31,7 +31,6 @@ class CompletionRequest(BaseModel):
     temperature: float = 0.9
     top_p: float = 0.95
     top_k: int = 5
-    logprobs: int = 5
     prompt_logprobs: int = 10
     number_of_logprobs: int = 1
     truncate_prompt_tokens: int = 50
