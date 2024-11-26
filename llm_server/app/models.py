@@ -63,7 +63,7 @@ class RequestInfo(BaseModel):
         description="Number of logprobs for input prompt to return with each token output",
         example=1,
         gt=0,
-        le=5,
+        le=20,
     )
     number_of_logprobs: int = Field(
         default=1,
