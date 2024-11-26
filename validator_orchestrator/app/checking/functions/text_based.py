@@ -97,9 +97,9 @@ async def check_text_result(
 ) -> Union[float, None]:
     global tokenizer, tokenizer_name
 
-    if task_config.load_model_config['tokenizer'] != tokenizer_name:
-        tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config['tokenizer'])
-        tokenizer_name = task_config.load_model_config['tokenizer']
+    if task_config.load_model_config.get('tokenizer', task_config.load_model_config.get('model')) != tokenizer_name:
+        tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config.get('tokenizer', task_config.load_model_config.get('model')))
+        tokenizer_name = task_config.load_model_config.get('tokenizer', task_config.load_model_config.get('model'))
 
     try:
         # Parse formatted response

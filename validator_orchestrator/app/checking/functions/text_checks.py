@@ -110,7 +110,6 @@ async def check_response(
                 logprobs=logprobs,
                 max_tokens=1
             )     
-            logger.info(f"eot_data : {eot_data}")       
             if eot_data and 'choices' in eot_data and eot_data['choices']:
                 first_eot_choice = eot_data['choices'][0]
                 if 'logprobs' in first_eot_choice:
