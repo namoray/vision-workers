@@ -133,7 +133,7 @@ async def complete_vllm(engine: models.LLMEngine,
             seed=seed,
             logprobs=number_of_logprobs,
             top_k=top_k,
-            prompt_logprobs=prompt_logprobs,
+            prompt_logprobs=prompt_logprobs
         )
         request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
 
@@ -187,8 +187,7 @@ async def complete_vllm(engine: models.LLMEngine,
             top_p=top_p,
             seed=seed,
             logprobs=number_of_logprobs,
-            top_k=top_k,
-            prompt_logprobs=number_of_logprobs
+            top_k=top_k
         )
         request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
         logprobs_cursor = 0
@@ -196,6 +195,9 @@ async def complete_vllm(engine: models.LLMEngine,
         async for output in request_output:
             text = output.outputs[0].text
             latest_chunk = text[cursor:]
+
+            logger.info(f"text: {text}")
+            logger.info('-----'*5)
 
             log_probs = output.outputs[0].logprobs
             log_probs_dict = [
