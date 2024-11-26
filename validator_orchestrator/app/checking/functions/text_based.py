@@ -57,6 +57,7 @@ async def _calculate_distance_for_token(
     index: int,
 ) -> float:
     validator_checking_response = await _get_chat_data_validator_response(task_config.endpoint, llm_request.model_dump(), server_name=task_config.server_needed.value)
+    logger.info(f"!! validator_checking_response: {validator_checking_response}")
     token = chat_responses[index].content
     validator_log_probs_for_token = {i.decoded: i.logprob for i in validator_checking_response.logprobs}
     logger.info(f"token : {token} - logprob : {chat_responses[index].logprob}")
