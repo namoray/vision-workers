@@ -171,7 +171,7 @@ async def get_prompt_logprobs(
 async def _query_completions(
     data: Dict[str, Any],
     server_name: str = "llm_server",
-    timeout: int = 5
+    timeout: int = 15
 ) -> httpx.Response:
 
     url = f"http://{server_name}:{AI_SERVER_PORT}/vali-completions"
