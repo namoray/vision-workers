@@ -34,16 +34,29 @@ async def check_response(
 ) -> TokenCheckResult:
     try:
         prompt_token_ids = tokenizer(prompt)["input_ids"]
-        
-        prompt_data = await get_prompt_logprobs(
-            prompt=prompt,
-            response=response,
-            temperature=temperature,
-            seed=seed,
-            top_p=top_p,
-            top_k=top_k,
-            logprobs=logprobs
-        )
+
+        total_tokens = len(prompt_token_ids) + len(response)
+        if total_tokens < max_model_len - 100:
+            prompt_data = await get_prompt_logprobs(
+                prompt=prompt,
+                response=response,
+                temperature=temperature,
+                seed=seed,
+                top_p=top_p,
+                top_k=top_k,
+                logprobs=logprobs
+            )
+        else:
+            prompt_data = await get_prompt_logprobs(
+                prompt=prompt,
+                response=response,
+                temperature=temperature,
+                seed=seed,
+                top_p=top_p,
+                top_k=top_k,
+                logprobs=logprobs,
+                max_tokens=1
+            )
         
         if not prompt_data or 'choices' not in prompt_data or not prompt_data['choices']:
             return TokenCheckResult(
