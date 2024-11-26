@@ -33,6 +33,7 @@ class CompletionRequest(BaseModel):
     top_k: int = 5
     logprobs: int = 5
     prompt_logprobs: int = 10
+    number_of_logprobs: int = 1
     truncate_prompt_tokens: int = 50
     class Config:
         extra = "allow"
