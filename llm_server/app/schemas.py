@@ -31,7 +31,7 @@ class CompletionRequest(BaseModel):
     temperature: float = 0.9
     top_p: float = 0.95
     top_k: int = 5
-    logprobs: int = 10
-    prompt_logprobs: int = 20
+    logprobs: int = 5
+    prompt_logprobs: int = 10
     class Config:
         extra = "allow"

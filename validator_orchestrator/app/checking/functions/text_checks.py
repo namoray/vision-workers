@@ -29,7 +29,7 @@ async def check_response(
     temperature: float = 0.9,
     top_p: float = 0.95,
     top_k: int = 5,
-    logprobs: int = 20,
+    logprobs: int = 10,
     logger_threshold: float = -10000,
 ) -> TokenCheckResult:
     try:
@@ -156,7 +156,7 @@ async def get_prompt_logprobs(
     seed: int,
     top_p: float = 0.95,
     top_k: int = 5,
-    logprobs: int = 20,
+    logprobs: int = 10,
     max_tokens: int = 100,
     server_name: str = "llm_server"
 ) -> Dict[str, Any]:
