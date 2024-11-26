@@ -37,7 +37,8 @@ async def check_response(
         prompt_token_ids = tokenizer(prompt)["input_ids"]
 
         total_tokens = len(prompt_token_ids) + len(response)
-        
+        logger.info(f"Total tokens: {total_tokens} ; prompt tokens: {len(prompt_token_ids)} ; response tokens: {len(response)}")
+
         prompt_data = await get_prompt_logprobs(
             prompt=prompt,
             response=response,
