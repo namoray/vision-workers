@@ -36,7 +36,7 @@ def _score_average_distance(average_distance: float, alpha: int = 5) -> float:
 async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any], server_name: str = "llm_server") -> httpx.Response:
     # TODO: Add ability to use localhost as the server name if set in env vars or similar
     url = f"http://{server_name}:{AI_SERVER_PORT}" + "/" + endpoint.lstrip("/")
-    async with httpx.AsyncClient(timeout=5) as client:
+    async with httpx.AsyncClient(timeout=10) as client:
         logger.info(f"Querying : {url}")
         response = await client.post(url, json=data)
         return response
