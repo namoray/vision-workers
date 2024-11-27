@@ -154,7 +154,7 @@ async def complete_vllm(engine: models.LLMEngine,
                         formatted_prompt_logprobs[str(i)] = {
                             str(token_id): {
                                 "logprob": logprob.logprob,
-                                "decoded_token": logprob.decoded_token,
+                                "token": logprob.decoded_token,
                                 "rank": logprob.rank
                             }
                             for token_id, logprob in token_logprobs.items()
