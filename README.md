@@ -32,7 +32,7 @@ Miner workers can operate on both Runpod/VastAI and bare metal machines, althoug
 
 ## For Runpod and Similar Providers
 
-Refer to the [Runpod Setup Guide](https://github.com/namoray/vision/blob/main/docs/mining.md#worker-server-setup) for instructions on starting workers.
+Refer to the [Runpod Setup Guide](https://github.com/namoray/vision/blob/production/docs/mining.md#worker-server-setup) for instructions on starting workers.
 
 ## For Bare Metal Users
 
