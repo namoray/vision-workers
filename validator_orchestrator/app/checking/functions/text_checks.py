@@ -60,7 +60,7 @@ async def check_response(
 
         first_choice = prompt_data['choices'][0]
         prompt_logprobs = first_choice.get('prompt_logprobs', {})[len(prompt_token_ids):]
-        for i, (token, current_prompt_logprobs)  in enumerate(zip(response, current_prompt_logprobs)):            
+        for i, (token, current_prompt_logprobs)  in enumerate(zip(response, prompt_logprobs)):            
             rank_to_be_smaller_than = max(
                 (logprob_obj['rank'] for logprob_obj in current_prompt_logprobs.values()
                  if logprob_obj.get('logprob', float('-inf')) > -float('inf')),
