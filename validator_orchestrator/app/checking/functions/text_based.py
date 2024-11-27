@@ -14,7 +14,7 @@ BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
 
 
-def _score_average_distance(average_distance: float, alpha: int = 5) -> float:
+def _score_average_distance(average_distance: float) -> float:
     """Calculate quality score from logprobs average distances.
     alpha decides how severe we penalize for big distances"""
     if average_distance <= BOTTOM_TEXT_THRESHOLD:
