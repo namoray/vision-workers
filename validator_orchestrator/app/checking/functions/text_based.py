@@ -151,7 +151,9 @@ async def check_text_result(
             )
             
             if not validation_result.is_valid:
-                logger.warning(f"Response validation failed: {validation_result.message}")
+                logger.error(f"Response validation failed")
+                logger.error(f"Query : {payload}")
+                logger.error(f"Response : {''.join(response_tokens)}")
                 return 0.0
         
         if messages[-1].content == "":

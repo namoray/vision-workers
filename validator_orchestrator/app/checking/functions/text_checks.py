@@ -32,8 +32,7 @@ async def check_response(
     temperature: float = 0.9,
     top_p: float = 0.95,
     top_k: int = 5,
-    logprobs: int = 10,
-    logger_threshold: float = -10000  # don't think we need this with the rank check
+    num_logprobs: int = 11,
 ) -> TokenCheckResult:
     try:
         prompt_token_ids = tokenizer(prompt)["input_ids"]
@@ -49,7 +48,7 @@ async def check_response(
             seed=seed,
             top_p=top_p,
             top_k=top_k,
-            logprobs=logprobs,
+            logprobs=num_logprobs,
             max_tokens=1,
         )
         if not prompt_data or 'choices' not in prompt_data or not prompt_data['choices']:
@@ -60,35 +59,45 @@ async def check_response(
 
         first_choice = prompt_data['choices'][0]
         prompt_logprobs = first_choice.get('prompt_logprobs', {})[len(prompt_token_ids):]
-        for i, (token, current_prompt_logprobs)  in enumerate(zip(response, prompt_logprobs)):            
-            rank_to_be_smaller_than = max(
-                (logprob_obj['rank'] for logprob_obj in current_prompt_logprobs.values()
-                 if logprob_obj.get('logprob', float('-inf')) > -float('inf')),
-                default=1
-            )
-
-            if rank_to_be_smaller_than == logprobs:
-                rank_to_be_smaller_than -= 1
-            token_found = False
-            for token_info in current_prompt_logprobs.values():
-                if token_info.get('token') == token:
-                    token_found = True
-                    if token_info.get('rank', float('inf')) > rank_to_be_smaller_than:
-                        logger.warning(
-                            f"BAD index {i}! Token '{token}' has rank {token_info.get('rank')} vs threshold {rank_to_be_smaller_than}")
-                        return TokenCheckResult(
-                            is_valid=False,
-                            token_index=i,
-                            message=f"Invalid token '{token}' at position {i}"
-                        )
+        
+        for i, (token, current_prompt_logprobs) in enumerate(zip(response, prompt_logprobs)):
+            # our token's info
+            token_info = None
+            for info in current_prompt_logprobs.values():
+                if info.get('token') == token:
+                    token_info = info
                     break
 
-            if not token_found:
+            if not token_info:
                 return TokenCheckResult(
                     is_valid=False,
                     message=f"Token '{token}' not found in logprobs at position {i}",
                     token_index=i,
                 )
+
+            # check if any token has -inf probability
+            has_inf = any(
+                info.get('logprob', float('-inf')) == float('-inf')
+                for info in current_prompt_logprobs.values()
+            )
+
+            # if we have -inf values, token just needs to not be -inf
+            if has_inf:
+                if token_info.get('logprob', float('-inf')) == float('-inf'):
+                    return TokenCheckResult(
+                        is_valid=False,
+                        token_index=i,
+                        message=f"Invalid token '{token}' at position {i} (probability is -inf)"
+                    )
+            # if all values are finite, token can't be in last rank
+            else:
+                if token_info.get('rank', 0) >= num_logprobs - 1:
+                    return TokenCheckResult(
+                        is_valid=False,
+                        token_index=i,
+                        message=f"Invalid token '{token}' at position {i} (lowest rank)"
+                    )
+
         logger.info("Allowed tokens validation ✅")
 
         # length validation
@@ -109,7 +118,7 @@ async def check_response(
                 seed=seed,
                 top_p=top_p,
                 top_k=top_k,
-                logprobs=logprobs,
+                logprobs=num_logprobs,
                 max_tokens=1
             )
             if eot_data and 'choices' in eot_data and eot_data['choices']:
