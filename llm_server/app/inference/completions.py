@@ -144,9 +144,6 @@ async def complete_vllm(engine: models.LLMEngine,
             log_probs = output.outputs[0].logprobs
             prompt_log_probs = output.prompt_logprobs
             
-            logger.info(f"{output}")
-            logger.info('-----'*5)
-
             final_prompt_logprobs = []
             if prompt_log_probs:
                 for i, token_logprobs in enumerate(prompt_log_probs):
