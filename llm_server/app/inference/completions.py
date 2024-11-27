@@ -176,7 +176,7 @@ async def complete_vllm(engine: models.LLMEngine,
                             for index, token_detail in token_details.items()
                         ]
                     },
-                    "prompt_logprobs": prompt_log_probs
+                    "prompt_logprobs": formatted_prompt_logprobs
                 }]
             }
             
