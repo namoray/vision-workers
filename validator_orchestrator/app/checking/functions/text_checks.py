@@ -89,6 +89,7 @@ async def check_response(
                     message=f"Token '{token}' not found in logprobs at position {i}",
                     token_index=i,
                 )
+        logger.info("Allowed tokens validation ✅")
 
         # length validation
         if len(response) > max_tokens:
