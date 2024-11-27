@@ -101,9 +101,10 @@ async def check_response(
         logger.info("Length validation ✅")
         # EOT validation
         if len(response) < max_tokens:
+            eot_response = response[:-1] if response[-1] == "" else response 
             eot_data = await get_prompt_logprobs(
                 prompt=prompt,
-                response=response[:-1],
+                response=eot_response,
                 temperature=temperature,
                 seed=seed,
                 top_p=top_p,
