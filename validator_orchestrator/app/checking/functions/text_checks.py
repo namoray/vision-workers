@@ -62,9 +62,7 @@ async def check_response(
         prompt_logprobs = first_choice.get('prompt_logprobs', {})
         logger.info(f"prompt_data : {prompt_data}")
         logger.info("---"*5)
-        logger.info(f"first_choice : {first_choice}")
-        logger.info("---"*5)
-        logger.info(f"prompt_logprobs : {prompt_logprobs}")
+        logger.info(f"prompt_logprobs keys: {prompt_logprobs.keys()}")
         logger.info("---"*5)
         for i, token in enumerate(response):
             current_prompt_logprobs = prompt_logprobs[str(i)]
