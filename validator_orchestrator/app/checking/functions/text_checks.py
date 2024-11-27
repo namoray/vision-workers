@@ -67,7 +67,7 @@ async def check_response(
         logger.info(f"prompt_logprobs : {prompt_logprobs}")
         logger.info("---"*5)
         for i, token in enumerate(response):
-            current_prompt_logprobs = prompt_logprobs[i+1]
+            current_prompt_logprobs = prompt_logprobs[str(i)]
             rank_to_be_smaller_than = max(
                 (logprob_obj['rank'] for logprob_obj in current_prompt_logprobs.values()
                  if logprob_obj.get('logprob', float('-inf')) > -float('inf')),
