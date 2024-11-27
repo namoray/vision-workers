@@ -147,11 +147,11 @@ async def complete_vllm(engine: models.LLMEngine,
             logger.info(f"{output}")
             logger.info('-----'*5)
 
-            formatted_prompt_logprobs = {}
+            final_prompt_logprobs = []
             if prompt_log_probs:
                 for i, token_logprobs in enumerate(prompt_log_probs):
                     if token_logprobs:
-                        formatted_prompt_logprobs[str(i)] = {
+                        formatted_prompt_logprobs = {
                             str(token_id): {
                                 "logprob": logprob.logprob,
                                 "token": logprob.decoded_token,
@@ -159,6 +159,9 @@ async def complete_vllm(engine: models.LLMEngine,
                             }
                             for token_id, logprob in token_logprobs.items()
                         }
+                        final_prompt_logprobs.append(formatted_prompt_logprobs)
+                    else:
+                        final_prompt_logprobs.append(None)
 
             choices_data = {
                 "choices": [{
@@ -176,7 +179,7 @@ async def complete_vllm(engine: models.LLMEngine,
                             for index, token_detail in token_details.items()
                         ]
                     },
-                    "prompt_logprobs": formatted_prompt_logprobs
+                    "prompt_logprobs": final_prompt_logprobs
                 }]
             }
             
