@@ -113,12 +113,12 @@ async def check_text_result(
         # Extract messages and validate format
         messages: List[models.MessageResponse] = []
         response_tokens: List[str] = []
-        for response in formatted_response:
+        for idx, response in enumerate(formatted_response):
             try:
                 content = response["choices"][0]["delta"]["content"]
                 logprobs = response["choices"][0]["logprobs"]
                 # Below is a fix for the first message not having logprobs
-                if content == "" and logprobs is None:
+                if idx == 0 and content == "" and logprobs is None:
                     role = response["choices"][0]["delta"]["role"]
                     if role == "assistant":
                         continue
