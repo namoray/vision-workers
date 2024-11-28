@@ -148,7 +148,7 @@ async def complete_vllm(engine: models.LLMEngine, request_info: models.RequestIn
             for idx, token_detail in token_details.items()
         ]
         data = json.dumps(
-            {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs]}
+            {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs], "finish_reason": request_output.outputs[0].finish_reason}
         )
         yield f"data: {data}\n\n"
 

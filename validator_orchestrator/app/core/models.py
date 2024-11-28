@@ -133,6 +133,7 @@ class Logprob(BaseModel):
 class ValidatorCheckingResponse(BaseModel):
     text: str
     logprobs: List[Logprob]
+    finish_reason: str | None
 
 
 class CheckResultResponse(BaseModel):
