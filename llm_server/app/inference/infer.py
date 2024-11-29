@@ -1,5 +1,5 @@
 from app import schemas
-from typing import List
+from typing import List, Union
 from app import models
 from app.inference import toxic
 from app.inference.state import EngineState
@@ -14,12 +14,15 @@ async def _get_last_message_content(messages: List[models.Message]):
 
 
 async def infer(
-    request: schemas.TextRequestModel,
+    request: Union[schemas.TextRequestModel, schemas.CompletionRequest],
     engine_state: EngineState,
     toxic_engine: models.ToxicEngine,
     base_completion: bool = False
 ):
-    last_message_content = await _get_last_message_content(request.messages)
+    if type(request) == schemas.TextRequestModel:
+        last_message_content = await _get_last_message_content(request.messages)
+    else:
+        last_message_content = request.prompt
     if toxic.prompt_is_toxic(toxic_engine, last_message_content):
         for o in "I am sorry, but that last request was deemed toxic, I am unable to answer.".split(" "):
             yield o + " "
