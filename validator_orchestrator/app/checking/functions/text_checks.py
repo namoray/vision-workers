@@ -51,6 +51,7 @@ async def check_response(
             logprobs=num_logprobs,
             max_tokens=1,
         )
+        logger.info(f"!! prompt_data: {prompt_data}")
         if not prompt_data or 'choices' not in prompt_data or not prompt_data['choices']:
             return TokenCheckResult(
                 is_valid=False,
