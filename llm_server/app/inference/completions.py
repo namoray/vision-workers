@@ -210,20 +210,20 @@ async def complete_vllm(engine: models.LLMEngine,
                     for token_details in log_probs[logprobs_cursor:]
                     for idx, token_detail in token_details.items()
                 ]
-                data = json.dumps(
-                    {
-                        "choices": {
-                            "text": latest_chunk, 
-                            "logprobs": {
-                                "token_logprobs": [list(log_probs_dict[0].values())[0]],
-                                "tokens": [list(log_probs_dict[0].keys())[0]],
-                                "top_logprobs": log_probs_dict[:number_of_logprobs]
-                            },
-                            "finish_reason": output.outputs[0].finish_reason
-                        }
+                data = {
+                    "choices": {
+                        "text": latest_chunk, 
+                        "logprobs": {
+                            "token_logprobs": [list(log_probs_dict[0].values())[0]],
+                            "tokens": [list(log_probs_dict[0].keys())[0]],
+                            "top_logprobs": log_probs_dict[:number_of_logprobs]
+                        },
+                        "finish_reason": output.outputs[0].finish_reason
                     }
-                )
-                
+                }
+                if data["choices"]["text"] and data["choices"]["logprobs"]:
+                    yield f"data: {json.dumps(data)}\n\n"
+
             else:
                 log_probs_dict = [
                     {
@@ -234,11 +234,13 @@ async def complete_vllm(engine: models.LLMEngine,
                     for token_details in log_probs[logprobs_cursor:]
                     for idx, token_detail in token_details.items()
                 ]
-                data = json.dumps(
-                    {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs], "finish_reason": output.outputs[0].finish_reason}
-                )
-            if data["text"] and data["logprobs"]:
-                yield f"data: {json.dumps(data)}\n\n"
+                data = {
+                    "text": latest_chunk, 
+                    "logprobs": log_probs_dict[:number_of_logprobs], 
+                    "finish_reason": output.outputs[0].finish_reason
+                }
+                if data["text"] and data["logprobs"]:
+                    yield f"data: {json.dumps(data)}\n\n"
 
             cursor = len(text)
             logprobs_cursor = len(log_probs)
