@@ -236,12 +236,16 @@ async def complete_vllm(engine: models.LLMEngine,
                     for token_details in log_probs[logprobs_cursor:]
                     for idx, token_detail in token_details.items()
                 ]
+
                 data = {
-                    "text": latest_chunk, 
-                    "logprobs": log_probs_dict[:number_of_logprobs], 
-                    "finish_reason": output.outputs[0].finish_reason
+                    "choices": [{
+                        "delta": {
+                            "content": text
+                        },
+                        "logprobs": {"content": log_probs_dict},
+                    }]
                 }
-                if data["text"] and data["logprobs"]:
+                if data["choices"][0]["delta"]["content"] and data["choices"][0]["logprobs"]:
                     yield f"data: {json.dumps(data)}\n\n"
 
             cursor = len(text)
