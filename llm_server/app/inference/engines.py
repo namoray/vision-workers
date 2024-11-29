@@ -29,6 +29,8 @@ async def _get_vllm_engine(
         enforce_eager=False,
         revision=revision,
         max_num_seqs=256,
+        enable_chunked_prefill=True,
+        # max_num_batched_tokens=128,
         max_logprobs=100,
         gpu_memory_utilization=gpu_memory_utilization,
         max_model_len=max_model_len,

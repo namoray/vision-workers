@@ -9,6 +9,8 @@ import json
 from app.logging import logging
 from typing import Any
 from loguru import logger
+from typing import List, Any, Union
+
 
 SYSTEM_PROMPT_PREFIX = "Instructions to follow for all following messages: "
 
@@ -95,95 +97,148 @@ def fix_message_structure_for_prompt(tokenizer: Any, messages: List[Message]) ->
     return processed_messages
 
 
-async def complete_vllm(engine: models.LLMEngine, request_info: models.RequestInfo) -> AsyncGenerator[str, None]:
+async def complete_vllm(engine: models.LLMEngine, 
+                       request_info: models.RequestInfo,
+) -> Union[AsyncGenerator[str, None], dict]:
     import uuid
 
     temperature = request_info.temperature
-
+    stream = getattr(request_info, 'stream', True)
     seed = request_info.seed
     number_of_logprobs = request_info.number_of_logprobs
+    prompt_logprobs = request_info.prompt_logprobs
     starting_assistant_message = request_info.starting_assistant_message
-    top_k = 5  # 5 is the maximum that vllm allows for logprobs, so we must use this
-    top_p = request_info.top_p
+    top_k = 5  # 5 is the maximum that vllm allows for logprobs
+    top_p = request_info.top_p if request_info.top_p in [0, 1] else 1
 
-    # Our use cases have top p 0 or 1
-    if top_p not in [0, 1]:
-        top_p = 1
+    if hasattr(request_info, 'prompt'):
+        formatted_prompt = request_info.prompt
+    else:
+        messages_dict = [message.model_dump() for message in fix_message_structure_for_prompt(engine.tokenizer, request_info.messages)]
+        formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=starting_assistant_message)
+        if "llama-3" in engine.model_name.lower() and not starting_assistant_message:
+            formatted_prompt = formatted_prompt[: formatted_prompt.rfind("<|eot_id|>")]
 
-    messages_dict = [message.model_dump() for message in fix_message_structure_for_prompt(engine.tokenizer, request_info.messages)]
-    formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=starting_assistant_message)
-    if "llama-3" in engine.model_name.lower() and not starting_assistant_message:
-        formatted_prompt = formatted_prompt[: formatted_prompt.rfind("<|eot_id|>")]
-
-    end_of_string_token = engine.tokenizer.eos_token
-    if not starting_assistant_message and formatted_prompt.rstrip().endswith(end_of_string_token):
-        formatted_prompt = formatted_prompt.rstrip()[: -len(end_of_string_token)]
+        end_of_string_token = engine.tokenizer.eos_token
+        if not starting_assistant_message and formatted_prompt.rstrip().endswith(end_of_string_token):
+            formatted_prompt = formatted_prompt.rstrip()[: -len(end_of_string_token)]
 
     set_random_seed(seed)
 
-    sampling_params = SamplingParams(
-        max_tokens=request_info.max_tokens,
-        temperature=temperature,
-        top_p=top_p,
-        seed=seed,
-        logprobs=number_of_logprobs,
-        top_k=top_k,
-    )
-    stream = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
+    # This case is solely relevant to validator, miners need not support the `/vali-completions` endpoint
+    if not stream:
+        sampling_params = SamplingParams(
+            max_tokens=request_info.max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            seed=seed,
+            logprobs=number_of_logprobs,
+            top_k=top_k,
+            prompt_logprobs=prompt_logprobs
+        )
+        request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
 
-    logprobs_cursor = 0
-    cursor = 0
-    async for request_output in stream:
-        text = request_output.outputs[0].text
-        latest_chunk = text[cursor:]
+        logprobs_cursor = 0
+        cursor = 0
+        async for output in request_output:
+            text = output.outputs[0].text
+            log_probs = output.outputs[0].logprobs
+            prompt_log_probs = output.prompt_logprobs
+            
+            final_prompt_logprobs = []
+            if prompt_log_probs:
+                for i, token_logprobs in enumerate(prompt_log_probs):
+                    if token_logprobs:
+                        formatted_prompt_logprobs = {
+                            str(token_id): {
+                                "logprob": logprob.logprob,
+                                "token": logprob.decoded_token,
+                                "rank": logprob.rank
+                            }
+                            for token_id, logprob in token_logprobs.items()
+                        }
+                        final_prompt_logprobs.append(formatted_prompt_logprobs)
+                    else:
+                        final_prompt_logprobs.append(None)
 
-        log_probs = request_output.outputs[0].logprobs
-        
-        if request_info.base_completion:
-            log_probs_dict = [
-                {
-                    token_detail.decoded_token : token_detail.logprob,
-                }
-                for token_details in log_probs[logprobs_cursor:]
-                for idx, token_detail in token_details.items()
-            ]
-            data = json.dumps(
-                {
-                    "choices": {
-                        "text": latest_chunk, 
-                        "logprobs": {
-                            "token_logprobs": [log_probs_dict[0].values()[0]],
-                            "tokens": [log_probs_dict[0].keys()[0]],
-                            "top_logprobs": [log_probs_dict[:number_of_logprobs]]
-                        },
-                        "finish_reason": request_output.outputs[0].finish_reason
-                    }
-                }
-            )
-        else:
-            log_probs_dict = [
-                {
-                    "index": idx,
-                    "logprob": token_detail.logprob,
-                    "decoded": token_detail.decoded_token,
-                }
-                for token_details in log_probs[logprobs_cursor:]
-                for idx, token_detail in token_details.items()
-            ]
-            data = json.dumps(
-                {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs], "finish_reason": request_output.outputs[0].finish_reason}
-            )
-        yield f"data: {data}\n\n"
-
-        cursor = len(text)
-        logprobs_cursor = len(log_probs)
-    yield "data: [DONE]\n\n"
-
-
-output_data = {
+            choices_data = {
                 "choices": [{
-                    "text": response_data["choices"][0]["delta"]["content"],
-                    "logprobs": {"token_logprobs": [response_data["choices"][0]["logprobs"]["content"]]},
-                    "finish_reason": request_output.outputs[0].finish_reason
+                    "delta": {
+                        "content": text
+                    },
+                    "logprobs": {
+                        "content": [
+                            {
+                                "index": index,
+                                "logprob": token_detail.logprob,
+                                "token": token_detail.decoded_token
+                            }
+                            for token_details in log_probs
+                            for index, token_detail in token_details.items()
+                        ]
+                    },
+                    "prompt_logprobs": final_prompt_logprobs
                 }]
             }
+            
+        yield f"data: {json.dumps(choices_data)}\n\n"
+    else:
+        sampling_params = SamplingParams(
+            max_tokens=request_info.max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            seed=seed,
+            logprobs=number_of_logprobs,
+            top_k=top_k
+        )
+        request_output = await engine.model.add_request(uuid.uuid4().hex, formatted_prompt, sampling_params)
+        logprobs_cursor = 0
+        cursor = 0
+        async for output in request_output:
+            text = output.outputs[0].text
+            latest_chunk = text[cursor:]
+
+            logger.info(f"text: {text}")
+            logger.info('-----'*5)
+
+            log_probs = output.outputs[0].logprobs
+            if request_info.base_completion:
+                log_probs_dict = [
+                    {
+                        token_detail.decoded_token : token_detail.logprob,
+                    }
+                    for token_details in log_probs[logprobs_cursor:]
+                    for idx, token_detail in token_details.items()
+                ]
+                data = json.dumps(
+                    {
+                        "choices": {
+                            "text": latest_chunk, 
+                            "logprobs": {
+                                "token_logprobs": [log_probs_dict[0].values()[0]],
+                                "tokens": [log_probs_dict[0].keys()[0]],
+                                "top_logprobs": [log_probs_dict[:number_of_logprobs]]
+                            },
+                            "finish_reason": request_output.outputs[0].finish_reason
+                        }
+                    }
+                )
+            else:
+                log_probs_dict = [
+                    {
+                        "index": idx,
+                        "logprob": token_detail.logprob,
+                        "decoded": token_detail.decoded_token,
+                    }
+                    for token_details in log_probs[logprobs_cursor:]
+                    for idx, token_detail in token_details.items()
+                ]
+                data = json.dumps(
+                    {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs], "finish_reason": request_output.outputs[0].finish_reason}
+                )
+            if data["text"] and data["logprobs"]:
+                yield f"data: {json.dumps(data)}\n\n"
+
+            cursor = len(text)
+            logprobs_cursor = len(log_probs)
+        yield "data: [DONE]\n\n"

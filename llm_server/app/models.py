@@ -57,6 +57,14 @@ class RequestInfo(BaseModel):
         description="Temperature for text generation.",
     )
     max_tokens: int = Field(4096, title="Max Tokens", description="Max tokens for text generation.")
+    prompt_logprobs: int = Field(
+        default=1,
+        title="Prompt Logprobs",
+        description="Number of logprobs for input prompt to return with each token output",
+        example=1,
+        gt=0,
+        le=20,
+    )
     number_of_logprobs: int = Field(
         default=1,
         title="Logprobs",
