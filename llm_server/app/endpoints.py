@@ -56,7 +56,7 @@ async def generate_text(
             media_type="application/json",
         )
     
-async def completion(
+async def vali_completion(
     request: schemas.CompletionRequest,
     EngineState: EngineState = fastapi.Depends(dependencies.get_engine_state),
 ) -> Response:
@@ -112,7 +112,7 @@ router = fastapi.APIRouter(
 
 router.add_api_route(
     "/vali-completions",
-    completion,
+    vali_completion,
     methods=["POST"],
     response_model=None,
     responses={
