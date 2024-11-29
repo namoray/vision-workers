@@ -25,4 +25,6 @@ class LoadModelResponse(BaseModel):
 
 class TextRequestModel(models.RequestInfo): ...
 
-class CompletionRequest(models.RequestInfo): ...
+class CompletionRequest(models.RequestInfo):
+    class Config:
+        extra = "allow"
