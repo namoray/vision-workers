@@ -29,7 +29,7 @@ async def infer(
     else:
         # Forward the request to the model process and stream the response back
         request_info = models.RequestInfo(**request.dict())
-        request_info.base_completion = True
+        request_info.base_completion = base_completion
         response_stream = engine_state.forward_request(request_info)
         async for line in response_stream:
             if line:
