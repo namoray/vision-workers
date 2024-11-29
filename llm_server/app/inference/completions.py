@@ -242,7 +242,7 @@ async def complete_vllm(engine: models.LLMEngine,
                         "delta": {
                             "content": latest_chunk
                         },
-                        "logprobs": {"content": log_probs_dict},
+                        "logprobs": {"content": log_probs_dict[:number_of_logprobs]},
                     }]
                 }
                 if data["choices"][0]["delta"]["content"] and data["choices"][0]["logprobs"]:

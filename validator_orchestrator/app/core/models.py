@@ -131,8 +131,17 @@ class Logprob(BaseModel):
 
 
 class ValidatorCheckingResponse(BaseModel):
-    text: str
-    logprobs: List[Logprob]
+    choices: List[ValidatorCheckingResponseBody]
+
+class ValidatorCheckingResponseBody(BaseModel):
+    delta: DeltaContent
+    logprobs: LogprobContent
+
+class DeltaContent(BaseModel):
+    content: str
+
+class LogprobContent(BaseModel):
+    content: List[Logprob]
 
 
 class CheckResultResponse(BaseModel):
