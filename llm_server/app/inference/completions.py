@@ -219,7 +219,7 @@ async def complete_vllm(engine: models.LLMEngine,
                                 "tokens": [list(log_probs_dict[0].keys())[0]],
                                 "top_logprobs": log_probs_dict[:number_of_logprobs]
                             },
-                            "finish_reason": request_output.outputs[0].finish_reason
+                            "finish_reason": output.outputs[0].finish_reason
                         }
                     }
                 )
@@ -234,7 +234,7 @@ async def complete_vllm(engine: models.LLMEngine,
                     for idx, token_detail in token_details.items()
                 ]
                 data = json.dumps(
-                    {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs], "finish_reason": request_output.outputs[0].finish_reason}
+                    {"text": latest_chunk, "logprobs": log_probs_dict[:number_of_logprobs], "finish_reason": output.outputs[0].finish_reason}
                 )
             if data["text"] and data["logprobs"]:
                 yield f"data: {json.dumps(data)}\n\n"
