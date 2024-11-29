@@ -213,7 +213,7 @@ async def complete_vllm(engine: models.LLMEngine,
                     for idx, token_detail in token_details.items()
                 ]
                 data = {
-                    "choices": {
+                    "choices": [{
                         "text": latest_chunk, 
                         "logprobs": {
                             "token_logprobs": [list(log_probs_dict[0].values())[0]],
@@ -221,9 +221,9 @@ async def complete_vllm(engine: models.LLMEngine,
                             "top_logprobs": log_probs_dict[:number_of_logprobs]
                         },
                         "finish_reason": output.outputs[0].finish_reason
-                    }
+                    }]
                 }
-                if data["choices"]["text"] and data["choices"]["logprobs"]:
+                if data["choices"][0]["text"] and data["choices"][0]["logprobs"]:
                     yield f"data: {json.dumps(data)}\n\n"
 
             else:
