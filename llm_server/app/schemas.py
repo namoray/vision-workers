@@ -33,5 +33,6 @@ class CompletionRequest(BaseModel):
     top_k: int = 5
     prompt_logprobs: int = 10
     number_of_logprobs: int = 1
+    seed: int = 0
     class Config:
         extra = "allow"
