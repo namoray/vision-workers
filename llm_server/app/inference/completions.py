@@ -223,6 +223,7 @@ async def complete_vllm(engine: models.LLMEngine,
                         }
                     }
                 )
+                
             else:
                 log_probs_dict = [
                     {
