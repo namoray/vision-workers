@@ -114,16 +114,16 @@ async def complete_vllm(engine: models.LLMEngine,
     # /completions endpoint
     if request_info.prompt:
         messages_dict = [Message(role=Role.user, content=request_info.prompt)]
-        formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=True)
     else:
         messages_dict = [message.model_dump() for message in fix_message_structure_for_prompt(engine.tokenizer, request_info.messages)]
-        formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=starting_assistant_message)
-        if "llama-3" in engine.model_name.lower() and not starting_assistant_message:
-            formatted_prompt = formatted_prompt[: formatted_prompt.rfind("<|eot_id|>")]
+    
+    formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=starting_assistant_message)
+    if "llama-3" in engine.model_name.lower() and not starting_assistant_message:
+        formatted_prompt = formatted_prompt[: formatted_prompt.rfind("<|eot_id|>")]
 
-        end_of_string_token = engine.tokenizer.eos_token
-        if not starting_assistant_message and formatted_prompt.rstrip().endswith(end_of_string_token):
-            formatted_prompt = formatted_prompt.rstrip()[: -len(end_of_string_token)]
+    end_of_string_token = engine.tokenizer.eos_token
+    if not starting_assistant_message and formatted_prompt.rstrip().endswith(end_of_string_token):
+        formatted_prompt = formatted_prompt.rstrip()[: -len(end_of_string_token)]
 
     set_random_seed(seed)
 
