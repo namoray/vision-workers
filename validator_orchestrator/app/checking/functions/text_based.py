@@ -148,10 +148,10 @@ async def check_text_result(
         
         # If `prompt` is in the payload, treat it as a /completions request
         if "prompt" in payload:
-            prompt = payload["prompt"]
-        else:
-            prompt = chat_to_prompt(payload["messages"], task_config.task)
-        
+            payload["messages"] = [models.Message(role=utility_models.Role.user, content=payload["prompt"])]
+            del payload["prompt"]
+
+        prompt = chat_to_prompt(payload["messages"], task_config.task)
         # Validate response tokens
         if tokenizer and response_tokens:
             logger.info("Validating response tokens")
@@ -194,10 +194,6 @@ async def check_text_result(
         payload["number_of_logprobs"] = 5
         payload["top_k"] = 5
     
-        # If `prompt` is in the payload, treat it as a /completions request
-        if "prompt" in payload:
-            payload["messages"] = [models.Message(role=utility_models.Role.user, content=payload["prompt"])]
-            del payload["prompt"]
 
         llm_request = models.ChatRequestModel(**payload)
         llm_request.max_tokens = 1
