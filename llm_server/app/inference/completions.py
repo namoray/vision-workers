@@ -215,9 +215,9 @@ async def complete_vllm(engine: models.LLMEngine,
                         "choices": {
                             "text": latest_chunk, 
                             "logprobs": {
-                                "token_logprobs": [log_probs_dict[0].values()[0]],
-                                "tokens": [log_probs_dict[0].keys()[0]],
-                                "top_logprobs": [log_probs_dict[:number_of_logprobs]]
+                                "token_logprobs": [list(log_probs_dict[0].values())[0]],
+                                "tokens": [list(log_probs_dict[0].keys())[0]],
+                                "top_logprobs": log_probs_dict[:number_of_logprobs]
                             },
                             "finish_reason": request_output.outputs[0].finish_reason
                         }
