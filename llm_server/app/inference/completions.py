@@ -240,7 +240,7 @@ async def complete_vllm(engine: models.LLMEngine,
                 data = {
                     "choices": [{
                         "delta": {
-                            "content": text
+                            "content": latest_chunk
                         },
                         "logprobs": {"content": log_probs_dict},
                     }]
