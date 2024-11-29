@@ -111,8 +111,10 @@ async def complete_vllm(engine: models.LLMEngine,
     top_k = 5  # 5 is the maximum that vllm allows for logprobs
     top_p = request_info.top_p if request_info.top_p in [0, 1] else 1
 
-    if hasattr(request_info, 'prompt'):
-        formatted_prompt = request_info.prompt
+    # /completions endpoint
+    if request_info.prompt:
+        messages_dict = [Message(role=Role.user, content=request_info.prompt)]
+        formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=True)
     else:
         messages_dict = [message.model_dump() for message in fix_message_structure_for_prompt(engine.tokenizer, request_info.messages)]
         formatted_prompt = engine.tokenizer.apply_chat_template(conversation=messages_dict, tokenize=False, add_generation_prompt=starting_assistant_message)

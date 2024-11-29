@@ -50,6 +50,7 @@ class RequestInfo(BaseModel):
         ],
         description="List of messages where each message has a 'role' and 'content' key.",
     )
+    prompt: Optional[str] = Field(None, title="Prompt", description="Prompt for text generation.")
     seed: int = Field(..., title="Seed", description="Seed for text generation.", example=0)
     temperature: float = Field(
         default=0.5,
