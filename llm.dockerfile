@@ -26,8 +26,8 @@ RUN /opt/python/bin/pip uninstall -y xformers
 # RUN /opt/python/bin/pip install /tmp/chutes-0.0.27-py3-none-any.whl
 
 # Or copy from local dir:
-ADD --chown=vllm chutes /workspace/chutes
-RUN /opt/python/bin/pip install -e chutes
+# ADD --chown=vllm chutes /workspace/chutes
+# RUN /opt/python/bin/pip install -e chutes
 
 ENV PATH=/home/vllm/.local/bin:$PATH
 # ADD vllm_example.py /app/vllm_example.py
