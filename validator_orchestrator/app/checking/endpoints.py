@@ -1,7 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from typing import Dict
 from uuid import uuid4
-import os
 from app.core import models
 from app.checking import scoring
 from app import server_management

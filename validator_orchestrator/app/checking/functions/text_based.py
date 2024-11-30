@@ -1,5 +1,5 @@
 from app.core import models, utility_models
-from typing import Dict, Any, List, Union, Optional
+from typing import Dict, Any, List, Union
 import httpx
 import json
 import random
@@ -7,9 +7,7 @@ from transformers import AutoTokenizer
 import math
 from loguru import logger
 
-from app.core import models
 from app.core.constants import AI_SERVER_PORT
-from app.checking.functions.text_checks import check_response
 
 tokenizer_name = "tau-vision/llama-tokenizer-fix"
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
@@ -17,14 +15,15 @@ tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
 
+
 def _score_average_distance(average_distance: float, alpha: int = 5) -> float:
     """
     Calculate quality score from logprobs average distances.
-    
+
     Args:
         average_distance: Average distance between expected and actual logprobs
         alpha: Severity factor for penalizing large distances
-    
+
     Returns:
         float: Normalized score between 0 and 1
     """
@@ -33,6 +32,7 @@ def _score_average_distance(average_distance: float, alpha: int = 5) -> float:
     elif average_distance <= TOP_TEXT_THRESHOLD:
         return 1.0 - 0.5 * (average_distance - BOTTOM_TEXT_THRESHOLD) / (TOP_TEXT_THRESHOLD - BOTTOM_TEXT_THRESHOLD)
     return 0.0
+
 
 async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any], server_name: str = "llm_server") -> httpx.Response:
     # TODO: Add ability to use localhost as the server name if set in env vars or similar
@@ -50,7 +50,8 @@ async def _get_chat_data_validator_response(endpoint: str, data: Dict[str, Any],
         line_formatted = line.split("data: ")[1].split("\n\n")[0]
         response_json = json.loads(line_formatted)
         return models.ValidatorCheckingResponse(**response_json)
-    
+
+
 async def _calculate_distance_for_token(
     task_config: models.OrchestratorServerConfig,
     llm_request: models.ChatRequestModel,
@@ -70,46 +71,32 @@ async def _calculate_distance_for_token(
 
     return distance
 
-def chat_to_prompt(
-    messages: List[Dict[str, str]],
-    model_name: str,
-    starting_assistant_message: bool = True
-) -> str:
+
+def chat_to_prompt(messages: List[Dict[str, str]], model_name: str, starting_assistant_message: bool = True) -> str:
     global tokenizer
 
-    formatted_prompt = tokenizer.apply_chat_template(
-        conversation=messages,
-        tokenize=False,
-        add_generation_prompt=starting_assistant_message
-    )
-    
+    formatted_prompt = tokenizer.apply_chat_template(conversation=messages, tokenize=False, add_generation_prompt=starting_assistant_message)
+
     if "llama-3" in model_name.lower() and not starting_assistant_message:
         formatted_prompt = formatted_prompt[: formatted_prompt.rfind("<|eot_id|>")]
-        
+
     end_of_string_token = tokenizer.eos_token
     if not starting_assistant_message and formatted_prompt.rstrip().endswith(end_of_string_token):
         formatted_prompt = formatted_prompt.rstrip()[: -len(end_of_string_token)]
-        
+
     return formatted_prompt
 
-async def check_text_result(
-    result: models.QueryResult,
-    payload: dict,
-    task_config: models.OrchestratorServerConfig
-) -> Union[float, None]:
+
+async def check_text_result(result: models.QueryResult, payload: dict, task_config: models.OrchestratorServerConfig) -> Union[float, None]:
     global tokenizer, tokenizer_name
 
-    if task_config.load_model_config.get('tokenizer', task_config.load_model_config.get('model')) != tokenizer_name:
-        tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config.get('tokenizer', task_config.load_model_config.get('model')))
-        tokenizer_name = task_config.load_model_config.get('tokenizer', task_config.load_model_config.get('model'))
+    if task_config.load_model_config.get("tokenizer", task_config.load_model_config.get("model")) != tokenizer_name:
+        tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config.get("tokenizer", task_config.load_model_config.get("model")))
+        tokenizer_name = task_config.load_model_config.get("tokenizer", task_config.load_model_config.get("model"))
 
     try:
         # Parse formatted response
-        formatted_response = (
-            json.loads(result.formatted_response)
-            if isinstance(result.formatted_response, str)
-            else result.formatted_response
-        )
+        formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
 
         # Extract messages and validate format
         messages: List[models.MessageResponse] = []
@@ -139,13 +126,13 @@ async def check_text_result(
                 logger.error(f"Error with logprob: {e}. Response: {response}")
                 logger.exception(e)
                 return 0  # Important to return 0 as this is a critical error
-            
+
         if not messages:
             logger.warning("No valid messages in response")
             return 0.0
-        
+
         response_tokens = [elm.content for elm in messages]
-        
+
         # If `prompt` is in the payload, treat it as a /completions request
         if "prompt" in payload:
             payload["messages"] = [models.Message(role=utility_models.Role.user, content=payload["prompt"])]
@@ -159,19 +146,19 @@ async def check_text_result(
                 prompt=prompt,
                 response=response_tokens,
                 tokenizer=tokenizer,
-                max_model_len=task_config.load_model_config['max_model_len'],
+                max_model_len=task_config.load_model_config["max_model_len"],
                 max_tokens=payload.get("max_tokens", 500),
                 temperature=payload.get("temperature", 0.5),
                 top_p=payload.get("top_p", 0.95),
-                seed=payload.get("seed", 369)
+                seed=payload.get("seed", 369),
             )
-            
+
             if not validation_result.is_valid:
                 logger.error(f"Response validation failed - {validation_result.message}")
                 logger.error(f"Query : {payload}")
                 logger.error(f"Response : {''.join(response_tokens)}")
                 return 0.0
-        
+
         if messages[-1].content == "":
             messages = messages[:-1]
 
@@ -193,7 +180,6 @@ async def check_text_result(
         payload["starting_assistant_message"] = True
         payload["number_of_logprobs"] = 5
         payload["top_k"] = 5
-    
 
         llm_request = models.ChatRequestModel(**payload)
         llm_request.max_tokens = 1
@@ -230,7 +216,7 @@ async def check_text_result(
             return 0
         score = _score_average_distance(average_distance)
         return score
-        
+
     except Exception as e:
         logger.error(f"Error with average distance: {e}. Total distance: {total_distance}. Checks: {checks}")
         logger.exception(e)
