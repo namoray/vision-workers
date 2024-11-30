@@ -30,4 +30,4 @@ ADD --chown=vllm chutes /workspace/chutes
 RUN /opt/python/bin/pip install -e chutes
 
 ENV PATH=/home/vllm/.local/bin:$PATH
-ADD vllm_example.py /app/vllm_example.py
+# ADD vllm_example.py /app/vllm_example.py
