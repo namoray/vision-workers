@@ -21,6 +21,26 @@ router = APIRouter(
 global_async_lock = asyncio.Lock()
 
 
+def _get_llm_server_docker_flags(task_config: models.OrchestratorServerConfig) -> str:
+    if task_config.server_needed != models.ServerType.LLM:
+        logger.info("Server needed is not LLM, so no docker flags needed")
+        return ""
+
+    load_model_config = task_config.load_model_config
+
+    flags = ""
+
+    flags += f" --model {load_model_config['model']}"
+    flags += f" --tokenizer {load_model_config['tokenizer']}"
+    flags += f" --max_model_len {load_model_config['max_model_len']}"
+    flags += f" --gpu_memory_utilization {load_model_config['gpu_utilization']}"
+
+    if load_model_config["half_precision"]:
+        flags += " --dtype half"
+
+    return flags
+
+
 @router.get("/", response_model=Dict[str, str])
 async def root() -> Dict[str, str]:
     return {"message": "Hello World"}
@@ -59,6 +79,9 @@ async def process_check_result(
             logger.info(f"Server needed: {server_needed}")
 
             load_model_config = task_config.load_model_config
+
+            flags = _get_llm_server_docker_flags(task_config)
+            load_model_config["extra-docker-flags"] = flags
             await server_manager.start_server(server_needed, load_model_config)
 
             if load_model_config is not None:
