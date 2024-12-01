@@ -57,6 +57,8 @@ async def _detokenize(tokens: list[int], model: str = "unsloth/Meta-Llama-3.1-8B
 
 async def _tokenize_and_detokenize(input_payload: dict, model_name: str, eos_token_id: int = 128009, add_generation_prompt: bool = True) -> tuple[str, int]:
     async with httpx.AsyncClient() as http_client:
+
+        logger.info(f"Tokenizing at: {BASE_URL}/tokenize")
         tokenize_response = await http_client.post(url=f"{BASE_URL}/tokenize", json=input_payload)
         tokenize_response.raise_for_status()
         token_list: list[int] = tokenize_response.json()["tokens"]
