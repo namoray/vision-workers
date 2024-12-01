@@ -98,8 +98,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     # Extract messages & logprobs from the response
 
-    messages: List[models.MessageResponse] = []
-    response_tokens: List[str] = []
+    messages: list[models.MessageResponse] = []
+    response_tokens: list[str] = []
     for idx, response in enumerate(formatted_response):
         try:
             # If `prompt` is in the payload, treat it as a /completions request
@@ -168,13 +168,13 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
 
-    for i, response_token, logprobs in zip(range(len(response_tokens)), response_tokens, prompt_logprobs):
+    for i, response_token, logprobs in zip(range(len(response_tokens[num_input_tokens:])), response_tokens[num_input_tokens:], prompt_logprobs):
 
         nice_logprobs = json.dumps(logprobs, indent=2, sort_keys=True, ensure_ascii=False)
         if response_token not in logprobs:
-            logger.error(f"Token {response_token} (decoded: {messages[i].content}, logprob: {messages[i].logprob}) not in logprobs: {nice_logprobs}!")
+            logger.error(f"Token {response_token} (decoded: '{messages[i].content}', logprob: {messages[i].logprob}) not in logprobs: {nice_logprobs}!")
         else:
-            logger.info(f"Token {response_token} (decoded: {messages[i].content}, logprob: {messages[i].logprob}) in logprobs: {nice_logprobs}!")
+            logger.info(f"Token {response_token} (decoded: '{messages[i].content}', logprob: {messages[i].logprob}) in logprobs: {nice_logprobs}!")
 
     # TODO: Check our token is in the prompt logprobs at each step
     # TODO: Check our token is in the prompt logprobs at each step
