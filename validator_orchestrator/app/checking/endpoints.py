@@ -88,7 +88,9 @@ async def process_check_result(
                 # TODO: Why is this needed? Slows down checking *alot*
                 # if task_manager.last_task_type != task_config.task:
                 #     load_model_config_dumped["force_reload"] = True
-                await server_manager.load_model(load_model_config, server_name=server_needed.value)
+                if server_needed != models.ServerType.LLM:
+                    # TODO: I'm pretty sure no one uses this any more lol
+                    await server_manager.load_model(load_model_config, server_name=server_needed.value)
 
             task_manager.last_task_type = task_config.task
 
