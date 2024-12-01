@@ -185,16 +185,14 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
                 logger.info(f"Token {response_token} {additional_log} in logprobs with good behaviour; rank: {rank}, logprob: {logprob} ✅")
             else:
                 logger.error(f"Token {response_token} {additional_log} in logprobs with bad behaviour; rank: {rank}, logprob: {logprob} ❌")
+                if response_token == eos_token_id:
+                    fail_reason = "EOS token is there when it shouldn't be there!"
+                else:
+                    fail_reason = "You made a token up mate"
                 bad_token_found = True
                 break
         else:
-            logger.error(f"Token {response_token} {additional_log} not in logprobs: {nice_logprobs}! ❌")
-            if response_token == eos_token_id:
-                fail_reason = "EOS token when it shouldn't be there!"
-            else:
-                fail_reason = "You made a token up mate"
-            bad_token_found = True
-            break
+            logger.exception("How did we even get here?")
 
     if bad_token_found:
         # TODO: Make a nice message
