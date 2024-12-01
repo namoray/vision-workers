@@ -167,11 +167,21 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         return 0.0
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
-    formatted_json = json.dumps(prompt_logprobs, indent=2, sort_keys=True, ensure_ascii=False)
-    print(f"logprobs: {formatted_json}")
 
-    print(f"input_content: {input_content}")
-    print(f"full_response_content: {full_response_content}")
-    print(f"full_prompt: {full_prompt}")
+    for response_token, logprobs in zip(response_tokens, prompt_logprobs):
+        if response_token not in logprobs:
+            logger.error(f"Token {response_token} not in logprobs: {logprobs}!")
+        else:
+            logger.info(f"Token {response_token} in logprobs: {logprobs}!")
+
+    # TODO: Check our token is in the prompt logprobs at each step
+    # TODO: Check our token is in the prompt logprobs at each step
+
+    # formatted_json = json.dumps(prompt_logprobs, indent=2, sort_keys=True, ensure_ascii=False)
+    # print(f"logprobs: {formatted_json}")
+
+    # print(f"input_content: {input_content}")
+    # print(f"full_response_content: {full_response_content}")
+    # print(f"full_prompt: {full_prompt}")
 
     return 0.0
