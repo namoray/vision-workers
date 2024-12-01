@@ -34,6 +34,7 @@ checking_server_configs: list[CheckingServerConfig] = [
         port=6919,
         volumes={"COMFY": "/app/image_server/ComfyUI"},
         network=shared_network,
+        external_port=6919,
     ),
 ]
 
