@@ -167,11 +167,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         return 0.0
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
-
     for i, response_token, logprobs in zip(range(len(response_tokens[num_input_tokens:])), response_tokens[num_input_tokens:], prompt_logprobs):
-
         nice_logprobs = json.dumps(logprobs, indent=2, sort_keys=True, ensure_ascii=False)
-        if response_token not in logprobs:
+        if str(response_token) not in logprobs:
             logger.error(f"Token {response_token} (decoded: '{messages[i].content}', logprob: {messages[i].logprob}) not in logprobs: {nice_logprobs}!")
         else:
             logger.info(f"Token {response_token} (decoded: '{messages[i].content}', logprob: {messages[i].logprob}) in logprobs: {nice_logprobs}!")
