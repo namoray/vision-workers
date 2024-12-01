@@ -138,19 +138,24 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     full_prompt = await _detokenize(response_tokens, task_config.load_model_config["model"])
 
     # Now get the prompt logprobs from completions and check they are all correct
+    # TODO: make async
     r = httpx.post(
         f"{BASE_URL}/v1/completions",
         json={
             "prompt": full_prompt,
             "model": task_config.load_model_config["model"],
-            "temperature": 1.0,
+            "temperature": payload["temperature"],
+            "top_k": 5,
+            "top_p": payload["top_p"],
+            "seed": payload["seed"],
+            "stream": False,
             "max_tokens": 1,
-            "prompt_logprobs": 2,
+            "prompt_logprobs": 10,
         },
     )
 
     result = json.loads(r.text)
-    prompt_logprobs = result["choices"][0]["prompt_logprobs"]
+    prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
     formatted_json = json.dumps(prompt_logprobs, indent=2, sort_keys=True, ensure_ascii=False)
     print(f"logprobs: {formatted_json}")
@@ -158,7 +163,5 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     print(f"input_content: {input_content}")
     print(f"full_response_content: {full_response_content}")
     print(f"full_prompt: {full_prompt}")
-
-
 
     return 0.0
