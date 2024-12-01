@@ -236,7 +236,6 @@ class ServerManager:
                     logger.error(f"Server {server_name} is running, but /v1/models returned {response.status_code}???")
                     logger.exception(response.text)
                     return False
-                print(response.json())
                 model_loaded = response.json()["data"][0]["id"]
                 correct_model_is_running = model_loaded == model_name
                 logger.info(f"Server {server_name} is running. Model is correct: {correct_model_is_running}")
