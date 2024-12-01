@@ -178,7 +178,13 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         if str(response_token) in logprobs:
             logprob = logprobs[str(response_token)]["logprob"]
             rank = logprobs[str(response_token)]["rank"]
-            logger.info(f"Token {response_token} {additional_log} in logprobs; rank: {rank}, logprob: {logprob} ✅")
+
+            if rank < 10 and logprob < float("-inf"):
+                logger.info(f"Token {response_token} {additional_log} in logprobs; rank: {rank}, logprob: {logprob} ✅")
+            else:
+                logger.error(f"Token {response_token} {additional_log} in logprobs with bad behaviour; rank: {rank}, logprob: {logprob} ❌")
+                bad_token_found = True
+                break
         else:
             logger.error(f"Token {response_token} {additional_log} not in logprobs: {nice_logprobs}! ❌")
             bad_token_found = True
