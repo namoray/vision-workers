@@ -150,9 +150,15 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     )
 
     result = json.loads(r.text)
-    prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
+    prompt_logprobs = result["choices"][0]["prompt_logprobs"]
 
-    formatted_json = json.dumps(prompt_logprobs, indent=4, sort_keys=True, ensure_ascii=False)
-    print(formatted_json)
+    formatted_json = json.dumps(prompt_logprobs, indent=2, sort_keys=True, ensure_ascii=False)
+    print(f"logprobs: {formatted_json}")
+
+    print(f"input_content: {input_content}")
+    print(f"full_response_content: {full_response_content}")
+    print(f"full_prompt: {full_prompt}")
+
+    
 
     return 0.0
