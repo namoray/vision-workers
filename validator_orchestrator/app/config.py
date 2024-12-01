@@ -12,6 +12,7 @@ class CheckingServerConfig(BaseModel):
     port: int
     volumes: Dict[str, str]  # volue name, mount path
     network: str
+    external_port: int
 
 
 shared_network = os.getenv("SHARED_NETWORK_NAME", DEFAULT_NETWORK_NAME)
@@ -20,11 +21,12 @@ checking_server_configs: list[CheckingServerConfig] = [
     CheckingServerConfig(
         name=ServerType.LLM.value,
         docker_image="vllm/vllm-openai:v0.6.3",
-        port=6919,
+        port=8000,
         volumes={
             "HF": "/app/cache",
         },
         network=shared_network,
+        external_port=6919,
     ),
     CheckingServerConfig(
         name=ServerType.IMAGE.value,

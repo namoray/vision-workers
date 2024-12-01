@@ -158,7 +158,7 @@ class ServerManager:
             f"docker run -d --rm --shm-size={shared_vol_size} --name {server_config.name} "
             + " ".join([f"-v {volume}:{mount_path}" for volume, mount_path in server_config.volumes.items()])
             + f" {docker_run_flags} "
-            + f"-p {server_config.port}:{server_config.port} "
+            + f"-p {server_config.external_port}:{server_config.port} "
             + f"--network {server_config.network} "
             + f"{server_config.docker_image} "
         )
