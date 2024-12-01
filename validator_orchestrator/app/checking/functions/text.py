@@ -168,7 +168,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
     bad_token_found = False
-    
+
     fail_reason = ""
 
     for idx, response_token, logprobs in zip(range(len(response_tokens[num_input_tokens:])), response_tokens[num_input_tokens:], prompt_logprobs):
@@ -196,12 +196,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     if bad_token_found:
         # TODO: Make a nice message
-        logger.error(
-            f"Bad token found at index {idx}. Token: {response_token}"
-            f"{additional_log}"
-            f" Prompt logprobs: {nice_logprobs}"
-            f" Reason: {fail_reason}"
-        )
+        logger.error(f"Bad token found at index {idx}. Token: {response_token}" f"{additional_log}" f" Prompt logprobs: {nice_logprobs}" f" Reason: {fail_reason}")
         return 0.0
 
     logger.info("All tokens found in prompt_logprobs! ✅")

@@ -26,7 +26,7 @@ from sdk.logging import get_logger
 logger = get_logger(__name__)
 
 example_payload = {
-    "messages": [{"role": "user", "content": "Tell me the capital of France in 5 words only."}],
+    "messages": [{"role": "user", "content": "Tell me the capital of France in 20 words only."}],
     "temperature": 0.5,
     "max_tokens": 500,
     "model": "chat-llama-3-2-3b",
