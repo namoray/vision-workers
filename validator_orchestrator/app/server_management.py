@@ -74,6 +74,11 @@ class ServerManager:
                     response = await client.get(f"http://{server_name}:{port}")
                     server_is_healthy = response.status_code == 200
                     if not server_is_healthy:
+                        # Some servers don't have a health endpoint, so we try to ping the root first
+                        # then fall back to this (llm has health, image does not)
+                        response = await client.get(f"http://{server_name}:{port}/health")
+                        server_is_healthy = response.status_code == 200
+
                         await asyncio.sleep(sleep_time)
                     else:
                         logger.info(f"Server {port} is healthy!")
