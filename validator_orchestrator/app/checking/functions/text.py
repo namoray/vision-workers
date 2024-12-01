@@ -176,7 +176,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         # So sometimes we don't have a message for the last token
         additional_log = f" (decoded: '{messages[idx].content}', logprob: {messages[idx].logprob})" if idx <= len(messages) - 1 else ""
         if str(response_token) in logprobs:
-            logger.info(f"Token {response_token} {additional_log} in logprobs! ✅")
+            logprob = logprobs[str(response_token)]["logprob"]
+            rank = logprobs[str(response_token)]["rank"]
+            logger.info(f"Token {response_token} {additional_log} in logprobs; rank: {rank}, logprob: {logprob} ✅")
         else:
             logger.error(f"Token {response_token} {additional_log} not in logprobs: {nice_logprobs}! ❌")
             bad_token_found = True
