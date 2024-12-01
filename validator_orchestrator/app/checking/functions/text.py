@@ -5,6 +5,13 @@ from loguru import logger
 import httpx
 
 
+def replace_inf(dct: dict):
+    for key, value in dct.items():
+        if value == "-inf":
+            dct[key] = float("-inf")
+    return dct
+
+
 PROMPT_KEY = "prompt"
 MESSAGES_KEY = "messages"
 
@@ -154,7 +161,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         },
     )
     try:
-        result = json.loads(r.text)
+        result = json.loads(r.text, object_hook=replace_inf)
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
         return 0.0
