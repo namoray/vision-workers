@@ -26,7 +26,7 @@ from sdk.logging import get_logger
 logger = get_logger(__name__)
 
 example_payload = {
-    "messages": [{"role": "user", "content": "Remind me that I have forgot to set the messages"}],
+    "messages": [{"role": "user", "content": "Tell me the capital of France in 3 words only."}],
     "temperature": 0.5,
     "max_tokens": 500,
     "model": "chat-llama-3-2-3b",
@@ -54,12 +54,28 @@ example_response = [
 
 task_configs = task_configs_factory()
 
+# async def _handle_stream(response: httpx.Response) -> dict[str, Any]:
+    
+
+async def get_real_response(task: str, payload: dict[str, Any] = example_payload, llm_url: str | None = None, chat: bool = True) -> dict[str, Any]:
+    if llm_url is None:
+        logger.warning("No LLM URL provided, using default")
+        llm_url = "http://llm_server:8000"
+    async with httpx.AsyncClient() as client:
+        if chat:
+            response = await client.post(llm_url.rstrip("/") + "/chat/completions", json=payload)
+        else:
+            response = await client.post(llm_url.rstrip("/") + "/completions", json=payload)
+        response.raise_for_status()
+        return response.json()
+
 
 async def check_result(
     task: str, payload: dict[str, Any] = example_payload, miner_response: dict[str, Any] = example_response, response_time: float = 1.0, orchestrator_url: str | None = None
 ) -> bool:
     task_config = task_configs[task]
     if orchestrator_url is None:
+        logger.warning("No orchestrator URL provided, using default")
         orchestrator_url = "http://localhost:6920"
 
     actual_payload = {

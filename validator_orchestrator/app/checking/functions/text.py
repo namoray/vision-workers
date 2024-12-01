@@ -4,6 +4,7 @@ import json
 from loguru import logger
 import httpx
 
+
 PROMPT_KEY = "prompt"
 MESSAGES_KEY = "messages"
 
@@ -57,7 +58,6 @@ async def _detokenize(tokens: list[int], model: str = "unsloth/Meta-Llama-3.1-8B
 
 async def _tokenize_and_detokenize(input_payload: dict, model_name: str, eos_token_id: int = 128009, add_generation_prompt: bool = True) -> tuple[str, int]:
     async with httpx.AsyncClient() as http_client:
-
         logger.info(f"Tokenizing at: {BASE_URL}/tokenize")
         tokenize_response = await http_client.post(url=f"{BASE_URL}/tokenize", json=input_payload)
         tokenize_response.raise_for_status()
@@ -152,6 +152,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     result = json.loads(r.text)
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
-    print(prompt_logprobs)
+    formatted_json = json.dumps(prompt_logprobs, indent=4, sort_keys=True, ensure_ascii=False)
+    print(formatted_json)
 
     return 0.0
