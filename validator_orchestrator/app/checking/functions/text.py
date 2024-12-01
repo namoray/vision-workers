@@ -168,6 +168,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
     bad_token_found = False
+    
+    fail_reason = ""
 
     for idx, response_token, logprobs in zip(range(len(response_tokens[num_input_tokens:])), response_tokens[num_input_tokens:], prompt_logprobs):
         nice_logprobs = json.dumps(logprobs, indent=2, sort_keys=True, ensure_ascii=False)
@@ -187,6 +189,10 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
                 break
         else:
             logger.error(f"Token {response_token} {additional_log} not in logprobs: {nice_logprobs}! ❌")
+            if response_token == eos_token_id:
+                fail_reason = "EOS token when it shouldn't be there!"
+            else:
+                fail_reason = "You made a token up mate"
             bad_token_found = True
             break
 
@@ -196,6 +202,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             f"Bad token found at index {idx}. Token: {response_token}"
             f"{additional_log}"
             f" Prompt logprobs: {nice_logprobs}"
+            f" Reason: {fail_reason}"
         )
         return 0.0
 
