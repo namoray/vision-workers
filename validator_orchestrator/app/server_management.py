@@ -134,7 +134,7 @@ class ServerManager:
             correct_model_is_running = await self._check_correct_model_is_running(
                 server_name=server_config.name,
                 port=server_config.port,
-                model_name=load_model_config["model_name"],
+                model_name=load_model_config["model"],
             )
             if correct_model_is_running:
                 return
