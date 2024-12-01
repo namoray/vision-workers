@@ -201,4 +201,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     logger.info("All tokens found in prompt_logprobs! ✅")
 
+
+    # TODO: Add finegrained check of 5 random logprobs
+
     return 1.0
