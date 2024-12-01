@@ -154,7 +154,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             "prompt": full_prompt,
             "model": task_config.load_model_config["model"],
             "temperature": payload["temperature"],
-            "top_k": 5,
+            # "top_k": 5,  # Don't add this as vllm breaks with it x)
             "top_p": payload["top_p"],
             "max_tokens": 1,
             "prompt_logprobs": 10,
