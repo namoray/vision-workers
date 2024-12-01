@@ -146,8 +146,9 @@ class ServerManager:
             num_gpus = load_model_config["num_gpus"]
             docker_run_flags = self.generate_gpu_string(num_gpus)
 
+        extra_docker_flags = ""
         if "extra-docker-flags" in load_model_config.keys():
-            docker_run_flags += f" {load_model_config['extra-docker-flags']}"
+            extra_docker_flags = load_model_config["extra-docker-flags"]
 
         sleep(2)
 
@@ -159,8 +160,10 @@ class ServerManager:
             + f" {docker_run_flags} "
             + f"-p {server_config.port}:{server_config.port} "
             + f"--network {server_config.network} "
-            + f"{server_config.docker_image}"
+            + f"{server_config.docker_image} "
         )
+        if extra_docker_flags:
+            command += f" {extra_docker_flags}"
 
         logger.info(f"Starting server: {server_config.name} 🦄")
         logger.debug(f"docker run cmd : {command}")
