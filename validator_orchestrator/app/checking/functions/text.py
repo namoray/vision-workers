@@ -10,7 +10,7 @@ MESSAGES_KEY = "messages"
 # TODO: Change below to local docker container, and eventually to chutes
 # BASE_URL = "http://83.143.115.20:8000"
 
-BASE_URL = "http://llm_server:6919".rstrip("/")
+BASE_URL = "http://llm_server:8000".rstrip("/")
 
 
 def _payload_is_completions(payload: dict) -> bool:
