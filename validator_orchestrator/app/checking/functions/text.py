@@ -120,10 +120,10 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     # Now get the combined input + output in `prompt` format
     if _payload_is_completions(payload):
         input_completions_content = payload[PROMPT_KEY]
-        input_content, num_input_tokens = await _completions_to_prompt(input_completions_content, task_config.load_model_config["model"], eos_token_id, add_generation_prompt=False)
+        input_content, num_input_tokens = await _completions_to_prompt(input_completions_content, task_config.load_model_config["model"], eos_token_id, add_generation_prompt=True)
     else:
         input_chat_content = payload[MESSAGES_KEY]
-        input_content, num_input_tokens = await _chat_to_prompt(input_chat_content, task_config.load_model_config["model"], eos_token_id, add_generation_prompt=False)
+        input_content, num_input_tokens = await _chat_to_prompt(input_chat_content, task_config.load_model_config["model"], eos_token_id, add_generation_prompt=True)
 
     full_response_content = "".join([message.content for message in messages])
 
@@ -159,6 +159,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     print(f"full_response_content: {full_response_content}")
     print(f"full_prompt: {full_prompt}")
 
-    
+
 
     return 0.0
