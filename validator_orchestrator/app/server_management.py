@@ -237,7 +237,7 @@ class ServerManager:
                     logger.exception(response.text)
                     return False
                 print(response.json())
-                model_loaded = response.json()[0]["id"]
+                model_loaded = response.json()["data"][0]["id"]
                 correct_model_is_running = model_loaded == model_name
                 logger.info(f"Server {server_name} is running. Model is correct: {correct_model_is_running}")
                 return correct_model_is_running
