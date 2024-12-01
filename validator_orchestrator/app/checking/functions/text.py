@@ -171,16 +171,14 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     for idx, response_token, logprobs in zip(range(len(response_tokens[num_input_tokens:])), response_tokens[num_input_tokens:], prompt_logprobs):
         nice_logprobs = json.dumps(logprobs, indent=2, sort_keys=True, ensure_ascii=False)
+
+        # The edge case here is when the messages didn't include the end of token
+        # So sometimes we don't have a message for the last token
+        additional_log = f" (decoded: '{messages[idx].content}', logprob: {messages[idx].logprob})" if idx <= len(messages) - 1 else ""
         if str(response_token) in logprobs:
-            if idx > len(messages) - 1:
-                logger.info(f"Token {response_token} in logprobs! ✅")
-            else:
-                logger.info(f"Token {response_token} (decoded: '{messages[idx].content}', logprob: {messages[idx].logprob}) in logprobs! ✅")
+            logger.info(f"Token {response_token} {additional_log} in logprobs! ✅")
         else:
-            if idx > len(messages) - 1:
-                logger.error(f"Token {response_token} not in logprobs: {nice_logprobs}! ❌")
-            else:
-                logger.error(f"Token {response_token} (decoded: '{messages[idx].content}', logprob: {messages[idx].logprob}) not in logprobs: {nice_logprobs}! ❌")
+            logger.error(f"Token {response_token} {additional_log} not in logprobs: {nice_logprobs}! ❌")
             bad_token_found = True
             break
 
