@@ -139,6 +139,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     # Now get the prompt logprobs from completions and check they are all correct
     # TODO: make async
+
+    print(payload)
     r = httpx.post(
         f"{BASE_URL}/v1/completions",
         json={
@@ -147,8 +149,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             "temperature": payload["temperature"],
             "top_k": 5,
             "top_p": payload["top_p"],
-            "seed": payload["seed"],
-            "stream": False,
             "max_tokens": 1,
             "prompt_logprobs": 10,
         },
