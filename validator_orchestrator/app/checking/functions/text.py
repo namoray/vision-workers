@@ -42,14 +42,14 @@ def _extract_chat_message(idx: int, response: dict) -> models.MessageResponse | 
     return models.MessageResponse(role="assistant", content=content, logprob=logprob)
 
 
-async def _tokenize(prompt: str, model: str = "unsloth/Meta-Llama-3.1-8B-Instruct") -> list[int]:
+async def _tokenize(prompt: str, model: str) -> list[int]:
     async with httpx.AsyncClient() as client:
         r = await client.post(url=f"{BASE_URL}/tokenize", json={"model": model, "prompt": prompt})
         r.raise_for_status()  # raise an exception for 4xx or 5xx status codes
         return r.json()["tokens"]
 
 
-async def _detokenize(tokens: list[int], model: str = "unsloth/Meta-Llama-3.1-8B-Instruct"):
+async def _detokenize(tokens: list[int], model: str):
     async with httpx.AsyncClient() as client:
         r = await client.post(url=f"{BASE_URL}/detokenize", json={"tokens": tokens, "model": model})
         r.raise_for_status()  # raise an exception for 4xx or 5xx status codes
@@ -140,7 +140,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     # Now get the prompt logprobs from completions and check they are all correct
     # TODO: make async
 
-    print(payload)
+    print("payload", payload)
     r = httpx.post(
         f"{BASE_URL}/v1/completions",
         json={
@@ -153,8 +153,11 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             "prompt_logprobs": 10,
         },
     )
-
-    result = json.loads(r.text)
+    try:
+        result = json.loads(r.text)
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
+        return 0.0
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
     formatted_json = json.dumps(prompt_logprobs, indent=2, sort_keys=True, ensure_ascii=False)
