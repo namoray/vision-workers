@@ -31,8 +31,21 @@ example_payload = {
     "max_tokens": 500,
     "model": "chat-llama-3-2-3b",
     "top_p": 1,
+    "top_k": 5,
     "stream": True,
     "logprobs": True,
+    "seed": 42,
+}
+
+example_completion_payload = {
+    "prompt": "Tell me the capital of France in 20 words only.",
+    "temperature": 0.5,
+    "max_tokens": 500,
+    "model": "chat-llama-3-2-3b",
+    "top_p": 1,
+    "top_k": 5,
+    "logprobs": True,
+    "stream": True,
     "seed": 42,
 }
 
