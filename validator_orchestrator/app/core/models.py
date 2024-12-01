@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, List, Optional, Any, Union, Callable, Coroutine
+from typing import Dict, List, Optional, Any, Union
 from enum import Enum
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -8,7 +8,7 @@ AxonScores = Dict[int, float]
 
 
 class QueryResult(BaseModel):
-    formatted_response: dict[str, Any] |  list[dict[str, Any]] | None
+    formatted_response: dict[str, Any] | list[dict[str, Any]] | None
     node_id: Optional[int]
     response_time: Optional[float]
 
@@ -47,7 +47,7 @@ class OrchestratorServerConfig(BaseModel):
                 "max_model_len": 16000,
                 "gpu_utilization": 0.6,
             },
-            None
+            None,
         ]
     )
     checking_function: str = Field(examples=["check_text_result", "check_image_result"])
@@ -133,12 +133,15 @@ class Logprob(BaseModel):
 class ValidatorCheckingResponse(BaseModel):
     choices: List[ValidatorCheckingResponseBody]
 
+
 class ValidatorCheckingResponseBody(BaseModel):
     delta: DeltaContent
     logprobs: LogprobContent
 
+
 class DeltaContent(BaseModel):
     content: str
+
 
 class LogprobContent(BaseModel):
     content: List[Logprob]

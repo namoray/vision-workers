@@ -3,14 +3,11 @@ from typing import Dict, Any, List, Union
 import httpx
 import json
 import random
-from transformers import AutoTokenizer
 import math
 from loguru import logger
 
 from app.core.constants import AI_SERVER_PORT
 
-tokenizer_name = "tau-vision/llama-tokenizer-fix"
-tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
 BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
@@ -88,12 +85,6 @@ def chat_to_prompt(messages: List[Dict[str, str]], model_name: str, starting_ass
 
 
 async def check_text_result(result: models.QueryResult, payload: dict, task_config: models.OrchestratorServerConfig) -> Union[float, None]:
-    global tokenizer, tokenizer_name
-
-    if task_config.load_model_config.get("tokenizer", task_config.load_model_config.get("model")) != tokenizer_name:
-        tokenizer = AutoTokenizer.from_pretrained(task_config.load_model_config.get("tokenizer", task_config.load_model_config.get("model")))
-        tokenizer_name = task_config.load_model_config.get("tokenizer", task_config.load_model_config.get("model"))
-
     try:
         # Parse formatted response
         formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
