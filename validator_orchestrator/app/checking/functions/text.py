@@ -114,7 +114,7 @@ async def calculate_distance_for_token(
 ) -> float:
 
     messages = [elm.model_dump() for elm in llm_request.messages]
-    prompt = await _chat_to_prompt(messages=messages, model_name=task_config.load_model_config['model'], 
+    prompt, _ = await _chat_to_prompt(messages=messages, model_name=task_config.load_model_config['model'], 
                              eos_token_id=task_config.load_model_config['eos_token_id'])
     r = httpx.post(
         f"{BASE_URL}/v1/completions",
