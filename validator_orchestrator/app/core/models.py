@@ -46,6 +46,7 @@ class OrchestratorServerConfig(BaseModel):
                 "tokenizer": "tau-vision/llama-tokenizer-fix",
                 "max_model_len": 16000,
                 "gpu_utilization": 0.6,
+                "eos_token_id": 128009
             },
             None,
         ]
@@ -81,7 +82,14 @@ class ChatRequestModel(BaseModel):
     number_of_logprobs: int
     starting_assistant_message: bool
 
-
+class CompletionRequestModel(BaseModel):
+    prompt: str
+    seed: int
+    temperature: float
+    max_tokens: int
+    top_k: int
+    number_of_logprobs: int
+    
 class MinerChatResponse(BaseModel):
     text: str
     logprob: float

@@ -106,32 +106,49 @@ async def _completions_to_prompt(prompt: str, model_name: str, eos_token_id: int
     return await _tokenize_and_detokenize(input_payload, model_name, eos_token_id, add_generation_prompt)
 
 
+async def make_completions_call(
+    payload: dict,
+    endpoint: str = f"{BASE_URL}/v1/completions",
+) -> dict:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(endpoint, json=payload)
+        return response.json()
+
+
 async def calculate_distance_for_token(
     task_config: models.OrchestratorServerConfig,
-    llm_request: models.ChatRequestModel,
+    llm_request: Union[models.ChatRequestModel, models.CompletionRequestModel],
     chat_responses: List[models.Message],
     index: int,
 ) -> float:
 
-    messages = [elm.model_dump() for elm in llm_request.messages]
-    prompt, _ = await _chat_to_prompt(messages=messages, model_name=task_config.load_model_config['model'], 
-                             eos_token_id=task_config.load_model_config['eos_token_id'], add_generation_prompt=False)
-    r = httpx.post(
-        f"{BASE_URL}/v1/completions",
-        json={
-            "prompt": prompt,
-            "model": task_config.load_model_config["model"],
-            "temperature": llm_request.temperature,
-            "top_k": llm_request.top_k,
-            "top_p": 1,
-            "max_tokens": 1,
-            "logprobs": 5
-        },
-    )
+    if isinstance(llm_request, models.ChatRequestModel):
+        messages = [elm.model_dump() for elm in llm_request.messages]
+        prompt, _ = await _chat_to_prompt(messages=messages, model_name=task_config.load_model_config['model'], 
+                                eos_token_id=task_config.load_model_config.get("eos_token_id", 128009), add_generation_prompt=False)
+    elif isinstance(llm_request, models.CompletionRequestModel):
+        prompt = llm_request.prompt
+    else:
+        raise ValueError(f"Unknown request type: {type(llm_request)}")
+    
+    completions_payload = {
+        "prompt": prompt,
+        "model": task_config.load_model_config["model"],
+        "temperature": llm_request.temperature,
+        "top_k": llm_request.top_k,
+        "top_p": 1,
+        "max_tokens": 1,
+        "logprobs": llm_request.number_of_logprobs
+    }
+
     try:
+        r = await httpx.AsyncClient().post(f"{BASE_URL}/v1/completions", json=completions_payload)
         validator_checking_response = json.loads(r.text, object_hook=replace_inf)
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
+        return 0.0
+    except httpx.RequestError as e:
+        logger.error(f"Request failed: {e}")
         return 0.0
 
     choice = validator_checking_response['choices'][0]
@@ -139,25 +156,32 @@ async def calculate_distance_for_token(
     token = choice['text']
     validator_log_probs_for_token = choice['logprobs']['top_logprobs'][0]
 
+
     if token not in validator_log_probs_for_token:
-        return 1.0
+        logger.info(f"token: {token} - not found in vali logprobs")
+        logger.info(f"validator_log_probs_for_token: {validator_log_probs_for_token}")
+        return 0
     else:
         distance = abs(math.exp(validator_log_probs_for_token[token]) - math.exp(chat_responses[index].logprob))
+        logger.info(f"token: {token} - logprob : {chat_responses[index].logprob}")
+        logger.info(f"validator_log_probs_for_token: {validator_log_probs_for_token}")
 
     return distance
 
+
 async def check_text_result(result: models.QueryResult, payload: dict, task_config: models.OrchestratorServerConfig) -> Union[float, None]:
     formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
-    eos_token_id = task_config.load_model_config["eos_token_id"]
+    eos_token_id = task_config.load_model_config.get("eos_token_id", 128009)
 
     # Extract messages & logprobs from the response
 
     messages: list[models.MessageResponse] = []
     response_tokens: list[str] = []
+    is_payload_completions = _payload_is_completions(payload)
     for idx, response in enumerate(formatted_response):
         try:
             # If `prompt` is in the payload, treat it as a /completions request
-            if _payload_is_completions(payload):
+            if is_payload_completions:
                 message = _extract_completions_message(idx, response)
             else:
                 message = _extract_chat_message(idx, response)
@@ -179,7 +203,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         return 0.0
 
     # Now get the combined input + output in `prompt` format
-    if _payload_is_completions(payload):
+    if is_payload_completions:
         input_completions_content = payload[PROMPT_KEY]
         input_content, num_input_tokens = await _completions_to_prompt(input_completions_content, task_config.load_model_config["model"], eos_token_id, add_generation_prompt=True)
     else:
@@ -199,25 +223,22 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     full_prompt = await _detokenize(response_tokens, task_config.load_model_config["model"])
 
     # Now get the prompt logprobs from completions and check they are all correct
-    # TODO: make async
+    completions_payload = {
+        "prompt": full_prompt,
+        "model": task_config.load_model_config["model"],
+        "temperature": payload["temperature"],
+        "top_p": payload["top_p"],
+        "max_tokens": 1,
+        "prompt_logprobs": 10,
+    }
 
-    r = httpx.post(
-        f"{BASE_URL}/v1/completions",
-        json={
-            "prompt": full_prompt,
-            "model": task_config.load_model_config["model"],
-            "temperature": payload["temperature"],
-            # "top_k": 5,  # Don't add this as vllm breaks with it x)
-            "top_p": payload["top_p"],
-            "max_tokens": 1,
-            "prompt_logprobs": 10,
-        },
-    )
     try:
-        result = json.loads(r.text, object_hook=replace_inf)
-    except json.JSONDecodeError as e:
-        logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
+        result = await make_completions_call(completions_payload)
+    except (httpx.RequestError, json.JSONDecodeError) as e:
+        logger.exception(e)
+        logger.error(f"API call failed: {e}")
         return 0.0
+
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
     bad_token_found = False
@@ -256,7 +277,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
 
     if messages[-1].content == "":
-            messages = messages[:-1]
+        messages = messages[:-1]
 
     if len(messages) == 1:
         indices_to_check = [0]
@@ -277,33 +298,41 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     payload["starting_assistant_message"] = True
     payload["number_of_logprobs"] = 5
     payload["top_k"] = 5
-    llm_request = models.ChatRequestModel(**payload)
-    llm_request.max_tokens = 1
+    if is_payload_completions:
+        llm_request = models.CompletionRequestModel(**payload)
+        llm_request.max_tokens = 1
+    else:
+        llm_request = models.ChatRequestModel(**payload)
+        llm_request.max_tokens = 1
 
     for index in indices_to_check:
         if checks >= 5:
             continue
 
-        if index == 0:
-            llm_request.starting_assistant_message = True
+        if is_payload_completions:
+            text_to_inject_for_checking = "".join([i.content for i in messages[:index]])
+            llm_request.prompt += text_to_inject_for_checking
         else:
-            llm_request.starting_assistant_message = False
-            text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
-            llm_request.messages.append(
-                models.Message(
-                    **{
-                        "role": "assistant",
-                        "content": text_to_inject_into_assistant_message,
-                    }
-                )
-            )
+            if index == 0:
+                llm_request.starting_assistant_message = True
+            else:
+                llm_request.starting_assistant_message = False
 
+                text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
+                llm_request.messages.append(
+                    models.Message(
+                        **{
+                            "role": "assistant",
+                            "content": text_to_inject_into_assistant_message,
+                        }
+                    )
+                )
         distance = await calculate_distance_for_token(task_config, llm_request, messages, index)
-        
         checks += 1
         total_distance += distance
-
-        if index != 0:
+        if index != 0 and is_payload_completions:
+            llm_request.prompt = llm_request.prompt[:(len(llm_request.prompt) - len(text_to_inject_for_checking))]
+        elif index != 0 and not is_payload_completions:
             llm_request.messages = llm_request.messages[:-1]
 
     try:
@@ -311,6 +340,5 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     except Exception as e:
         logger.error(f"Error with average distance: {e}. Total distance: {total_distance}. Checks: {checks}")
         return 0
-
     score = score_average_distance(average_distance)
     return score
