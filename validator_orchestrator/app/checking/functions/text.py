@@ -122,7 +122,7 @@ async def calculate_distance_for_token(
             "prompt": prompt,
             "model": task_config.load_model_config["model"],
             "temperature": llm_request.temperature,
-            "top_k": 5,
+            "top_k": llm_request.top_k,
             "top_p": 1,
             "max_tokens": 1,
             "logprobs": 5
@@ -138,7 +138,7 @@ async def calculate_distance_for_token(
 
     token = choice['text']
     validator_log_probs_for_token = choice['logprobs']['top_logprobs'][0]
-    
+
     if token not in validator_log_probs_for_token:
         return 1.0
     else:
