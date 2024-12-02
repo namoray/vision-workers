@@ -113,8 +113,6 @@ async def calculate_distance_for_token(
     index: int,
 ) -> float:
 
-    validator_checking_response = await _get_chat_data_validator_response(task_config.endpoint, llm_request.model_dump())
-
     prompt = _chat_to_prompt(messages=llm_request.messages, model_name=task_config.load_model_config['model'], 
                              eos_token_id=task_config.load_model_config['eos_token_id'])
     r = httpx.post(
@@ -130,11 +128,11 @@ async def calculate_distance_for_token(
         },
     )
     try:
-        result = json.loads(r.text, object_hook=replace_inf)
+        validator_checking_response = json.loads(r.text, object_hook=replace_inf)
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
         return 0.0
-    logger.info(f"vali response : {result}")
+    logger.info(f"vali response : {validator_checking_response}")
 
     logger.info(f"!! validator_checking_response: {validator_checking_response}")
     token = chat_responses[index].content
