@@ -114,22 +114,18 @@ async def calculate_distance_for_token(
 ) -> float:
 
     messages = [elm.model_dump() for elm in llm_request.messages]
-    messages_to_format = messages[:-1]
-    last_assistant_msg = messages[-1] 
-    
-    prompt, _ = await _chat_to_prompt(messages=messages_to_format, model_name=task_config.load_model_config['model'], 
-                             eos_token_id=task_config.load_model_config['eos_token_id'])
-    prompt += last_assistant_msg['content']
+    prompt, _ = await _chat_to_prompt(messages=messages, model_name=task_config.load_model_config['model'], 
+                             eos_token_id=task_config.load_model_config['eos_token_id'], add_generation_prompt=False)
     r = httpx.post(
         f"{BASE_URL}/v1/completions",
         json={
             "prompt": prompt,
             "model": task_config.load_model_config["model"],
             "temperature": llm_request.temperature,
-            # "top_k": 5,  # Don't add this as vllm breaks with it x)
+            "top_k": 5,
             "top_p": 1,
             "max_tokens": 1,
-            "prompt_logprobs": 1,
+            "prompt_logprobs": 0,
             "logprobs": 5
         },
     )
