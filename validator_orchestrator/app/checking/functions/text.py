@@ -126,6 +126,7 @@ async def calculate_distance_for_token(
             "top_p": 1,
             "max_tokens": 1,
             "prompt_logprobs": 1,
+            "logprobs": 5
         },
     )
     try:
@@ -135,8 +136,13 @@ async def calculate_distance_for_token(
         return 0.0
     logger.info(f"vali response : {validator_checking_response}")
 
+    choice = validator_checking_response['choices'][0]
+
     logger.info(f"!! validator_checking_response: {validator_checking_response}")
-    token = chat_responses[index].content
+    token = choice['text']
+    token_logprob = choice['text']['logprobs'][choice['index']]
+
+    
     validator_log_probs_for_token = {i.decoded: i.logprob for i in validator_checking_response.logprobs}
     logger.info(f"token : {token} - logprob : {chat_responses[index].logprob}")
     logger.info(f"validator_log_probs_for_token : {validator_log_probs_for_token}")
