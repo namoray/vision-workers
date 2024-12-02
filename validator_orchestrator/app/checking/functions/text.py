@@ -125,7 +125,6 @@ async def calculate_distance_for_token(
             "top_k": 5,
             "top_p": 1,
             "max_tokens": 1,
-            "prompt_logprobs": False,
             "logprobs": 5
         },
     )
