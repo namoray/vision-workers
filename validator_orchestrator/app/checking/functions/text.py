@@ -1,8 +1,11 @@
 from app.core import models
 from typing import Union
 import json
+import random
 from loguru import logger
 import httpx
+from typing import Dict, List, Any, Union
+import math
 
 
 def replace_inf(dct: dict):
@@ -19,6 +22,17 @@ MESSAGES_KEY = "messages"
 # BASE_URL = "http://83.143.115.20:8000"
 
 BASE_URL = "http://llm_server:8000".rstrip("/")
+
+BOTTOM_TEXT_THRESHOLD = 0.125
+TOP_TEXT_THRESHOLD = 0.25
+
+
+def score_average_distance(average_distance: float) -> float:
+    if average_distance <= BOTTOM_TEXT_THRESHOLD:
+        return 1.0
+    elif average_distance <= TOP_TEXT_THRESHOLD:
+        return 1.0 - 0.5 * (average_distance - BOTTOM_TEXT_THRESHOLD) / (TOP_TEXT_THRESHOLD - BOTTOM_TEXT_THRESHOLD)
+    return 0.0
 
 
 def _payload_is_completions(payload: dict) -> bool:
@@ -91,6 +105,41 @@ async def _completions_to_prompt(prompt: str, model_name: str, eos_token_id: int
     input_payload = {"model": model_name, "prompt": prompt}
     return await _tokenize_and_detokenize(input_payload, model_name, eos_token_id, add_generation_prompt)
 
+
+async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any]) -> httpx.Response:
+    # TODO: Add ability to use localhost as the server name if set in env vars or similar
+    url = f"{BASE_URL}" + "/" + endpoint.lstrip("/")
+    async with httpx.AsyncClient(timeout=10) as client:
+        logger.info(f"Querying : {url}")
+        response = await client.post(url, json=data)
+        return response
+
+async def _get_chat_data_validator_response(endpoint: str, data: Dict[str, Any]) -> models.ValidatorCheckingResponse:
+    """This method is fine as we always have max token is 1"""
+    response = await _query_endpoint_for_iterator(endpoint, data)
+    async for line in response.aiter_lines():
+        line_formatted = line.split("data: ")[1].split("\n\n")[0]
+        response_json = json.loads(line_formatted)
+        return models.ValidatorCheckingResponse(**response_json)
+
+async def calculate_distance_for_token(
+    task_config: models.OrchestratorServerConfig,
+    llm_request: models.ChatRequestModel,
+    chat_responses: List[models.Message],
+    index: int,
+) -> float:
+    validator_checking_response = await _get_chat_data_validator_response(task_config.endpoint, llm_request.model_dump(), server_name=task_config.server_needed.value)
+    logger.info(f"!! validator_checking_response: {validator_checking_response}")
+    token = chat_responses[index].content
+    validator_log_probs_for_token = {i.decoded: i.logprob for i in validator_checking_response.logprobs}
+    logger.info(f"token : {token} - logprob : {chat_responses[index].logprob}")
+    logger.info(f"validator_log_probs_for_token : {validator_log_probs_for_token}")
+    if token not in validator_log_probs_for_token:
+        return 1.0
+    else:
+        distance = abs(math.exp(validator_log_probs_for_token[token]) - math.exp(chat_responses[index].logprob))
+
+    return distance
 
 async def check_text_result(result: models.QueryResult, payload: dict, task_config: models.OrchestratorServerConfig) -> Union[float, None]:
     formatted_response = json.loads(result.formatted_response) if isinstance(result.formatted_response, str) else result.formatted_response
@@ -202,6 +251,61 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     logger.info("All tokens found in prompt_logprobs! ✅")
 
 
-    # TODO: Add finegrained check of 5 random logprobs
+    if messages[-1].content == "":
+            messages = messages[:-1]
 
-    return 1.0
+    if len(messages) == 1:
+        indices_to_check = [0]
+    else:
+        # Always check first & last
+        indices_to_check = [0, len(messages) - 1]
+        number_of_additional_indices_to_check = len(messages) - 2
+        additional_indices_to_check = random.sample(
+            range(1, len(messages) - 1),
+            number_of_additional_indices_to_check,
+        )
+        indices_to_check.extend(additional_indices_to_check)
+
+    total_distance = 0
+    checks = 0
+
+    # Prepare request for token validation
+    payload["starting_assistant_message"] = True
+    payload["number_of_logprobs"] = 5
+    payload["top_k"] = 5
+    llm_request = models.ChatRequestModel(**payload)
+    llm_request.max_tokens = 1
+
+    for index in indices_to_check:
+        if checks >= 5:
+            continue
+
+        if index == 0:
+            llm_request.starting_assistant_message = True
+        else:
+            llm_request.starting_assistant_message = False
+            text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
+            llm_request.messages.append(
+                models.Message(
+                    **{
+                        "role": "assistant",
+                        "content": text_to_inject_into_assistant_message,
+                    }
+                )
+            )
+
+        distance = await calculate_distance_for_token(task_config, llm_request, messages, index)
+        checks += 1
+        total_distance += distance
+
+        if index != 0:
+            llm_request.messages = llm_request.messages[:-1]
+
+    try:
+        average_distance = total_distance / checks
+    except Exception as e:
+        logger.error(f"Error with average distance: {e}. Total distance: {total_distance}. Checks: {checks}")
+        return 0
+
+    score = score_average_distance(average_distance)
+    return score
