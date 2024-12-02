@@ -138,10 +138,11 @@ async def calculate_distance_for_token(
 
     choice = validator_checking_response['choices'][0]
 
-    logger.info(f"!! validator_checking_response: {validator_checking_response}")
     token = choice['text']
     validator_log_probs_for_token = choice['logprobs']['top_logprobs'][0]
 
+    logger.info(f"Original payload : {llm_request.model_dump()}")
+    logger.info(f"Formatted prompt : {prompt}")
 
     logger.info(f"token : {token} - logprob : {chat_responses[index].logprob}")
     logger.info(f"validator_log_probs_for_token : {validator_log_probs_for_token}")
@@ -207,7 +208,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     # Now get the prompt logprobs from completions and check they are all correct
     # TODO: make async
 
-    print("payload", payload)
     r = httpx.post(
         f"{BASE_URL}/v1/completions",
         json={
