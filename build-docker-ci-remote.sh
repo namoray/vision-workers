@@ -37,8 +37,5 @@ fi
 docker build -f Dockerfile.orchestrator -t ${IMAGE_PREFIX}/cicd:orchestrator-$BUILD_ID .
 docker push ${IMAGE_PREFIX}/cicd:orchestrator-$BUILD_ID
 
-docker build -f Dockerfile.llm_server -t ${IMAGE_PREFIX}/cicd:llm_server-$BUILD_ID .
-docker push ${IMAGE_PREFIX}/cicd:llm_server-$BUILD_ID
-
 docker build -f Dockerfile.image_server -t ${IMAGE_PREFIX}/cicd:image_server-$BUILD_ID .
 docker push ${IMAGE_PREFIX}/cicd:image_server-$BUILD_ID 
