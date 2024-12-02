@@ -106,29 +106,36 @@ async def _completions_to_prompt(prompt: str, model_name: str, eos_token_id: int
     return await _tokenize_and_detokenize(input_payload, model_name, eos_token_id, add_generation_prompt)
 
 
-async def _query_endpoint_for_iterator(endpoint: str, data: Dict[str, Any]) -> httpx.Response:
-    # TODO: Add ability to use localhost as the server name if set in env vars or similar
-    url = f"{BASE_URL}" + "/" + endpoint.lstrip("/")
-    async with httpx.AsyncClient(timeout=10) as client:
-        logger.info(f"Querying : {url}")
-        response = await client.post(url, json=data)
-        return response
-
-async def _get_chat_data_validator_response(endpoint: str, data: Dict[str, Any]) -> models.ValidatorCheckingResponse:
-    """This method is fine as we always have max token is 1"""
-    response = await _query_endpoint_for_iterator(endpoint, data)
-    async for line in response.aiter_lines():
-        line_formatted = line.split("data: ")[1].split("\n\n")[0]
-        response_json = json.loads(line_formatted)
-        return models.ValidatorCheckingResponse(**response_json)
-
 async def calculate_distance_for_token(
     task_config: models.OrchestratorServerConfig,
     llm_request: models.ChatRequestModel,
     chat_responses: List[models.Message],
     index: int,
 ) -> float:
+
     validator_checking_response = await _get_chat_data_validator_response(task_config.endpoint, llm_request.model_dump())
+
+    prompt = _chat_to_prompt(messages=llm_request.messages, model_name=task_config.load_model_config['model'], 
+                             eos_token_id=task_config.load_model_config['eos_token_id'])
+    r = httpx.post(
+        f"{BASE_URL}/v1/completions",
+        json={
+            "prompt": prompt,
+            "model": task_config.load_model_config["model"],
+            "temperature": llm_request.temperature,
+            # "top_k": 5,  # Don't add this as vllm breaks with it x)
+            "top_p": 1,
+            "max_tokens": 1,
+            "prompt_logprobs": 1,
+        },
+    )
+    try:
+        result = json.loads(r.text, object_hook=replace_inf)
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
+        return 0.0
+    logger.info(f"vali response : {result}")
+
     logger.info(f"!! validator_checking_response: {validator_checking_response}")
     token = chat_responses[index].content
     validator_log_probs_for_token = {i.decoded: i.logprob for i in validator_checking_response.logprobs}
@@ -295,6 +302,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             )
 
         distance = await calculate_distance_for_token(task_config, llm_request, messages, index)
+        
         checks += 1
         total_distance += distance
 
