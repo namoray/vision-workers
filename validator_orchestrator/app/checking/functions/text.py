@@ -133,18 +133,12 @@ async def calculate_distance_for_token(
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
         return 0.0
-    logger.info(f"vali response : {validator_checking_response}")
 
     choice = validator_checking_response['choices'][0]
 
     token = choice['text']
     validator_log_probs_for_token = choice['logprobs']['top_logprobs'][0]
-
-    logger.info(f"Original payload : {llm_request.model_dump()}")
-    logger.info(f"Formatted prompt : {prompt}")
-
-    logger.info(f"token : {token} - logprob : {chat_responses[index].logprob}")
-    logger.info(f"validator_log_probs_for_token : {validator_log_probs_for_token}")
+    
     if token not in validator_log_probs_for_token:
         return 1.0
     else:
