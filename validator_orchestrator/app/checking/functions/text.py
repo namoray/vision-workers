@@ -43,7 +43,6 @@ def _extract_completions_message(idx: int, response: dict) -> str:
 
 
 def _extract_chat_message(idx: int, response: dict) -> models.MessageResponse | None:
-    logger.info(f"_extract_chat_message got : {idx} - {response}")
     content = response["choices"][0]["delta"]["content"]
     logprobs = response["choices"][0]["logprobs"]
     # Below is a fix for the first message not having logprobs
@@ -52,7 +51,6 @@ def _extract_chat_message(idx: int, response: dict) -> models.MessageResponse | 
         if role == "assistant":
             return None
     logprob = logprobs["content"][0]["logprob"]
-    logger.info(f"_extract_chat_message responds : {content} - {logprob}")
     return models.MessageResponse(content=content, logprob=logprob)
 
 
@@ -76,8 +74,6 @@ async def _tokenize_and_detokenize(input_payload: dict, model_name: str, eos_tok
         tokenize_response = await http_client.post(url=f"{BASE_URL}/tokenize", json=input_payload)
         tokenize_response.raise_for_status()
         token_list: list[int] = tokenize_response.json()["tokens"]
-        logger.info(f"tokenizer input : {input_payload}")
-        logger.info(f"tokenizer output : {token_list}")
 
         if "llama-3" in model_name.lower() and not add_generation_prompt:
             last_eot_index = max((index for index, value in enumerate(token_list) if value == eos_token_id), default=None)
@@ -86,7 +82,6 @@ async def _tokenize_and_detokenize(input_payload: dict, model_name: str, eos_tok
 
         detokenize_response = await http_client.post(url=f"{BASE_URL}/detokenize", json={"tokens": token_list, "model": model_name})
         detokenize_response.raise_for_status()
-        logger.info(f"detokenize_response output : {token_list}")
         prompt = detokenize_response.json()["prompt"]
         return prompt, len(token_list)
 
@@ -137,8 +132,6 @@ async def calculate_distance_for_token(
         "max_tokens": 1,
         "logprobs": llm_request.number_of_logprobs,
     }
-    logger.info(f"check request: {llm_request.model_dump()}")
-    logger.info(f"check prompt : {prompt}")
     try:
         validator_checking_response = await make_api_call(completions_payload, endpoint=f"{BASE_URL}/v1/completions")
     except json.JSONDecodeError as e:
@@ -186,7 +179,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             logger.exception(e)
             return 0  # Important to return 0 as this is a critical error
 
-    logger.info(f"Got chat or completion messages : \n{messages}")
 
     if not messages:
         logger.error("No valid messages in response.")
