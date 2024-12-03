@@ -111,6 +111,7 @@ async def calculate_distance_for_token(
     llm_request: Union[models.ChatRequestModel, models.CompletionRequestModel],
     chat_responses: List[models.MessageResponse],
     index: int,
+    starting_assistant_message: bool
 ) -> float:
     if isinstance(llm_request, models.ChatRequestModel):
         messages = [elm.model_dump() for elm in llm_request.messages]
@@ -118,7 +119,7 @@ async def calculate_distance_for_token(
             messages=messages,
             model_name=task_config.load_model_config["model"],
             eos_token_id=task_config.load_model_config.get("eos_token_id", 128009),
-            add_generation_prompt=llm_request.starting_assistant_message,
+            add_generation_prompt=starting_assistant_message,
         )
     elif isinstance(llm_request, models.CompletionRequestModel):
         prompt = llm_request.prompt
@@ -317,9 +318,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         if is_completions_payload:
             text_to_inject_for_checking = "".join([i.content for i in messages[:index]])
             llm_request.prompt += text_to_inject_for_checking
-            llm_request.starting_assistant_message = False
+            starting_assistant_message = False
         else:
-            llm_request.starting_assistant_message = index == 0
+            starting_assistant_message = index == 0
             text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
             llm_request.messages.append(
                 models.Message(
@@ -329,7 +330,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
                     }
                 )
             )
-        distance = await calculate_distance_for_token(task_config, llm_request, messages, index)
+        distance = await calculate_distance_for_token(task_config, llm_request, messages, index, starting_assistant_message)
         checks += 1
         total_distance += distance
         if index != 0 and is_completions_payload:
