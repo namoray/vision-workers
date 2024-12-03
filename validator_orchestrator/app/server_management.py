@@ -128,10 +128,11 @@ class ServerManager:
         # we want is not running
         self.running_servers[server_config.name] = desired_server_is_online
 
-        logger.debug(f"Desired server: {server_config.name}. Is running: {desired_server_is_online}.")
+        logger.info(f"Desired server: {server_config.name}. Is running: {desired_server_is_online}.")
 
         if desired_server_is_online:
             if server_config.name == ServerType.LLM:
+                logger.info("Checking correct model")
                 correct_model_is_running = await self._check_correct_model_is_running(
                     server_name=server_config.name,
                     port=server_config.port,
@@ -229,18 +230,13 @@ class ServerManager:
 
     @staticmethod
     async def _check_correct_model_is_running(server_name: str, port: int, model_name: str):
-        if server_name == ServerType.IMAGE.value:
-            logger.info("Image server running, and they have all models, so all good!")
-            return True
-
-        else:
-            async with httpx.AsyncClient(timeout=5) as client:
-                response = await client.get(f"http://{server_name}:{port}/v1/models")
-                if response.status_code != 200:
-                    logger.error(f"Server {server_name} is running, but /v1/models returned {response.status_code}???")
-                    logger.exception(response.text)
-                    return False
-                model_loaded = response.json()["data"][0]["id"]
-                correct_model_is_running = model_loaded == model_name
-                logger.info(f"Server {server_name} is running. Model is correct: {correct_model_is_running}")
-                return correct_model_is_running
+        async with httpx.AsyncClient(timeout=5) as client:
+            response = await client.get(f"http://{server_name}:{port}/v1/models")
+            if response.status_code != 200:
+                logger.error(f"Server {server_name} is running, but /v1/models returned {response.status_code}???")
+                logger.exception(response.text)
+                return False
+            model_loaded = response.json()["data"][0]["id"]
+            correct_model_is_running = model_loaded == model_name
+            logger.info(f"Server {server_name} is running. Model is correct: {correct_model_is_running}")
+            return correct_model_is_running
