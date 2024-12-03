@@ -11,9 +11,7 @@ import math
 PROMPT_KEY = "prompt"
 MESSAGES_KEY = "messages"
 
-# TODO: Change below to local docker container, and eventually to chutes
-# BASE_URL = "http://83.143.115.20:8000"
-
+# TODO: Eventually change to chutes
 BASE_URL = "http://llm_server:8000".rstrip("/")
 
 BOTTOM_TEXT_THRESHOLD = 0.125
