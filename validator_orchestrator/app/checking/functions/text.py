@@ -74,6 +74,8 @@ async def _tokenize_and_detokenize(input_payload: dict, model_name: str, eos_tok
         tokenize_response = await http_client.post(url=f"{BASE_URL}/tokenize", json=input_payload)
         tokenize_response.raise_for_status()
         token_list: list[int] = tokenize_response.json()["tokens"]
+        logger.info(f"tokenizer input : {input_payload}")
+        logger.info(f"tokenizer output : {token_list}")
 
         if "llama-3" in model_name.lower() and not add_generation_prompt:
             last_eot_index = max((index for index, value in enumerate(token_list) if value == eos_token_id), default=None)
@@ -82,7 +84,7 @@ async def _tokenize_and_detokenize(input_payload: dict, model_name: str, eos_tok
 
         detokenize_response = await http_client.post(url=f"{BASE_URL}/detokenize", json={"tokens": token_list, "model": model_name})
         detokenize_response.raise_for_status()
-
+        logger.info(f"detokenize_response output : {token_list}")
         prompt = detokenize_response.json()["prompt"]
         return prompt, len(token_list)
 
