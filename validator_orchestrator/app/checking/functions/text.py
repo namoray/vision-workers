@@ -4,7 +4,7 @@ import json
 import random
 from loguru import logger
 import httpx
-from typing import List, Union
+from typing import List
 import math
 
 
@@ -101,9 +101,9 @@ async def _completions_to_prompt(prompt: str, model_name: str, eos_token_id: int
 
 async def make_api_call(
     payload: dict,
-    endpoint: str = f"{BASE_URL}/v1/completions",
+    endpoint: str,
 ) -> dict:
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=5) as client:
         response = await client.post(endpoint, json=payload)
         return response.json()
 
@@ -112,7 +112,7 @@ async def calculate_distance_for_token(
     task_config: models.OrchestratorServerConfig,
     llm_request: Union[models.ChatRequestModel, models.CompletionRequestModel],
     chat_responses: List[models.MessageResponse],
-    index: int
+    index: int,
 ) -> float:
     if isinstance(llm_request, models.ChatRequestModel):
         messages = [elm.model_dump() for elm in llm_request.messages]
@@ -124,8 +124,6 @@ async def calculate_distance_for_token(
         )
     elif isinstance(llm_request, models.CompletionRequestModel):
         prompt = llm_request.prompt
-    else:
-        raise ValueError(f"Unknown request type: {type(llm_request)}")
 
     completions_payload = {
         "prompt": prompt,
@@ -138,26 +136,24 @@ async def calculate_distance_for_token(
     }
 
     try:
-        validator_checking_response = await make_api_call(completions_payload)
+        validator_checking_response = await make_api_call(completions_payload, endpoint=f"{BASE_URL}/v1/completions")
     except json.JSONDecodeError as e:
-        logger.error(f"Error decoding JSON: {e}. Response: {validator_checking_response}")
+        logger.error(f"Error decoding JSON in calculate_distance_for_token: {e}. Response: {validator_checking_response}")
         return 0.0
     except httpx.RequestError as e:
-        logger.error(f"Request failed: {e}")
+        logger.error(f"Request failed in calculate_distance_for_token: {e}")
         return 0.0
 
-    choice = validator_checking_response["choices"][0]
+    text = validator_checking_response["choices"][0]["text"]
+    validator_log_probs_for_token = validator_checking_response["choices"][0]["logprobs"]["top_logprobs"][0]
 
-    token = choice["text"]
-    validator_log_probs_for_token = choice["logprobs"]["top_logprobs"][0]
-
-    if token not in validator_log_probs_for_token:
-        logger.info(f"token: {token} - not found in vali logprobs")
+    if text not in validator_log_probs_for_token:
+        logger.info(f"token: {text} - not found in vali logprobs")
         logger.info(f"validator_log_probs_for_token: {validator_log_probs_for_token}")
         return 0
     else:
-        distance = abs(math.exp(validator_log_probs_for_token[token]) - math.exp(chat_responses[index].logprob))
-        logger.info(f"token: {token} - logprob : {chat_responses[index].logprob}")
+        distance = abs(math.exp(validator_log_probs_for_token[text]) - math.exp(chat_responses[index].logprob))
+        logger.info(f"token: {text} - logprob : {chat_responses[index].logprob}")
         logger.info(f"validator_log_probs_for_token: {validator_log_probs_for_token}")
 
     return distance
@@ -264,7 +260,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             logger.error(f"Token {response_token} {additional_log} not found in logprobs :(")
             bad_token_found = True
             break
-        
+
         # If you could've stopped, why didnt you?
         if str(eos_token_id) in logprobs and str(response_token) != str(eos_token_id):
             logprob = logprobs[str(eos_token_id)]["logprob"]
@@ -281,6 +277,10 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     logger.info("All tokens found in prompt_logprobs! ✅")
 
+    # Now lets do some fine grained checking
+
+    # Don't use the last token, as the token that comes after that
+    # is undefined
     if messages[-1].content == "":
         messages = messages[:-1]
 
@@ -303,6 +303,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     payload["starting_assistant_message"] = True
     payload["number_of_logprobs"] = 5
     payload["top_k"] = 5
+
     if is_completions_payload:
         llm_request = models.CompletionRequestModel(**payload)
         llm_request.max_tokens = 1
@@ -312,26 +313,24 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     for index in indices_to_check:
         if checks >= 5:
-            continue
+            break
+
 
         if is_completions_payload:
             text_to_inject_for_checking = "".join([i.content for i in messages[:index]])
             llm_request.prompt += text_to_inject_for_checking
+            llm_request.starting_assistant_message = False
         else:
-            if index == 0:
-                llm_request.starting_assistant_message = True
-            else:
-                llm_request.starting_assistant_message = False
-
-                text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
-                llm_request.messages.append(
-                    models.Message(
-                        **{
-                            "role": "assistant",
-                            "content": text_to_inject_into_assistant_message,
-                        }
-                    )
+            llm_request.starting_assistant_message = index == 0
+            text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
+            llm_request.messages.append(
+                models.Message(
+                    **{
+                        "role": "assistant",
+                        "content": text_to_inject_into_assistant_message,
+                    }
                 )
+            )
         distance = await calculate_distance_for_token(task_config, llm_request, messages, index)
         checks += 1
         total_distance += distance
