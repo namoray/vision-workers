@@ -131,11 +131,7 @@ class ServerManager:
         logger.info(f"Desired server: {server_config.name}. Is running: {desired_server_is_online}.")
 
         if desired_server_is_online:
-            logger.info(f"server_config.name : {server_config.name}")
-            logger.info(f"ServerType.LLM : {ServerType.LLM}")
-            
-            if server_config.name == ServerType.LLM:
-                logger.info("Checking correct model")
+            if server_config.name == ServerType.LLM.value:
                 correct_model_is_running = await self._check_correct_model_is_running(
                     server_name=server_config.name,
                     port=server_config.port,
