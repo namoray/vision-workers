@@ -181,6 +181,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             logger.exception(e)
             return 0  # Important to return 0 as this is a critical error
 
+    logger.info(f"Got chat or completion messages : \n{messages}")
+
     if not messages:
         logger.error("No valid messages in response.")
         logger.exception(formatted_response)
