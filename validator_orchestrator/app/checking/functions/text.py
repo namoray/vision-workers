@@ -4,15 +4,8 @@ import json
 import random
 from loguru import logger
 import httpx
-from typing import Dict, List, Any, Union
+from typing import List, Union
 import math
-
-
-def replace_inf(dct: dict):
-    for key, value in dct.items():
-        if value == "-inf":
-            dct[key] = float("-inf")
-    return dct
 
 
 PROMPT_KEY = "prompt"
@@ -27,6 +20,7 @@ BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
 
 
+
 def score_average_distance(average_distance: float) -> float:
     if average_distance <= BOTTOM_TEXT_THRESHOLD:
         return 1.0
@@ -34,10 +28,8 @@ def score_average_distance(average_distance: float) -> float:
         return 1.0 - 0.5 * (average_distance - BOTTOM_TEXT_THRESHOLD) / (TOP_TEXT_THRESHOLD - BOTTOM_TEXT_THRESHOLD)
     return 0.0
 
-
 def _payload_is_completions(payload: dict) -> bool:
     return PROMPT_KEY in payload
-
 
 def _extract_completions_message(idx: int, response: dict) -> str:
     content = response["choices"][0]["text"]
@@ -106,7 +98,7 @@ async def _completions_to_prompt(prompt: str, model_name: str, eos_token_id: int
     return await _tokenize_and_detokenize(input_payload, model_name, eos_token_id, add_generation_prompt)
 
 
-async def make_completions_call(
+async def make_api_call(
     payload: dict,
     endpoint: str = f"{BASE_URL}/v1/completions",
 ) -> dict:
@@ -142,8 +134,8 @@ async def calculate_distance_for_token(
     }
 
     try:
-        r = await httpx.AsyncClient().post(f"{BASE_URL}/v1/completions", json=completions_payload)
-        validator_checking_response = json.loads(r.text, object_hook=replace_inf)
+        r = await make_api_call(completions_payload)
+        validator_checking_response = json.loads(r.text)
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
         return 0.0
@@ -155,7 +147,6 @@ async def calculate_distance_for_token(
 
     token = choice['text']
     validator_log_probs_for_token = choice['logprobs']['top_logprobs'][0]
-
 
     if token not in validator_log_probs_for_token:
         logger.info(f"token: {token} - not found in vali logprobs")
@@ -174,14 +165,13 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     eos_token_id = task_config.load_model_config.get("eos_token_id", 128009)
 
     # Extract messages & logprobs from the response
-
     messages: list[models.MessageResponse] = []
     response_tokens: list[str] = []
-    is_payload_completions = _payload_is_completions(payload)
+    is_completions_payload = _payload_is_completions(payload)
     for idx, response in enumerate(formatted_response):
         try:
             # If `prompt` is in the payload, treat it as a /completions request
-            if is_payload_completions:
+            if is_completions_payload:
                 message = _extract_completions_message(idx, response)
             else:
                 message = _extract_chat_message(idx, response)
@@ -203,7 +193,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         return 0.0
 
     # Now get the combined input + output in `prompt` format
-    if is_payload_completions:
+    if is_completions_payload:
         input_completions_content = payload[PROMPT_KEY]
         input_content, num_input_tokens = await _completions_to_prompt(input_completions_content, task_config.load_model_config["model"], eos_token_id, add_generation_prompt=True)
     else:
@@ -233,7 +223,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     }
 
     try:
-        result = await make_completions_call(completions_payload)
+        result = await make_api_call(completions_payload)
     except (httpx.RequestError, json.JSONDecodeError) as e:
         logger.exception(e)
         logger.error(f"API call failed: {e}")
@@ -298,7 +288,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     payload["starting_assistant_message"] = True
     payload["number_of_logprobs"] = 5
     payload["top_k"] = 5
-    if is_payload_completions:
+    if is_completions_payload:
         llm_request = models.CompletionRequestModel(**payload)
         llm_request.max_tokens = 1
     else:
@@ -309,7 +299,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         if checks >= 5:
             continue
 
-        if is_payload_completions:
+        if is_completions_payload:
             text_to_inject_for_checking = "".join([i.content for i in messages[:index]])
             llm_request.prompt += text_to_inject_for_checking
         else:
@@ -330,9 +320,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         distance = await calculate_distance_for_token(task_config, llm_request, messages, index)
         checks += 1
         total_distance += distance
-        if index != 0 and is_payload_completions:
+        if index != 0 and is_completions_payload:
             llm_request.prompt = llm_request.prompt[:(len(llm_request.prompt) - len(text_to_inject_for_checking))]
-        elif index != 0 and not is_payload_completions:
+        elif index != 0 and not is_completions_payload:
             llm_request.messages = llm_request.messages[:-1]
 
     try:
