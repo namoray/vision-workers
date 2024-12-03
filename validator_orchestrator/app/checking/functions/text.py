@@ -141,7 +141,7 @@ async def calculate_distance_for_token(
         logger.error(f"Request failed in calculate_distance_for_token: {e}")
         return 0.0
 
-    text = validator_checking_response["choices"][0]["text"]
+    text = chat_responses[index].content
     validator_log_probs_for_token = validator_checking_response["choices"][0]["logprobs"]["top_logprobs"][0]
 
     if text not in validator_log_probs_for_token:
