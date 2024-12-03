@@ -65,7 +65,6 @@ example_response = [
     },
 ]
 
-task_configs = task_configs_factory()
 
 # async def _handle_stream(response: httpx.Response) -> dict[str, Any]:
     
@@ -86,6 +85,7 @@ async def get_real_response(task: str, payload: dict[str, Any] = example_payload
 async def check_result(
     task: str, payload: dict[str, Any] = example_payload, miner_response: dict[str, Any] = example_response, response_time: float = 1.0, orchestrator_url: str | None = None
 ) -> bool:
+    task_configs = task_configs_factory()
     task_config = task_configs[task]
     if orchestrator_url is None:
         logger.warning("No orchestrator URL provided, using default")

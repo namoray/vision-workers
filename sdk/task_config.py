@@ -12,6 +12,7 @@ logger = get_logger(__name__)
 CHAT_LLAMA_3_2_3B = "chat-llama-3-2-3b"
 CHAT_LLAMA_3_1_70B = "chat-llama-3-1-70b"
 CHAT_LLAMA_3_1_8B = "chat-llama-3-1-8b"
+CHAT_ROGUE_ROSE_103B = "chat-rogue-rose-103b"
 PROTEUS_TEXT_TO_IMAGE = "proteus-text-to-image"
 PROTEUS_IMAGE_TO_IMAGE = "proteus-image-to-image"
 FLUX_SCHNELL_TEXT_TO_IMAGE = "flux-schnell-text-to-image"
@@ -42,6 +43,33 @@ def task_configs_factory() -> dict[str, cmodels.FullTaskConfig]:
                 task=CHAT_LLAMA_3_2_3B,
             ),
             synthetic_generation_config=cmodels.SyntheticGenerationConfig(func="generate_chat_synthetic", kwargs={"model": CHAT_LLAMA_3_2_3B}),
+            endpoint=cmodels.Endpoints.chat_completions.value,
+            volume_to_requests_conversion=300,
+            is_stream=True,
+            weight=0.05,
+            timeout=2,
+            enabled=True,
+        ),
+        CHAT_ROGUE_ROSE_103B: cmodels.FullTaskConfig(
+            task=CHAT_ROGUE_ROSE_103B,
+            task_type=cmodels.TaskType.TEXT,
+            max_capacity=120_000,
+            orchestrator_server_config=cmodels.OrchestratorServerConfig(
+                server_needed=cmodels.ServerType.LLM,
+                load_model_config={
+                    "model": "sophosympatheia/Rogue-Rose-103b-v0.2",
+                    "tokenizer": "sophosympatheia/Rogue-Rose-103b-v0.2",
+                    "revision": "exl2-3.2bpw",
+                    "half_precision": True,
+                    "max_model_len": 4096,
+                    "gpu_utilization": 0.7,
+                    "eos_token_id": 2,
+                },
+                endpoint=cmodels.Endpoints.chat_completions.value,
+                task=CHAT_ROGUE_ROSE_103B,
+                checking_function="check_text_result",
+            ),
+            synthetic_generation_config=cmodels.SyntheticGenerationConfig(func="generate_chat_synthetic", kwargs={"model": CHAT_ROGUE_ROSE_103B}),
             endpoint=cmodels.Endpoints.chat_completions.value,
             volume_to_requests_conversion=300,
             is_stream=True,
