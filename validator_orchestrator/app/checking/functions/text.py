@@ -28,8 +28,10 @@ def score_average_distance(average_distance: float) -> float:
         return 1.0 - 0.5 * (average_distance - BOTTOM_TEXT_THRESHOLD) / (TOP_TEXT_THRESHOLD - BOTTOM_TEXT_THRESHOLD)
     return 0.0
 
+
 def _payload_is_completions(payload: dict) -> bool:
     return PROMPT_KEY in payload
+
 
 def _extract_completions_message(idx: int, response: dict) -> str:
     content = response["choices"][0]["text"]
