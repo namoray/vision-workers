@@ -68,7 +68,6 @@ class Message(BaseModel):
 
 
 class MessageResponse(BaseModel):
-    role: str
     content: str
     logprob: float
 

@@ -39,7 +39,7 @@ def _extract_completions_message(idx: int, response: dict) -> str:
         return None
 
     logprob = logprobs["token_logprobs"][0]
-    return models.MessageResponse(role="assistant", content=content, logprob=logprob)
+    return models.MessageResponse(content=content, logprob=logprob)
 
 
 def _extract_chat_message(idx: int, response: dict) -> models.MessageResponse | None:
@@ -51,7 +51,7 @@ def _extract_chat_message(idx: int, response: dict) -> models.MessageResponse | 
         if role == "assistant":
             return None
     logprob = logprobs["content"][0]["logprob"]
-    return models.MessageResponse(role="assistant", content=content, logprob=logprob)
+    return models.MessageResponse(content=content, logprob=logprob)
 
 
 async def _tokenize(prompt: str, model: str) -> list[int]:
