@@ -131,12 +131,16 @@ class ServerManager:
         logger.debug(f"Desired server: {server_config.name}. Is running: {desired_server_is_online}.")
 
         if desired_server_is_online:
-            correct_model_is_running = await self._check_correct_model_is_running(
-                server_name=server_config.name,
-                port=server_config.port,
-                model_name=load_model_config["model"],
-            )
-            if correct_model_is_running:
+            if server_config.name == ServerType.LLM:
+                correct_model_is_running = await self._check_correct_model_is_running(
+                    server_name=server_config.name,
+                    port=server_config.port,
+                    model_name=load_model_config["model"],
+                )
+                if correct_model_is_running:
+                    return
+            # no need for image tasks
+            else:
                 return
 
         # Check no other server is running on the same port
