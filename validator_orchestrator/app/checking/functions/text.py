@@ -328,15 +328,16 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             starting_assistant_message = False
         else:
             starting_assistant_message = index == 0
-            text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
-            llm_request.messages.append(
-                models.Message(
-                    **{
-                        "role": "assistant",
-                        "content": text_to_inject_into_assistant_message,
-                    }
+            if index > 0 : 
+                text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
+                llm_request.messages.append(
+                    models.Message(
+                        **{
+                            "role": "assistant",
+                            "content": text_to_inject_into_assistant_message,
+                        }
+                    )
                 )
-            )
         distance = await calculate_distance_for_token(task_config, llm_request, messages, index, starting_assistant_message)
         checks += 1
         total_distance += distance
