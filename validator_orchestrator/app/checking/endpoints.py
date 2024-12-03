@@ -32,10 +32,10 @@ def _get_llm_server_docker_flags(task_config: models.OrchestratorServerConfig) -
 
     flags += f" --model {load_model_config['model']}"
     flags += f" --tokenizer {load_model_config['tokenizer']}"
-    flags += f" --max_model_len {load_model_config['max_model_len']}"
-    flags += f" --gpu_memory_utilization {load_model_config['gpu_utilization']}"
+    flags += f" --max_model_len {load_model_config.get('max_model_len', 8000)}"
+    flags += f" --gpu_memory_utilization {load_model_config.get('gpu_utilization', 0.8)}"
 
-    if load_model_config["half_precision"]:
+    if load_model_config.get('half_precision', True):
         flags += " --dtype half"
 
     return flags
