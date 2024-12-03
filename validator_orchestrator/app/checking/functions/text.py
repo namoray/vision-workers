@@ -118,7 +118,7 @@ async def calculate_distance_for_token(
             messages=messages,
             model_name=task_config.load_model_config["model"],
             eos_token_id=task_config.load_model_config.get("eos_token_id", 128009),
-            add_generation_prompt=False,
+            add_generation_prompt=llm_request.starting_assistant_message,
         )
     elif isinstance(llm_request, models.CompletionRequestModel):
         prompt = llm_request.prompt
