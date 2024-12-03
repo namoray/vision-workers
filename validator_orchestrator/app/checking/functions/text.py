@@ -220,7 +220,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     }
 
     try:
-        result = await make_api_call(completions_payload, endpoint=f"{BASE_URL}/v1/completions)
+        result = await make_api_call(completions_payload, endpoint=f"{BASE_URL}/v1/completions")
     except (httpx.RequestError, json.JSONDecodeError) as e:
         logger.exception(e)
         logger.error(f"API call failed: {e}")
