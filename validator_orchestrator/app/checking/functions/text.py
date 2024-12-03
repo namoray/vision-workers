@@ -133,7 +133,7 @@ async def calculate_distance_for_token(
         "max_tokens": 1,
         "logprobs": llm_request.number_of_logprobs,
     }
-
+    logger.info(f"check prompt : {prompt}")
     try:
         validator_checking_response = await make_api_call(completions_payload, endpoint=f"{BASE_URL}/v1/completions")
     except json.JSONDecodeError as e:
