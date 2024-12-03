@@ -112,14 +112,14 @@ async def make_api_call(
 async def calculate_distance_for_token(
     task_config: models.OrchestratorServerConfig,
     llm_request: Union[models.ChatRequestModel, models.CompletionRequestModel],
-    chat_responses: List[models.Message],
-    index: int,
+    chat_responses: List[models.MessageResponse],
+    index: int
 ) -> float:
 
     if isinstance(llm_request, models.ChatRequestModel):
         messages = [elm.model_dump() for elm in llm_request.messages]
         prompt, _ = await _chat_to_prompt(messages=messages, model_name=task_config.load_model_config['model'], 
-                                eos_token_id=task_config.load_model_config.get("eos_token_id", 128009), add_generation_prompt=False)
+                                eos_token_id=task_config.load_model_config.get("eos_token_id", 128009), add_generation_prompt=llm_request.starting_assistant_message)
     elif isinstance(llm_request, models.CompletionRequestModel):
         prompt = llm_request.prompt
     else:
@@ -138,7 +138,7 @@ async def calculate_distance_for_token(
     try:
         validator_checking_response = await make_api_call(completions_payload)
     except json.JSONDecodeError as e:
-        logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
+        logger.error(f"Error decoding JSON: {e}. Response: {validator_checking_response}")
         return 0.0
     except httpx.RequestError as e:
         logger.error(f"Request failed: {e}")
@@ -146,7 +146,8 @@ async def calculate_distance_for_token(
 
     choice = validator_checking_response['choices'][0]
 
-    token = choice['text']
+    token = chat_responses[index].content
+
     validator_log_probs_for_token = choice['logprobs']['top_logprobs'][0]
 
     if token not in validator_log_probs_for_token:
