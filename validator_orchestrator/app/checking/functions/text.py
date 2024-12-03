@@ -134,8 +134,7 @@ async def calculate_distance_for_token(
     }
 
     try:
-        r = await make_api_call(completions_payload)
-        validator_checking_response = json.loads(r.text)
+        validator_checking_response = await make_api_call(completions_payload)
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON: {e}. Response: {r.text}")
         return 0.0
