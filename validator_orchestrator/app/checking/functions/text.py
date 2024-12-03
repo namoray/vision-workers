@@ -43,6 +43,7 @@ def _extract_completions_message(idx: int, response: dict) -> str:
 
 
 def _extract_chat_message(idx: int, response: dict) -> models.MessageResponse | None:
+    logger.info(f"_extract_chat_message got : {idx} - {response}")
     content = response["choices"][0]["delta"]["content"]
     logprobs = response["choices"][0]["logprobs"]
     # Below is a fix for the first message not having logprobs
@@ -51,6 +52,7 @@ def _extract_chat_message(idx: int, response: dict) -> models.MessageResponse | 
         if role == "assistant":
             return None
     logprob = logprobs["content"][0]["logprob"]
+    logger.info(f"_extract_chat_message responds : {content} - {logprob}")
     return models.MessageResponse(content=content, logprob=logprob)
 
 
