@@ -20,8 +20,7 @@ BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
 
 
-
-def score_average_distance(average_distance: float) -> float:
+def _score_average_distance(average_distance: float) -> float:
     if average_distance <= BOTTOM_TEXT_THRESHOLD:
         return 1.0
     elif average_distance <= TOP_TEXT_THRESHOLD:
@@ -115,16 +114,19 @@ async def calculate_distance_for_token(
     chat_responses: List[models.MessageResponse],
     index: int
 ) -> float:
-
     if isinstance(llm_request, models.ChatRequestModel):
         messages = [elm.model_dump() for elm in llm_request.messages]
-        prompt, _ = await _chat_to_prompt(messages=messages, model_name=task_config.load_model_config['model'], 
-                                eos_token_id=task_config.load_model_config.get("eos_token_id", 128009), add_generation_prompt=llm_request.starting_assistant_message)
+        prompt, _ = await _chat_to_prompt(
+            messages=messages,
+            model_name=task_config.load_model_config["model"],
+            eos_token_id=task_config.load_model_config.get("eos_token_id", 128009),
+            add_generation_prompt=False,
+        )
     elif isinstance(llm_request, models.CompletionRequestModel):
         prompt = llm_request.prompt
     else:
         raise ValueError(f"Unknown request type: {type(llm_request)}")
-    
+
     completions_payload = {
         "prompt": prompt,
         "model": task_config.load_model_config["model"],
@@ -132,7 +134,7 @@ async def calculate_distance_for_token(
         "top_k": llm_request.top_k,
         "top_p": 1,
         "max_tokens": 1,
-        "logprobs": llm_request.number_of_logprobs
+        "logprobs": llm_request.number_of_logprobs,
     }
 
     try:
@@ -144,11 +146,10 @@ async def calculate_distance_for_token(
         logger.error(f"Request failed: {e}")
         return 0.0
 
-    choice = validator_checking_response['choices'][0]
+    choice = validator_checking_response["choices"][0]
 
-    token = chat_responses[index].content
-
-    validator_log_probs_for_token = choice['logprobs']['top_logprobs'][0]
+    token = choice["text"]
+    validator_log_probs_for_token = choice["logprobs"]["top_logprobs"][0]
 
     if token not in validator_log_probs_for_token:
         logger.info(f"token: {token} - not found in vali logprobs")
@@ -238,11 +239,13 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     fail_reason = ""
 
     for idx, response_token, logprobs in zip(range(len(response_tokens[num_input_tokens:])), response_tokens[num_input_tokens:], prompt_logprobs):
+        # Just a helper for nicer printing
         nice_logprobs = json.dumps(logprobs, indent=2, sort_keys=True, ensure_ascii=False)
 
         # The edge case here is when the messages didn't include the end of token
         # So sometimes we don't have a message for the last token
         additional_log = f" (decoded: '{messages[idx].content}', logprob: {messages[idx].logprob})" if idx <= len(messages) - 1 else ""
+
         if str(response_token) in logprobs:
             logprob = logprobs[str(response_token)]["logprob"]
             rank = logprobs[str(response_token)]["rank"]
@@ -258,7 +261,18 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
                 bad_token_found = True
                 break
         else:
-            logger.exception("How did we even get here?")
+            logger.error(f"Token {response_token} {additional_log} not found in logprobs :(")
+            bad_token_found = True
+            break
+        
+        # If you could've stopped, why didnt you?
+        if str(eos_token_id) in logprobs and str(response_token) != str(eos_token_id):
+            logprob = logprobs[str(eos_token_id)]["logprob"]
+            response_logprob = logprobs[str(response_token)]["logprob"]
+            if logprob > float("-inf") and math.exp(logprob) / math.exp(response_logprob) > 100:
+                fail_reason = "You really went out your way to avoid stopping!"
+                bad_token_found = True
+                break
 
     if bad_token_found:
         # TODO: Make a nice message
@@ -266,7 +280,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         return 0.0
 
     logger.info("All tokens found in prompt_logprobs! ✅")
-
 
     if messages[-1].content == "":
         messages = messages[:-1]
@@ -323,7 +336,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         checks += 1
         total_distance += distance
         if index != 0 and is_completions_payload:
-            llm_request.prompt = llm_request.prompt[:(len(llm_request.prompt) - len(text_to_inject_for_checking))]
+            llm_request.prompt = llm_request.prompt[: (len(llm_request.prompt) - len(text_to_inject_for_checking))]
         elif index != 0 and not is_completions_payload:
             llm_request.messages = llm_request.messages[:-1]
 
@@ -332,5 +345,5 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     except Exception as e:
         logger.error(f"Error with average distance: {e}. Total distance: {total_distance}. Checks: {checks}")
         return 0
-    score = score_average_distance(average_distance)
+    score = _score_average_distance(average_distance)
     return score
