@@ -21,12 +21,12 @@ checking_server_configs: list[CheckingServerConfig] = [
     CheckingServerConfig(
         name=ServerType.LLM.value,
         docker_image="vllm/vllm-openai:v0.6.3",
-        port=8000,
+        port=6919,
         volumes={
             "HF": "/app/cache",
         },
         network=shared_network,
-        external_port=8000,
+        external_port=6919,
     ),
     CheckingServerConfig(
         name=ServerType.IMAGE.value,

@@ -12,7 +12,7 @@ PROMPT_KEY = "prompt"
 MESSAGES_KEY = "messages"
 
 # TODO: Eventually change to chutes
-BASE_URL = "http://llm_server:8000".rstrip("/")
+BASE_URL = "http://llm_server:6919".rstrip("/")
 
 BOTTOM_TEXT_THRESHOLD = 0.125
 TOP_TEXT_THRESHOLD = 0.25
