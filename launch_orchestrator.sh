@@ -118,4 +118,10 @@ if [ -n "$(docker ps -q -f name=$ORCHESTRATOR_CONTAINER_NAME)" ]; then
   sleep 5
 fi
 
+# TODO: remove later
+
+docker stop llm_server 2>/dev/null || true
+sleep 5
+docker rm -f llm_server 2>/dev/null || true
+
 docker run -d --rm --name $ORCHESTRATOR_CONTAINER_NAME $DOCKER_RUN_FLAGS -e PORT=$PORT -p $PORT:$PORT $ORCHESTRATOR_IMAGE
