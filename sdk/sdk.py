@@ -91,6 +91,7 @@ async def check_result(
         logger.warning("No orchestrator URL provided, using default")
         orchestrator_url = "http://localhost:6920"
 
+    payload["model"] = task_config.orchestrator_server_config.load_model_config["model"]
     actual_payload = {
         "server_config": {
             "server_needed": task_config.orchestrator_server_config.server_needed,
