@@ -110,7 +110,7 @@ async def calculate_distance_for_token(
     llm_request: Union[models.ChatRequestModel, models.CompletionRequestModel],
     chat_responses: List[models.MessageResponse],
     index: int,
-    starting_assistant_message: bool
+    starting_assistant_message: bool,
 ) -> float:
     if isinstance(llm_request, models.ChatRequestModel):
         messages = [elm.model_dump() for elm in llm_request.messages]
@@ -179,7 +179,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             logger.exception(e)
             return 0  # Important to return 0 as this is a critical error
 
-
     if not messages:
         logger.error("No valid messages in response.")
         logger.exception(formatted_response)
@@ -225,6 +224,8 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         logger.exception(e)
         logger.error(f"API call failed: {e}")
         return 0.0
+
+    logger.info("Number of input tokens:" + str(num_input_tokens) + "Prompt logprobs:" + json.dumps(completions_payload["prompt_logprobs"], indent=2))
 
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
 
@@ -313,14 +314,13 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         if checks >= 5:
             break
 
-
         if is_completions_payload:
             text_to_inject_for_checking = "".join([i.content for i in messages[:index]])
             llm_request.prompt += text_to_inject_for_checking
             starting_assistant_message = False
         else:
             starting_assistant_message = index == 0
-            if index > 0 : 
+            if index > 0:
                 text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
                 llm_request.messages.append(
                     models.Message(
