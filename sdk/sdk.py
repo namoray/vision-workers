@@ -38,7 +38,7 @@ example_payload = {
 }
 
 example_completion_payload = {
-    "prompt": "Tell me the capital of France in 20 words only.",
+    "prompt": "You know I just love to make omelettes with",
     "temperature": 0.5,
     "max_tokens": 500,
     "model": "chat-llama-3-2-3b",
