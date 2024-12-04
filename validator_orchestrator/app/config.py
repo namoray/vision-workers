@@ -11,6 +11,7 @@ class CheckingServerConfig(BaseModel):
     docker_image: str
     port: int
     volumes: Dict[str, str]  # volue name, mount path
+    env_vars: Dict[str, str]
     network: str
     external_port: int
 
@@ -25,6 +26,10 @@ checking_server_configs: list[CheckingServerConfig] = [
         volumes={
             "HF": "/app/cache",
         },
+        env_vars={
+            "HF_HOME": "/app/cache",
+            "HF_HUB_CACHE": "/app/cache/hub"
+        },
         network=shared_network,
         external_port=6919,
     ),
@@ -33,6 +38,7 @@ checking_server_configs: list[CheckingServerConfig] = [
         docker_image=os.getenv("IMAGE_SERVER_DOCKER_IMAGE", ProdDockerImages.IMAGE),
         port=6919,
         volumes={"COMFY": "/app/image_server/ComfyUI"},
+        env_vars={},
         network=shared_network,
         external_port=6919,
     ),
