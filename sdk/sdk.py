@@ -72,7 +72,7 @@ example_response = [
 async def get_real_response(task: str, payload: dict[str, Any] = example_payload, llm_url: str | None = None, chat: bool = True) -> dict[str, Any]:
     if llm_url is None:
         logger.warning("No LLM URL provided, using default")
-        llm_url = "http://llm_server:8000"
+        llm_url = "http://llm_server:6919"
     async with httpx.AsyncClient() as client:
         if chat:
             response = await client.post(llm_url.rstrip("/") + "/chat/completions", json=payload)

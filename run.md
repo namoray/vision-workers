@@ -1,7 +1,7 @@
 ```bash
 docker run --runtime nvidia --gpus all \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
-    -p 8000:8000 \
+    -p 6919:6919 \
     --ipc=host \
     vllm/vllm-openai:v0.6.3 \
     --model sophosympatheia/Rogue-Rose-103b-v0.2 \

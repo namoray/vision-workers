@@ -35,10 +35,10 @@ def _get_llm_server_docker_flags(task_config: models.OrchestratorServerConfig) -
     flags += f" --tokenizer {load_model_config['tokenizer']}"
     flags += f" --dtype {dtype}"
     flags += f" --max_model_len {load_model_config.get('max_model_len', 8000)}"
-    flags += f" --gpu_memory_utilization {load_model_config.get('gpu_utilization', 0.7)}"
+    flags += f" --gpu_memory_utilization {load_model_config.get('gpu_memory_utilization', 0.7)}"
     flags += f" --tensor-parallel-size {load_model_config.get('tensor_parallel_size', 1)}"
     flags += f" --num-scheduler-steps {load_model_config.get('num_scheduler_steps', 1)}"
-    flags += " --enable-chunked-prefill"
+    flags += " --port 6919 --enable-chunked-prefill"
 
     
     if load_model_config.get("revision", None):

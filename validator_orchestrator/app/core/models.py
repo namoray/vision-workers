@@ -45,7 +45,7 @@ class OrchestratorServerConfig(BaseModel):
                 "half_precision": True,
                 "tokenizer": "tau-vision/llama-tokenizer-fix",
                 "max_model_len": 16000,
-                "gpu_utilization": 0.6,
+                "gpu_memory_utilization": 0.6,
                 "eos_token_id": 128009
             },
             None,
