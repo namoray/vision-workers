@@ -26,7 +26,7 @@ checking_server_configs: list[CheckingServerConfig] = [
             "HF": "/app/cache",
         },
         network=shared_network,
-        external_port=8000,
+        external_port=6919,
     ),
     CheckingServerConfig(
         name=ServerType.IMAGE.value,
