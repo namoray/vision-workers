@@ -227,7 +227,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens + 1:]
 
-    logger.info("Number of input tokens:" + str(num_input_tokens) + "Prompt logprobs:" + json.dumps(result["choices"][0]["prompt_logprobs"], indent=2))
+    logger.info("Number of input tokens:" + str(num_input_tokens) + "Prompt logprobs:" + json.dumps(prompt_logprobs, indent=2))
 
     bad_token_found = False
 
