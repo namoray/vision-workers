@@ -166,6 +166,8 @@ class ServerManager:
         command = (
             f"docker run -d --rm --shm-size={shared_vol_size} --name {server_config.name} "
             + " ".join([f"-v {volume}:{mount_path}" for volume, mount_path in server_config.volumes.items()])
+            + " "
+            + " ".join([f"-e {key}={val}" for key, val in server_config.env_vars.items()])
             + f" {docker_run_flags} "
             + f"-p {server_config.external_port}:{server_config.port} "
             + f"--network {server_config.network} "
