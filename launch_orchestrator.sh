@@ -97,8 +97,7 @@ check_and_pull_image() {
   fi
 }
 check_and_pull_image $ORCHESTRATOR_IMAGE
-# TODO: uncomment below
-# check_and_pull_image $IMAGE_SERVER_IMAGE
+check_and_pull_image $IMAGE_SERVER_IMAGE
 
 echo "Got up to date images, Making volumes...."
 
