@@ -40,7 +40,7 @@ example_payload = {
 example_completion_payload = {
     "prompt": "You know I just love to make omelettes with",
     "temperature": 0.5,
-    "max_tokens": 500,
+    "max_tokens": 10,
     "model": "chat-llama-3-2-3b",
     "top_p": 1,
     "top_k": 5,

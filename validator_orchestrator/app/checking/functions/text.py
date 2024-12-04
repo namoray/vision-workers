@@ -225,9 +225,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         logger.error(f"API call failed: {e}")
         return 0.0
 
-    logger.info("Number of input tokens:" + str(num_input_tokens) + "Prompt logprobs:" + json.dumps(completions_payload["prompt_logprobs"], indent=2))
-
     prompt_logprobs = result["choices"][0]["prompt_logprobs"][num_input_tokens:]
+
+    logger.info("Number of input tokens:" + str(num_input_tokens) + "Prompt logprobs:" + json.dumps(result["choices"][0]["prompt_logprobs"], indent=2))
 
     bad_token_found = False
 
