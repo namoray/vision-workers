@@ -192,7 +192,6 @@ class ServerManager:
         """
         Stop the currently running server.
         """
-        logger.info("Here!")
         for server_name, is_running in self.running_servers.items():
             if is_running:
                 logger.info(f"Stopping the running server container {server_name} 😈")
