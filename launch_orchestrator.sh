@@ -1,11 +1,10 @@
 #!/bin/bash
 ORCHESTRATOR_IMAGE="nineteenai/sn19:orchestrator-latest"
-LLM_IMAGE="nineteenai/sn19:llm_server-latest"
 IMAGE_SERVER_IMAGE="nineteenai/sn19:image_server-latest"
 PORT=6920
 REFRESH_LOCAL_IMAGES=1
 
-# ./launch_orchestrator.sh --llm-image nineteenai/sn19:llm_server-6.0.0 --image-server-image nineteenai/sn19:image_server-6.0.0 --orchestrator-image nineteenai/sn19:orchestrator-6.0.0
+# ./launch_orchestrator.sh --image-server-image nineteenai/sn19:image_server-6.0.0 --orchestrator-image nineteenai/sn19:orchestrator-6.0.0
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
@@ -17,10 +16,6 @@ while [[ "$#" -gt 0 ]]; do
     ;;
   --orchestrator-image)
     ORCHESTRATOR_IMAGE="$2"
-    shift
-    ;;
-  --llm-image)
-    LLM_IMAGE="$2"
     shift
     ;;
   --image-server-image)
@@ -102,7 +97,6 @@ check_and_pull_image() {
   fi
 }
 check_and_pull_image $ORCHESTRATOR_IMAGE
-check_and_pull_image $LLM_IMAGE
 check_and_pull_image $IMAGE_SERVER_IMAGE
 
 echo "Got up to date images, Making volumes...."
