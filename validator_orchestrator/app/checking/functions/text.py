@@ -54,9 +54,9 @@ def _extract_chat_message(idx: int, response: dict) -> models.MessageResponse | 
     return models.MessageResponse(content=content, logprob=logprob)
 
 
-async def _tokenize(prompt: str, model: str) -> list[int]:
+async def _tokenize(prompt: str, model: str, add_special_tokens: bool) -> list[int]:
     async with httpx.AsyncClient() as client:
-        r = await client.post(url=f"{BASE_URL}/tokenize", json={"model": model, "prompt": prompt})
+        r = await client.post(url=f"{BASE_URL}/tokenize", json={"model": model, "prompt": prompt, "add_special_tokens": add_special_tokens})
         r.raise_for_status()  # raise an exception for 4xx or 5xx status codes
         return r.json()["tokens"]
 
@@ -110,7 +110,7 @@ async def calculate_distance_for_token(
     llm_request: Union[models.ChatRequestModel, models.CompletionRequestModel],
     chat_responses: List[models.MessageResponse],
     index: int,
-    starting_assistant_message: bool
+    starting_assistant_message: bool,
 ) -> float:
     if isinstance(llm_request, models.ChatRequestModel):
         messages = [elm.model_dump() for elm in llm_request.messages]
@@ -123,6 +123,7 @@ async def calculate_distance_for_token(
     elif isinstance(llm_request, models.CompletionRequestModel):
         prompt = llm_request.prompt
 
+    # TODO: in future if upgrading from vllm 0.6.3, remember to set `add_special_tokens = False` due to "second bos" issue
     completions_payload = {
         "prompt": prompt,
         "model": task_config.load_model_config["model"],
@@ -136,10 +137,10 @@ async def calculate_distance_for_token(
         validator_checking_response = await make_api_call(completions_payload, endpoint=f"{BASE_URL}/v1/completions")
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON in calculate_distance_for_token: {e}. Response: {validator_checking_response}")
-        return 0.0
+        return 1
     except httpx.RequestError as e:
         logger.error(f"Request failed in calculate_distance_for_token: {e}")
-        return 0.0
+        return 1
 
     text = chat_responses[index].content
     validator_log_probs_for_token = validator_checking_response["choices"][0]["logprobs"]["top_logprobs"][0]
@@ -147,7 +148,7 @@ async def calculate_distance_for_token(
     if text not in validator_log_probs_for_token:
         logger.info(f"token: {text} - not found in vali logprobs")
         logger.info(f"validator_log_probs_for_token: {validator_log_probs_for_token}")
-        return 0
+        return 1
     else:
         distance = abs(math.exp(validator_log_probs_for_token[text]) - math.exp(chat_responses[index].logprob))
         logger.info(f"token: {text} - logprob : {chat_responses[index].logprob}")
@@ -162,7 +163,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     # Extract messages & logprobs from the response
     messages: list[models.MessageResponse] = []
-    response_tokens: list[str] = []
     is_completions_payload = _payload_is_completions(payload)
     for idx, response in enumerate(formatted_response):
         try:
@@ -179,7 +179,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             logger.exception(e)
             return 0  # Important to return 0 as this is a critical error
 
-
     if not messages:
         logger.error("No valid messages in response.")
         logger.exception(formatted_response)
@@ -189,32 +188,42 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         logger.error("Number of messages is greater than max_tokens, skipping logprob check, returning 0")
         return 0.0
 
+    full_response_content = "".join([message.content for message in messages])
+    number_of_output_tokens = len(messages)
+
     # Now get the combined input + output in `prompt` format
     if is_completions_payload:
         input_completions_content = payload[PROMPT_KEY]
-        input_content, num_input_tokens = await _completions_to_prompt(input_completions_content, task_config.load_model_config["model"], eos_token_id, add_generation_prompt=True)
+
+        input_tokens = await _tokenize(input_completions_content, task_config.load_model_config["model"], add_special_tokens=False)
+        input_content, num_input_tokens = input_completions_content, len(input_tokens)
+        eos_token = await _detokenize([eos_token_id], task_config.load_model_config["model"])
+
+        if number_of_output_tokens != payload["max_tokens"] and messages[-1] != eos_token:
+            full_prompt = input_content + full_response_content + eos_token
+        else:    
+            full_prompt = input_content + full_response_content
+
+        all_tokens = await _tokenize(full_prompt, task_config.load_model_config["model"], add_special_tokens=True)
+
     else:
         input_chat_content = payload[MESSAGES_KEY]
         input_content, num_input_tokens = await _chat_to_prompt(input_chat_content, task_config.load_model_config["model"], eos_token_id, add_generation_prompt=True)
+        full_prompt_before_eos = input_content + full_response_content
+        all_tokens = await _tokenize(full_prompt_before_eos, task_config.load_model_config["model"], add_special_tokens=True)
 
-    full_response_content = "".join([message.content for message in messages])
+        # Make sure the last token is eos token where necessary, so we can check it with prompt logprobs
+        if number_of_output_tokens != payload["max_tokens"] and all_tokens[-1] != eos_token_id:
+            all_tokens.append(eos_token_id)
 
-    full_prompt_before_eos = input_content + full_response_content
-    response_tokens = await _tokenize(full_prompt_before_eos, task_config.load_model_config["model"])
-
-    # Make sure the last token is eos token where necessary, so we can check it with prompt logprobs
-    number_of_output_tokens = len(messages)
-    if number_of_output_tokens != payload["max_tokens"] and response_tokens[-1] != eos_token_id:
-        response_tokens.append(eos_token_id)
-
-    full_prompt = await _detokenize(response_tokens, task_config.load_model_config["model"])
+        full_prompt = await _detokenize(all_tokens, task_config.load_model_config["model"])
 
     # Now get the prompt logprobs from completions and check they are all correct
+    # TODO: in future if upgrading from vllm 0.6.3, remember to set `add_special_tokens = False` due to "second bos" issue
     completions_payload = {
         "prompt": full_prompt,
         "model": task_config.load_model_config["model"],
         "temperature": payload["temperature"],
-        "top_p": payload["top_p"],
         "max_tokens": 1,
         "prompt_logprobs": 10,
     }
@@ -232,7 +241,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     fail_reason = ""
 
-    for idx, response_token, logprobs in zip(range(len(response_tokens[num_input_tokens:])), response_tokens[num_input_tokens:], prompt_logprobs):
+    for idx, response_token, logprobs in zip(range(len(all_tokens[num_input_tokens:])), all_tokens[num_input_tokens:], prompt_logprobs):
         # Just a helper for nicer printing
         nice_logprobs = json.dumps(logprobs, indent=2, sort_keys=True, ensure_ascii=False)
 
@@ -313,14 +322,13 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         if checks >= 5:
             break
 
-
         if is_completions_payload:
             text_to_inject_for_checking = "".join([i.content for i in messages[:index]])
             llm_request.prompt += text_to_inject_for_checking
             starting_assistant_message = False
         else:
             starting_assistant_message = index == 0
-            if index > 0 : 
+            if index > 0:
                 text_to_inject_into_assistant_message = "".join([i.content for i in messages[:index]])
                 llm_request.messages.append(
                     models.Message(
