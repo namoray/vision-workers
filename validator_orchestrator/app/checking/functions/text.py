@@ -302,8 +302,6 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             )
             indices_to_check.extend(additional_indices_to_check)
 
-    logger.info(f"indices_to_check: {indices_to_check}")
-
     total_distance = 0
     checks = 0
 
