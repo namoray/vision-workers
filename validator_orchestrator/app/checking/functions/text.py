@@ -282,7 +282,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     if bad_token_found:
         # TODO: Make a nice message
-        logger.error(f"Bad token found at index {idx}. Token: {response_token}" f"{additional_log}" f" Prompt logprobs: {nice_logprobs}" f" Reason: {fail_reason}")
+        logger.error(f"Bad token (s) found at indexes {failed_tokens_idx}." f" Prompt logprobs: {nice_logprobs}" f" Reason: {fail_reason}")
         return 0.0
 
     logger.info("All tokens found in prompt_logprobs! ✅")
