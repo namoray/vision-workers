@@ -244,6 +244,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     fail_reason = ""
 
     failed_tokens_idx = []
+    failed_tokens_details = []
 
     for idx, response_token, logprobs in zip(range(len(all_tokens[num_input_tokens:])), all_tokens[num_input_tokens:], prompt_logprobs):
         # Just a helper for nicer printing
@@ -262,8 +263,11 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
             else:
                 logger.error(f"Token {response_token} {additional_log} in logprobs with bad behaviour; rank: {rank}, logprob: {logprob} ❌")
                 failed_tokens_idx.append(idx)
+                failed_tokens_details.append((response_token, rank, logprob, additional_log))
+
                 if len(failed_tokens_idx) > 3:
-                    fail_reason = "Too many bad tokens found"
+                    failed_tokens_details = json.dumps(failed_tokens_details, indent=2, sort_keys=True, ensure_ascii=False)
+                    fail_reason = f"Too many bad tokens found ('response_token', 'rank', 'logprob', 'additional_log'):\n{failed_tokens_details}"
                     bad_token_found = True
                     break
         else:
