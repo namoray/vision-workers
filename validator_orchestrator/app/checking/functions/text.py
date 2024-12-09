@@ -302,7 +302,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         )
         indices_to_check.extend(additional_indices_to_check)
 
-    logger.info(f"failed token ids : {failed_tokens_idx}")
+    logger.info(f"failed token indexes : {failed_tokens_idx}")
     logger.info(f"logprobs indexes to check : {indices_to_check}")
 
     total_distance = 0
