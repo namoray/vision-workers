@@ -132,6 +132,7 @@ async def calculate_distance_for_token(
         "top_p": 1,
         "max_tokens": 1,
         "logprobs": llm_request.number_of_logprobs,
+        "add_special_tokens": False
     }
     try:
         validator_checking_response = await make_api_call(completions_payload, endpoint=f"{BASE_URL}/v1/completions")
@@ -204,7 +205,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         else:    
             full_prompt = input_content + full_response_content
 
-        all_tokens = await _tokenize(full_prompt, task_config.load_model_config["model"], add_special_tokens=True)
+        all_tokens = await _tokenize(full_prompt, task_config.load_model_config["model"], add_special_tokens=False)
 
     else:
         input_chat_content = payload[MESSAGES_KEY]
@@ -226,6 +227,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         "temperature": payload["temperature"],
         "max_tokens": 1,
         "prompt_logprobs": 10,
+        "add_special_tokens": False
     }
 
     try:
@@ -286,22 +288,19 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     # Now lets do some fine grained checking
 
-    # Don't use the last token, as the token that comes after that
-    # is undefined
-    if messages[-1].content == "":
-        messages = messages[:-1]
-
     if len(messages) == 1:
         indices_to_check = [0]
     else:
         # Always check first & last
         indices_to_check = [0, len(messages) - 1]
         number_of_additional_indices_to_check = len(messages) - 2
-        additional_indices_to_check = random.sample(
-            range(1, len(messages) - 1),
-            number_of_additional_indices_to_check,
-        )
-        indices_to_check.extend(additional_indices_to_check)
+        if len(messages) > 2:
+            number_of_additional_indices_to_check = len(messages) - 2
+            additional_indices_to_check = random.sample(
+                range(1, len(messages) - 1),
+                number_of_additional_indices_to_check,
+            )
+            indices_to_check.extend(additional_indices_to_check)
 
     total_distance = 0
     checks = 0
