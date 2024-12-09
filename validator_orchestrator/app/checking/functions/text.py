@@ -293,14 +293,16 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     else:
         # Always check first & last
         indices_to_check = [0, len(messages) - 1]
-        number_of_additional_indices_to_check = len(messages) - 2
-        if len(messages) > 2:
-            number_of_additional_indices_to_check = len(messages) - 2
+        number_of_additional_indices_to_check = min(3, len(messages) - 2) 
+
+        if number_of_additional_indices_to_check > 0:
             additional_indices_to_check = random.sample(
                 range(1, len(messages) - 1),
                 number_of_additional_indices_to_check,
             )
             indices_to_check.extend(additional_indices_to_check)
+
+    logger.info(f"indices_to_check: {indices_to_check}")
 
     total_distance = 0
     checks = 0
