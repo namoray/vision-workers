@@ -132,6 +132,7 @@ async def calculate_distance_for_token(
         "top_p": 1,
         "max_tokens": 1,
         "logprobs": llm_request.number_of_logprobs,
+        "add_special_tokens": False
     }
     try:
         validator_checking_response = await make_api_call(completions_payload, endpoint=f"{BASE_URL}/v1/completions")
@@ -204,7 +205,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         else:    
             full_prompt = input_content + full_response_content
 
-        all_tokens = await _tokenize(full_prompt, task_config.load_model_config["model"], add_special_tokens=True)
+        all_tokens = await _tokenize(full_prompt, task_config.load_model_config["model"], add_special_tokens=False)
 
     else:
         input_chat_content = payload[MESSAGES_KEY]
@@ -226,6 +227,7 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
         "temperature": payload["temperature"],
         "max_tokens": 1,
         "prompt_logprobs": 10,
+        "add_special_tokens": False
     }
 
     try:
@@ -240,6 +242,9 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
     bad_token_found = False
 
     fail_reason = ""
+
+    failed_tokens_idx = []
+    failed_tokens_details = []
 
     for idx, response_token, logprobs in zip(range(len(all_tokens[num_input_tokens:])), all_tokens[num_input_tokens:], prompt_logprobs):
         # Just a helper for nicer printing
@@ -257,12 +262,14 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
                 logger.info(f"Token {response_token} {additional_log} in logprobs with good behaviour; rank: {rank}, logprob: {logprob} ✅")
             else:
                 logger.error(f"Token {response_token} {additional_log} in logprobs with bad behaviour; rank: {rank}, logprob: {logprob} ❌")
-                if response_token == eos_token_id:
-                    fail_reason = "EOS token is there when it shouldn't be there!"
-                else:
-                    fail_reason = "You made a token up mate"
-                bad_token_found = True
-                break
+                failed_tokens_idx.append(idx)
+                failed_tokens_details.append((response_token, rank, logprob, additional_log))
+
+                if len(failed_tokens_idx) > 3:
+                    failed_tokens_details = json.dumps(failed_tokens_details, indent=2, sort_keys=True, ensure_ascii=False)
+                    fail_reason = f"Too many bad tokens found ('response_token', 'rank', 'logprob', 'additional_log'):\n{failed_tokens_details}"
+                    bad_token_found = True
+                    break
         else:
             logger.error(f"Token {response_token} {additional_log} not found in logprobs :(")
             bad_token_found = True
@@ -279,29 +286,28 @@ async def check_text_result(result: models.QueryResult, payload: dict, task_conf
 
     if bad_token_found:
         # TODO: Make a nice message
-        logger.error(f"Bad token found at index {idx}. Token: {response_token}" f"{additional_log}" f" Prompt logprobs: {nice_logprobs}" f" Reason: {fail_reason}")
+        logger.error(f"Bad token (s) found at indexes {failed_tokens_idx}." f" Prompt logprobs: {nice_logprobs}" f" Reason: {fail_reason}")
         return 0.0
 
     logger.info("All tokens found in prompt_logprobs! ✅")
 
     # Now lets do some fine grained checking
 
-    # Don't use the last token, as the token that comes after that
-    # is undefined
-    if messages[-1].content == "":
-        messages = messages[:-1]
-
     if len(messages) == 1:
         indices_to_check = [0]
     else:
         # Always check first & last
-        indices_to_check = [0, len(messages) - 1]
-        number_of_additional_indices_to_check = len(messages) - 2
+        indices_to_check = [0, len(messages) - 1] + failed_tokens_idx
+
+        number_of_additional_indices_to_check = min(5 - len(indices_to_check), len(messages) - 2) 
         additional_indices_to_check = random.sample(
             range(1, len(messages) - 1),
             number_of_additional_indices_to_check,
         )
         indices_to_check.extend(additional_indices_to_check)
+
+    logger.info(f"failed token indexes : {failed_tokens_idx}")
+    logger.info(f"logprobs indexes to check : {indices_to_check}")
 
     total_distance = 0
     checks = 0
