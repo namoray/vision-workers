@@ -10,6 +10,7 @@ from loguru import logger
 import traceback
 from datetime import datetime
 from app.checking.task_manager import task_manager
+from app.settings import settings
 import asyncio
 
 router = APIRouter(
@@ -145,3 +146,10 @@ async def check_task(task_id: str) -> models.CheckTaskResponse:
 @router.get("/all-task-status")
 async def task_statuses() -> models.AllTaskStatusResponse:
     return models.AllTaskStatusResponse(tasks=task_manager.task_status)
+
+
+@router.get("/worker-version")
+async def task_statuses() -> dict:
+    return {
+        "orchestrator_version": settings.version
+    }
