@@ -149,7 +149,7 @@ async def task_statuses() -> models.AllTaskStatusResponse:
 
 
 @router.get("/version")
-async def task_statuses() -> dict:
+async def get_version() -> dict:
     return {
         "version": settings.version
     }
