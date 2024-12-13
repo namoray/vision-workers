@@ -151,5 +151,5 @@ async def task_statuses() -> models.AllTaskStatusResponse:
 @router.get("/worker-version")
 async def task_statuses() -> dict:
     return {
-        "orchestrator_version": settings.version
+        "version": settings.version
     }
