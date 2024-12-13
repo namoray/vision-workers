@@ -148,7 +148,7 @@ async def task_statuses() -> models.AllTaskStatusResponse:
     return models.AllTaskStatusResponse(tasks=task_manager.task_status)
 
 
-@router.get("/worker-version")
+@router.get("/version")
 async def task_statuses() -> dict:
     return {
         "version": settings.version
