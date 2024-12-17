@@ -6,14 +6,24 @@ REFRESH_LOCAL_IMAGES=1
 
 # ./launch_orchestrator.sh --image-server-image nineteenai/sn19:image_server-6.0.0 --orchestrator-image nineteenai/sn19:orchestrator-6.0.0
 
+if [ -f .vali.env ]; then
+    set -a
+    source .vali.env
+    set +a
+fi
+
+ORCHESTRATOR_IMAGE=${ORCHESTRATOR_IMAGE:-"nineteenai/sn19:orchestrator-latest"}
+IMAGE_SERVER_IMAGE=${IMAGE_SERVER_IMAGE:-"nineteenai/sn19:image_server-latest"}
+PORT=${PORT:-6920}
+REFRESH_LOCAL_IMAGES=${REFRESH_LOCAL_IMAGES:-1}
+NETWORK=${NETWORK:-"comm"}
+ORCHESTRATOR_CONTAINER_NAME=${ORCHESTRATOR_CONTAINER_NAME:-"orchestrator"}
+SHARED_VOLUME_SIZE=${SHARED_VOLUME_SIZE:-"10g"}
+
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
   case $1 in
   --nvidia-runtime) NVIDIA_RUNTIME_FLAG=1 ;;
-  --device)
-    DEVICE="$2"
-    shift
-    ;;
   --orchestrator-image)
     ORCHESTRATOR_IMAGE="$2"
     shift
@@ -47,19 +57,17 @@ DOCKER_RUN_FLAGS="--rm \
                   -e IMAGE_SERVER_DOCKER_IMAGE=$IMAGE_SERVER_IMAGE \
                   --network $NETWORK"
 
-# Add the --runtime=nvidia flag unless --no-runtime-flag is specified
 
 if [[ -n "$NVIDIA_RUNTIME_FLAG" ]]; then
   DOCKER_RUN_FLAGS+=" --runtime=nvidia"
 fi
 
-if [[ -n "$DEVICE" ]]; then
-  DOCKER_RUN_FLAGS+=" -e CUDA_VISIBLE_DEVICES=$DEVICE \
-                        -e DEVICE=$DEVICE \
-                        --gpus \"device=$DEVICE\""
+if [[ -n "$CUDA_VISIBLE_DEVICES" ]]; then
+    DOCKER_RUN_FLAGS+=" --gpus \"device=$CUDA_VISIBLE_DEVICES\""
 else
-  DOCKER_RUN_FLAGS+=" --gpus all"
+    DOCKER_RUN_FLAGS+=" --gpus all"
 fi
+
 
 check_and_pull_image() {
   IMAGE=$1
@@ -124,4 +132,11 @@ docker stop llm_server 2>/dev/null || true
 sleep 5
 docker rm -f llm_server 2>/dev/null || true
 
-docker run -d --rm --name $ORCHESTRATOR_CONTAINER_NAME $DOCKER_RUN_FLAGS -e PORT=$PORT -p $PORT:$PORT $ORCHESTRATOR_IMAGE
+docker run -d --rm \
+  --name $ORCHESTRATOR_CONTAINER_NAME \
+  $DOCKER_RUN_FLAGS \
+  --shm-size=$SHARED_VOLUME_SIZE \
+  -e CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
+  -e NVIDIA_RUNTIME_FLAG=$NVIDIA_RUNTIME_FLAG \
+  -p $PORT:$PORT \
+  $ORCHESTRATOR_IMAGE
